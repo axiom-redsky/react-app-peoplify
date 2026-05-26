@@ -1,7 +1,7 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useApi } from '@axiom/hooks';
 import { Button, Input } from '@axiom/components/ui';
-import { callApi } from '@/core/api/api';
 
 interface LoginResponse {
 	success: boolean;
@@ -11,32 +11,62 @@ interface LoginResponse {
 	};
 }
 
+type TLoginRequest = {
+	email: string;
+	password: string;
+};
+
 export default function LoginPage(): React.ReactNode {
 	const [email, setEmail] = useState('admin@peoplify.com');
 	const [password, setPassword] = useState('password');
 	const [error, setError] = useState('');
-	const [loading, setLoading] = useState(false);
 
-	const handleLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+	/** 로그인 API 호출 */
+	const {
+		mutate,
+		isPending: isLoggingIn,
+		data: loginResult,
+		error: loginError,
+		reset: resetMutation,
+	} = useApi<LoginResponse, TLoginRequest>('/api/auth/login', {
+		method: 'POST',
+		type: 'mutation',
+	});
+
+	const handleLogin = async (e: React.SyntheticEvent<HTMLFormElement>): Promise<void> => {
 		e.preventDefault();
 		setError('');
-		setLoading(true);
 
-		try {
-			const result = await callApi<LoginResponse>('/api/auth/login', {
-				method: 'POST',
-				body: { email, password },
-			});
-			console.log('로그인 토큰>>>>>', result.data!.data.token);
-			localStorage.setItem('access_token', result.data!.data.token);
-			$router.push('/');
-		} catch (err: unknown) {
-			const message = err instanceof Error ? err.message : '로그인에 실패했습니다.';
-			setError(message);
-		} finally {
-			setLoading(false);
-		}
+		mutate(
+			{ email, password },
+			{
+				// onSuccess: async (result) => {
+				// 	if (result?.data?.token) {
+				// 		localStorage.setItem('access_token', result.data.token);
+				// 		$router.push('/');
+				// 	}
+				// },
+				onError: (err) => {
+					setError(err instanceof Error ? err.message : '로그인에 실패했습니다.');
+				},
+			}
+		);
 	};
+
+  // 로그인 완료 response 활용 부분
+	useEffect(() => {
+		if (loginResult?.data?.token) {
+			localStorage.setItem('access_token', loginResult.data.token);
+			$router.push('/');
+		}
+	}, [loginResult]);
+
+	// 로그인 에러 상태 업데이트 (useApi 의 error 객체 사용)
+	useEffect(() => {
+		if (loginError) {
+			setError(loginError.message);
+		}
+	}, [loginError]);
 
 	return (
 		<div>
@@ -93,9 +123,9 @@ export default function LoginPage(): React.ReactNode {
 					type="submit"
 					className="w-full"
 					size="lg"
-					disabled={loading}
+					disabled={isLoggingIn}
 				>
-					{loading ? '로그인 중...' : '로그인'}
+					{isLoggingIn ? '로그인 중...' : '로그인'}
 				</Button>
 			</form>
 
