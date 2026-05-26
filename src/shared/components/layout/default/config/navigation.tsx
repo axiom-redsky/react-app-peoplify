@@ -1,15 +1,16 @@
 import {
-	Layers,
-	SquareDashedBottomCode,
-	Square,
-	FishingHook,
-	Badge,
-	ListChevronsDownUp,
-	GalleryHorizontal,
-	CheckSquare2,
-	ChevronsUpDown,
-	Table2,
+	LayoutDashboard,
+	Users,
+	FolderKanban,
+	CalendarClock,
+	BarChart3,
+	UserPlus,
+	List,
+	Activity,
 	CalendarDays,
+	ClipboardList,
+	LayoutTemplate,
+	LogIn,
 } from 'lucide-react';
 
 /** leaf: `path`만 사용. 하위 그룹: `subItems`가 있으면 `path`는 무시됩니다.
@@ -33,41 +34,79 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
 	{
-		icon: <Layers />,
-		name: 'Dev Examples',
+		icon: <LayoutDashboard />,
+		name: '대시보드',
+		path: '/',
+	},
+	{
+		icon: <Users />,
+		name: '직원관리',
 		subItems: [
-			{ name: '메인 페이지', path: '/' },
-			{ name: '계좌 메인 페이지', path: '/example/account-page' },
+			{ name: '직원 목록', icon: <List />, path: '/employees' },
+			{ name: '직원 등록', icon: <UserPlus />, path: '/employees/new' },
 		],
 	},
 	{
-		icon: <SquareDashedBottomCode />,
-		name: 'UI Components',
+		icon: <FolderKanban />,
+		name: '프로젝트',
 		subItems: [
-			{ name: 'Accordion', icon: <ListChevronsDownUp />, path: '/example/ui-components/accordion' },
-			{ name: 'Badge', icon: <Badge />, path: '/example/ui-components/badge' },
-			{ name: 'Button', icon: <Square />, path: '/example/ui-components/button' },
-			{ name: 'Carousel', icon: <GalleryHorizontal />, path: '/example/ui-components/carousel' },
-			{ name: 'Checkbox', icon: <CheckSquare2 />, path: '/example/ui-components/checkbox' },
-			{ name: 'Combobox', icon: <ChevronsUpDown />, path: '/example/ui-components/combobox' },
-			{ name: 'Calendar', icon: <CalendarDays />, path: '/example/ui-components/calendar' },
-			{ name: 'Data Table', icon: <Table2 />, path: '/example/ui-components/data-table' },
+			{ name: '프로젝트 목록', icon: <List />, path: '/projects' },
+			{ name: '투입 현황', icon: <Activity />, path: '/projects/status' },
 		],
 	},
 	{
-		icon: <SquareDashedBottomCode />,
-		name: 'API Examples',
+		icon: <CalendarClock />,
+		name: '근태관리',
 		subItems: [
-			{ name: 'useApi', icon: <FishingHook />, path: '/example/use-api' },
-			{
-				name: 'useClientState예제',
-				subItems: [
-					{ name: 'useClientState1', path: '/example/use-client-state-1' },
-					{ name: 'useClientState2', path: '/example/use-client-state-2' },
-				],
-			},
+			{ name: '월별 근무 보고', icon: <ClipboardList />, path: '/attendance' },
+			{ name: '휴가 관리', icon: <CalendarDays />, path: '/attendance/leave' },
 		],
+	},
+	{
+		icon: <BarChart3 />,
+		name: '리포트',
+		path: '/reports',
 	},
 ];
 
-export const othersItems: NavItem[] = [];
+export const othersItems: NavItem[] = [
+	{
+		icon: <LayoutTemplate />,
+		name: '대시보드',
+		path: '/publishing/dashboard',
+	},
+	{
+		icon: <Users />,
+		name: '직원관리',
+		subItems: [
+			{ name: '직원 목록', icon: <List />, path: '/publishing/employees' },
+			{ name: '직원 등록', icon: <UserPlus />, path: '/publishing/employees/new' },
+		],
+	},
+	{
+		icon: <FolderKanban />,
+		name: '프로젝트',
+		subItems: [
+			{ name: '프로젝트 목록', icon: <List />, path: '/publishing/projects' },
+			{ name: '투입 현황', icon: <Activity />, path: '/publishing/projects/status' },
+		],
+	},
+	{
+		icon: <CalendarClock />,
+		name: '근태관리',
+		subItems: [
+			{ name: '월별 근무 보고', icon: <ClipboardList />, path: '/publishing/attendance' },
+			{ name: '휴가 관리', icon: <CalendarDays />, path: '/publishing/attendance/leave' },
+		],
+	},
+	{
+		icon: <BarChart3 />,
+		name: '리포트',
+		path: '/publishing/reports',
+	},
+	{
+		icon: <LogIn />,
+		name: '로그인',
+		path: '/publishing/login',
+	},
+];

@@ -286,7 +286,7 @@ const AppSidebar: React.FC = () => {
 
 	return (
 		<aside
-			className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
+			className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white border-gray-200 text-gray-900 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 h-screen transition-all duration-300 ease-in-out z-50 border-r
         ${isExpanded || isMobileOpen ? 'w-72.5' : isHovered ? 'w-72.5' : 'w-22.5'}
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0`}
@@ -306,8 +306,8 @@ const AppSidebar: React.FC = () => {
 									/>
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-medium text-gray-900">React App Scaffold v1</span>
-									<span className="truncate text-xs text-gray-600">react-app-scaffold</span>
+									<span className="truncate font-medium text-gray-900">인력관리 시스템</span>
+									<span className="truncate text-xs text-gray-600">Peoplify v1.0</span>
 								</div>
 							</div>
 							<div className="hidden dark:flex items-center gap-3">
@@ -319,8 +319,8 @@ const AppSidebar: React.FC = () => {
 									/>
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-medium text-white">React App Scaffold v1</span>
-									<span className="truncate text-xs text-gray-400">react-app-scaffold</span>
+									<span className="truncate font-medium text-white">인력관리 시스템</span>
+									<span className="truncate text-xs text-gray-400">Peoplify v1.0</span>
 								</div>
 							</div>
 						</>
@@ -344,7 +344,7 @@ const AppSidebar: React.FC = () => {
 										!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
 									}`}
 								>
-									{isExpanded || isHovered || isMobileOpen ? 'Examples' : <ChevronDownIcon className="size-6" />}
+									{isExpanded || isHovered || isMobileOpen ? '메인 메뉴' : <ChevronDownIcon className="size-6" />}
 								</h2>
 								{renderMenuItems(navItems, 'main')}
 							</div>
@@ -356,7 +356,7 @@ const AppSidebar: React.FC = () => {
 										!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
 									}`}
 								>
-									{isExpanded || isHovered || isMobileOpen ? 'Others' : <ChevronDownIcon className="size-6" />}
+									{isExpanded || isHovered || isMobileOpen ? '퍼블리싱 (임시)' : <ChevronDownIcon className="size-6" />}
 								</h2>
 								{renderMenuItems(othersItems, 'others')}
 							</div>

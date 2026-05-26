@@ -1,0 +1,149 @@
+import { Button } from '@/shared/ui';
+import PageHeader from '@/shared/components/ui/PageHeader';
+import StatusBadge from '@/shared/components/ui/StatusBadge';
+import { Edit, UserPlus } from 'lucide-react';
+
+const members = [
+	{ name: '홍길동', role: 'PM', rate: '100%', start: '25.03.01', end: '26.12.31' },
+	{ name: '김민준', role: 'PL', rate: '100%', start: '25.03.01', end: '26.09.30' },
+	{ name: '이서연', role: '개발', rate: '100%', start: '25.05.01', end: '26.12.31' },
+	{ name: '박지훈', role: '개발', rate: '100%', start: '25.05.01', end: '26.06.30' },
+	{ name: '최유나', role: 'QA', rate: '50%', start: '25.08.01', end: '26.12.31' },
+];
+
+const techStack = ['Java', 'Spring Boot', 'Oracle', 'iBatis', 'MSA', 'Git', 'Jenkins'];
+const tabs = ['개요', '투입 인력', '일정', '계약'];
+
+export default function ProjectDetailPage(): React.ReactNode {
+	return (
+		<div className="p-5">
+			<PageHeader
+				title="A금융 차세대 코어뱅킹"
+				breadcrumb={[
+					{ label: '프로젝트', path: '/projects' },
+					{ label: 'A금융 차세대 코어뱅킹' },
+				]}
+				actions={
+					<div className="flex gap-2">
+						<Button variant="outline" size="sm">
+							<Edit className="w-4 h-4 mr-1.5" />
+							수정
+						</Button>
+						<Button size="sm">
+							<UserPlus className="w-4 h-4 mr-1.5" />
+							인력 배정
+						</Button>
+					</div>
+				}
+			/>
+
+			{/* 개요 카드 */}
+			<div className="bg-card rounded-xl border p-5 mb-4">
+				<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+					<div>
+						<p className="text-xs text-muted-foreground mb-0.5">고객사</p>
+						<p className="font-semibold text-foreground">A금융그룹</p>
+					</div>
+					<div>
+						<p className="text-xs text-muted-foreground mb-0.5">프로젝트 기간</p>
+						<p className="font-semibold text-foreground">2025.03.01 ~ 2026.12.31</p>
+					</div>
+					<div>
+						<p className="text-xs text-muted-foreground mb-0.5">PM</p>
+						<p className="font-semibold text-foreground">홍길동 부장</p>
+					</div>
+					<div>
+						<p className="text-xs text-muted-foreground mb-0.5">계약 유형</p>
+						<p className="font-semibold text-foreground">T&M (시간·재료)</p>
+					</div>
+					<div>
+						<p className="text-xs text-muted-foreground mb-0.5">총 계약금액</p>
+						<p className="font-semibold text-foreground">12억 원</p>
+					</div>
+					<div className="col-span-2">
+						<p className="text-xs text-muted-foreground mb-0.5">상태</p>
+						<StatusBadge status="active" />
+					</div>
+				</div>
+				{/* 진척도 바 */}
+				<div>
+					<div className="flex justify-between text-sm mb-1">
+						<span className="text-muted-foreground">현재 진척도</span>
+						<span className="font-semibold text-teal-600">68%</span>
+					</div>
+					<div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+						<div className="h-full bg-teal-500 rounded-full" style={{ width: '68%' }} />
+					</div>
+				</div>
+			</div>
+
+			{/* 탭 */}
+			<div className="border-b mb-4">
+				<div className="flex gap-0">
+					{tabs.map((tab, idx) => (
+						<button
+							key={tab}
+							className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+								idx === 1
+									? 'border-teal-600 text-teal-600'
+									: 'border-transparent text-muted-foreground hover:text-foreground'
+							}`}
+						>
+							{tab}
+						</button>
+					))}
+				</div>
+			</div>
+
+			{/* 투입 인력 탭 */}
+			<div className="bg-card rounded-xl border overflow-hidden mb-4">
+				<div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+					<h3 className="font-semibold text-foreground text-sm">투입 인력 (7명)</h3>
+				</div>
+				<table className="w-full text-sm">
+					<thead className="bg-muted/50">
+						<tr>
+							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">이름</th>
+							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">역할</th>
+							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">투입률</th>
+							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">투입일</th>
+							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">철수예정</th>
+						</tr>
+					</thead>
+					<tbody>
+						{members.map((m) => (
+							<tr key={m.name} className="border-t hover:bg-muted/20 transition-colors">
+								<td className="py-2.5 px-4">
+									<div className="flex items-center gap-2">
+										<div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-xs">
+											{m.name[0]}
+										</div>
+										<span className="font-medium text-foreground">{m.name}</span>
+									</div>
+								</td>
+								<td className="py-2.5 px-4">
+									<span className="px-2 py-0.5 rounded text-xs bg-teal-50 text-teal-700 font-medium">{m.role}</span>
+								</td>
+								<td className="py-2.5 px-4 font-medium">{m.rate}</td>
+								<td className="py-2.5 px-4 text-muted-foreground">{m.start}</td>
+								<td className="py-2.5 px-4 text-muted-foreground">{m.end}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			{/* 기술스택 */}
+			<div className="bg-card rounded-xl border p-4">
+				<h3 className="font-semibold text-foreground text-sm mb-3">기술 스택</h3>
+				<div className="flex flex-wrap gap-2">
+					{techStack.map((t) => (
+						<span key={t} className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium">
+							{t}
+						</span>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+}

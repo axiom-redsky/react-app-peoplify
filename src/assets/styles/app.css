@@ -13,8 +13,8 @@
 @import './tokens/theme-dark.css';
 
 /* 3. Theme (shadcn 시맨틱 vars + Tailwind 브리지) */
-@import './themes/theme-default.css';
-/* @import './themes/theme-[project].css'; ← 투입 시 주석 해제 */
+/* @import './themes/theme-default.css'; */
+@import './themes/theme-peoplify.css';
 
 /* 4. Base */
 @import './base/reset.css';

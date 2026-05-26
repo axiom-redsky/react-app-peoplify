@@ -6,4 +6,14 @@
   --color-success: var(--color-success-500);
   --color-error: var(--color-error-500);
   --color-warning: var(--color-warning-500);
+  --color-brand-primary: var(--color-teal-600);
+  --color-brand-primary-hover: var(--color-teal-700);
+  --color-brand-primary-subtle: var(--color-teal-50);
+  --color-brand-secondary: var(--color-teal-500);
+  --color-brand-accent: var(--color-teal-400);
+  --color-status-active: var(--color-emerald-500);
+  --color-status-bench: var(--color-amber-400);
+  --color-status-warning: var(--color-orange-500);
+  --color-status-complete: var(--color-slate-400);
+  --color-status-planned: var(--color-sky-500);
 }

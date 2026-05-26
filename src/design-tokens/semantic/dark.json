@@ -5,6 +5,20 @@
     "accent":     { "$value": "var(--color-blue-light-400)",  "$type": "color" },
     "success":    { "$value": "var(--color-success-400)",     "$type": "color" },
     "error":      { "$value": "var(--color-error-400)",       "$type": "color" },
-    "warning":    { "$value": "var(--color-warning-400)",     "$type": "color" }
+    "warning":    { "$value": "var(--color-warning-400)",     "$type": "color" },
+    "brand": {
+      "primary":       { "$value": "var(--color-teal-400)",   "$type": "color" },
+      "primary-hover": { "$value": "var(--color-teal-300)",   "$type": "color" },
+      "primary-subtle":{ "$value": "var(--color-teal-950)",   "$type": "color" },
+      "secondary":     { "$value": "var(--color-teal-500)",   "$type": "color" },
+      "accent":        { "$value": "var(--color-teal-300)",   "$type": "color" }
+    },
+    "status": {
+      "active":   { "$value": "var(--color-emerald-400)", "$type": "color" },
+      "bench":    { "$value": "var(--color-amber-300)",   "$type": "color" },
+      "warning":  { "$value": "var(--color-orange-400)",  "$type": "color" },
+      "complete": { "$value": "var(--color-slate-500)",   "$type": "color" },
+      "planned":  { "$value": "var(--color-sky-400)",     "$type": "color" }
+    }
   }
 }
