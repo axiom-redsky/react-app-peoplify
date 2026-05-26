@@ -40,6 +40,11 @@ class BaseAxiosClient {
 	}
 
 	private requestInterceptor(requestConfig: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+		const token = localStorage.getItem('access_token');
+		if (token) {
+			requestConfig.headers = requestConfig.headers ?? {};
+			requestConfig.headers['Authorization'] = `Bearer ${token}`;
+		}
 		return requestConfig;
 	}
 

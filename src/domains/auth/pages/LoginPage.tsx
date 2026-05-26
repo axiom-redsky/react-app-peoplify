@@ -1,15 +1,38 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Button, Input, Card, CardHeader, CardTitle, CardContent, CardDescription, Label } from '@axiom/components/ui';
+import { Button, Input } from '@axiom/components/ui';
+import { callApi } from '@/core/api/api';
+
+interface LoginResponse {
+	token: string;
+	user: { id: number; name: string; email: string; role: string };
+}
 
 export default function LoginPage(): React.ReactNode {
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
+	const [email, setEmail] = useState('admin@peoplify.com');
+	const [password, setPassword] = useState('password');
+	const [error, setError] = useState('');
+	const [loading, setLoading] = useState(false);
 
-	const handleLogin = () => {
-		// TODO: 실제 로그인 로직 구현 (useApi 등 활용)
-		console.log('Login attempt:', { email, password });
-		$router.push('/');
+	const handleLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		setError('');
+		setLoading(true);
+
+		try {
+			const result = await callApi<LoginResponse>('/api/auth/login', {
+				method: 'POST',
+				body: { email, password },
+			});
+			localStorage.setItem('access_token', result.data!.token);
+			$router.push('/');
+		} catch (err: unknown) {
+			const message =
+				err instanceof Error ? err.message : '로그인에 실패했습니다.';
+			setError(message);
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -21,7 +44,7 @@ export default function LoginPage(): React.ReactNode {
 
 			<form
 				className="space-y-4"
-				onSubmit={(e) => e.preventDefault()}
+				onSubmit={handleLogin}
 			>
 				<div>
 					<label className="block text-sm font-medium text-foreground mb-1">이메일</label>
@@ -29,7 +52,8 @@ export default function LoginPage(): React.ReactNode {
 						type="email"
 						placeholder="name@company.com"
 						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
-						defaultValue="admin@peoplify.com"
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
 					/>
 				</div>
 
@@ -39,9 +63,14 @@ export default function LoginPage(): React.ReactNode {
 						type="password"
 						placeholder="••••••••"
 						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
-						defaultValue="password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
 					/>
 				</div>
+
+				{error && (
+					<p className="text-sm text-red-500 text-center">{error}</p>
+				)}
 
 				<div className="flex items-center justify-between">
 					<label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
@@ -63,8 +92,9 @@ export default function LoginPage(): React.ReactNode {
 					type="submit"
 					className="w-full"
 					size="lg"
+					disabled={loading}
 				>
-					로그인
+					{loading ? '로그인 중...' : '로그인'}
 				</Button>
 			</form>
 

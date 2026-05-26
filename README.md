@@ -1,73 +1,35 @@
-# React + TypeScript + Vite
+# Peoplify 프로젝트
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Peoplify의 의미
 
-Currently, two official plugins are available:
+**Peoplify = People + -ify**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**People** (사람들) + **-ify** (동사형 접미사 — "~하게 만들다", "~화하다")
 
-## React Compiler
+영어에서 `-ify`는 무언가를 체계화하거나 가능하게 만든다는 뉘앙스를 담고 있습니다. 예를 들어 `simplify`(단순화하다), `clarify`(명확히 하다), `unify`(통합하다)처럼요.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+### 그래서 Peoplify가 담고 있는 의미
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+> **"사람(인력)을 체계적으로 관리하고 최적화한다"**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+SI 회사 맥락에서 더 구체적으로 보면 **"흩어진 현장의 인력을 하나로 모아 관리 가능하게 만든다"** 는 의미로도 읽힙니다.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### 추가로 느껴지는 뉘앙스
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+발음이 부드럽고 기억하기 쉬우며, `-ify`로 끝나는 이름은 Spotify, Shopify, Simplify처럼 현대적인 SaaS 서비스에서 많이 쓰이는 패턴이라 **제품다운 느낌**도 자연스럽게 생깁니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+
+## Node 서버 관련
+실행 방법:
+
+### 터미널 1 - 서버
+cd server && npm run dev
+
+### 터미널 2 - 프론트
+npm run dev
+테스트 계정: admin@peoplify.com / password

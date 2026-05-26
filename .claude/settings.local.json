@@ -9,7 +9,10 @@
       "PowerShell(Get-ChildItem -Path \"d:\\\\work\\\\2026\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\src\" -Force | ForEach-Object { if \\($_.PSIsContainer\\) { Write-Output \"[DIR]  $\\($_.Name\\)\" } else { Write-Output \"[FILE] $\\($_.Name\\)\" } })",
       "PowerShell(Get-ChildItem -Path \"d:\\\\work\\\\2026\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\src\\\\assets\" -Recurse -Force | ForEach-Object { if \\($_.PSIsContainer\\) { Write-Output \"[DIR]  $\\($_.FullName\\)\" } else { Write-Output \"[FILE] $\\($_.FullName\\)\" } })",
       "PowerShell(Get-ChildItem -Path \"d:\\\\work\\\\2026\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\src\" -Recurse -Force -Directory | ForEach-Object { Write-Output $_.FullName } | Sort-Object)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\redsky\\\\work\\\\react\\\\peoplify_react\\\\react-app-peoplify\" -Recurse -Directory | Where-Object { $_.Name -match \"\\(auth|api|router\\)\" } | Select-Object -ExpandProperty FullName | Sort-Object)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\redsky\\\\work\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\src\" -Recurse -Directory | Where-Object { $_.FullName -notmatch \"node_modules\" } | Select-Object -ExpandProperty FullName | Sort-Object)",
+      "Bash(npm install *)"
     ]
   }
 }
