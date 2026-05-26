@@ -1,0 +1,22 @@
+/*
+ * theme-example-project.css — 프로젝트 투입 시 브랜드 override 예시
+ *
+ * 사용 방법:
+ * 1. 이 파일을 theme-[project-name].css 로 복사
+ * 2. 원하는 변수를 주석 해제하여 override
+ * 3. app.css에서 @import './themes/theme-[project-name].css'; 주석 해제
+ *
+ * 토큰 값은 tokens/primitive.css의 --color-brand-* 등을 참조할 것
+ */
+
+/* :root { */
+/*   --primary: var(--color-brand-500);           토큰 참조 권장 */
+/*   --primary-foreground: var(--color-white); */
+/*   --ring: var(--color-brand-500); */
+/*   --border: var(--color-gray-200); */
+/* } */
+
+/* .dark { */
+/*   --primary: var(--color-brand-400); */
+/*   --ring: var(--color-brand-400); */
+/* } */

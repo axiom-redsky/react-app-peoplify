@@ -1,0 +1,28 @@
+<script src="/storybook-config.js"></script>
+<!-- Storybook을 다른 도메인에서 iFrame같은 요소에 postMessage 전달을 위한 로직(BEGIN) ================================= -->
+<script>
+	const targetOrigin = window.__SB_CONFIG__?.parentOrigin;
+	const checkScrollChange = (entries) => {
+		const currentScrollHeight = document.documentElement.scrollHeight;
+		const oldHeight = localStorage.getItem('__SB_OLD_HEIGHT__') || 0;
+		const gapH = 40;
+		if (currentScrollHeight + gapH !== Number(oldHeight)) {
+			localStorage.setItem('__SB_OLD_HEIGHT__', currentScrollHeight + gapH);
+			window.parent.parent.postMessage(
+				{
+					type: 'loaded',
+					source: 'storybook-manager',
+					height: currentScrollHeight + gapH,
+				},
+				targetOrigin,
+			);
+		}
+	};
+
+	const resizeObserver = new ResizeObserver(checkScrollChange);
+	const mutationObserver = new MutationObserver(checkScrollChange);
+	window.addEventListener('DOMContentLoaded', () => {
+		resizeObserver.observe(document.body);
+		mutationObserver.observe(document.body, { childList: true, subtree: true });
+	});
+</script>

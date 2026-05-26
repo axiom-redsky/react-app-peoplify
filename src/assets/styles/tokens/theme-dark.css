@@ -1,0 +1,9 @@
+/* AUTO-GENERATED — do not edit manually */
+.dark {
+  --color-primary: var(--color-brand-400);
+  --color-primary-lt: var(--color-brand-300);
+  --color-accent: var(--color-blue-light-400);
+  --color-success: var(--color-success-400);
+  --color-error: var(--color-error-400);
+  --color-warning: var(--color-warning-400);
+}

@@ -1,0 +1,10 @@
+{
+  "color": {
+    "primary":    { "$value": "var(--color-brand-400)",       "$type": "color" },
+    "primary-lt": { "$value": "var(--color-brand-300)",       "$type": "color" },
+    "accent":     { "$value": "var(--color-blue-light-400)",  "$type": "color" },
+    "success":    { "$value": "var(--color-success-400)",     "$type": "color" },
+    "error":      { "$value": "var(--color-error-400)",       "$type": "color" },
+    "warning":    { "$value": "var(--color-warning-400)",     "$type": "color" }
+  }
+}

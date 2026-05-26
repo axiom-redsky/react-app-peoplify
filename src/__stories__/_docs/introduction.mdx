@@ -1,0 +1,62 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Getting Started/소개" />
+
+# react-app-scaffold UI 컴포넌트
+
+이 Storybook은 `react-app-scaffold`에서 제공하는 UI 컴포넌트, Hooks, 유틸리티를 문서화합니다.
+
+---
+
+## 디렉토리 구조
+
+```
+src/__stories__/
+├── _docs/              # 소개 및 가이드 문서 (MDX)
+├── shared/
+│   └── ui/             # shadcn/ui 기반 공통 컴포넌트
+└── core/
+    └── hooks/          # 커스텀 훅
+```
+
+---
+
+## 스토리 카테고리
+
+| 카테고리 | 설명 |
+|---|---|
+| `Shared/UI` | `@axiom/components/ui`로 제공되는 공통 UI 컴포넌트 |
+| `Core/Hooks` | `@axiom/hooks`로 제공되는 커스텀 훅 |
+
+---
+
+## 기술 스택
+
+- **React 19** + **TypeScript**
+- **Tailwind CSS v4** + **shadcn/ui**
+- **TanStack Query v5**
+- **Vite 8** + **Storybook 10**
+
+---
+
+## 새 스토리 추가 방법
+
+`src/__stories__/` 하위에 `*.stories.tsx` 파일을 생성합니다.
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { MyComponent } from '@axiom/components/ui';
+
+const meta = {
+  title: 'Shared/UI/MyComponent',
+  component: MyComponent,
+  tags: ['autodocs'],
+} satisfies Meta<typeof MyComponent>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: { ... },
+};
+```

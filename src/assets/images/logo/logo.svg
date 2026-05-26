@@ -1,0 +1,81 @@
+<svg viewBox="0 50 1200 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for cards -->
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4169E1;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1E90FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00CED1;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="cardShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12"/>
+      <feOffset dx="0" dy="18" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.6"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Back card -->
+  <g transform="translate(100, 350)">
+    <rect x="0" y="0" width="900" height="550" rx="80" ry="80" 
+          fill="url(#cardGradient)" 
+          stroke="#00CED1" 
+          stroke-width="4"
+          filter="url(#cardShadow)" 
+          opacity="0.7"/>
+  </g>
+  
+  <!-- Middle card -->
+  <g transform="translate(150, 250)">
+    <rect x="0" y="0" width="900" height="550" rx="80" ry="80" 
+          fill="url(#cardGradient)" 
+          stroke="#00CED1" 
+          stroke-width="4"
+          filter="url(#cardShadow)" 
+          opacity="0.85"/>
+  </g>
+  
+  <!-- Front card with React logo -->
+  <g transform="translate(275, 120)">
+    <rect x="0" y="0" width="850" height="550" rx="80" ry="80" 
+          fill="url(#cardGradient)" 
+          stroke="#00CED1" 
+          stroke-width="4"
+          filter="url(#cardShadow)"/>
+    
+    <!-- React Atom Logo -->
+    <g transform="translate(425, 275)">
+      <!-- Center circle -->
+      <circle cx="0" cy="0" r="40" fill="#E0F7FF"/>
+      
+      <!-- Ellipse 1 (horizontal) -->
+      <ellipse cx="0" cy="0" rx="260" ry="95" 
+               fill="none" 
+               stroke="#E0F7FF" 
+               stroke-width="28" 
+               opacity="0.95"/>
+      
+      <!-- Ellipse 2 (rotated 60 degrees) -->
+      <ellipse cx="0" cy="0" rx="260" ry="95" 
+               fill="none" 
+               stroke="#E0F7FF" 
+               stroke-width="28" 
+               opacity="0.95"
+               transform="rotate(60)"/>
+      
+      <!-- Ellipse 3 (rotated -60 degrees) -->
+      <ellipse cx="0" cy="0" rx="260" ry="95" 
+               fill="none" 
+               stroke="#E0F7FF" 
+               stroke-width="28" 
+               opacity="0.95"
+               transform="rotate(-60)"/>
+    </g>
+  </g>
+</svg>

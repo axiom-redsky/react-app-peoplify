@@ -1,0 +1,11 @@
+{
+  "z-index": {
+    "1":      { "$value": 1,      "$type": "number" },
+    "9":      { "$value": 9,      "$type": "number" },
+    "99":     { "$value": 99,     "$type": "number" },
+    "999":    { "$value": 999,    "$type": "number" },
+    "9999":   { "$value": 9999,   "$type": "number" },
+    "99999":  { "$value": 99999,  "$type": "number" },
+    "999999": { "$value": 999999, "$type": "number" }
+  }
+}

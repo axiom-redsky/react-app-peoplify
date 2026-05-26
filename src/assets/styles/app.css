@@ -1,0 +1,29 @@
+/* app.css — CSS 진입점. 선언 없이 @import만. */
+
+/* 1. External */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+
+/* 2. Design Tokens (Style Dictionary 자동생성 — 직접 편집 금지) */
+@import './tokens/primitive.css';
+@import './tokens/theme-light.css';
+@import './tokens/theme-dark.css';
+
+/* 3. Theme (shadcn 시맨틱 vars + Tailwind 브리지) */
+@import './themes/theme-default.css';
+/* @import './themes/theme-[project].css'; ← 투입 시 주석 해제 */
+
+/* 4. Base */
+@import './base/reset.css';
+@import './base/typography.css';
+@import './base/layout.css';
+@import './base/utilities.css';
+
+/* 5. Layout (서드파티 오버라이드) */
+@import './layout/default/layout.css';
+
+/* @custom-variant은 반드시 루트 파일에 직접 선언 (import된 파일 안에 넣으면 dark: variant 미생성) */
+@custom-variant dark (&:is(.dark *));

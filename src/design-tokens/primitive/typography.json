@@ -1,0 +1,29 @@
+{
+  "font": {
+    "outfit": { "$value": "Outfit, sans-serif", "$type": "fontFamily" }
+  },
+  "breakpoint": {
+    "2xsm": { "$value": "375px", "$type": "dimension" },
+    "xsm":  { "$value": "425px", "$type": "dimension" },
+    "sm":   { "$value": "640px", "$type": "dimension" },
+    "md":   { "$value": "768px", "$type": "dimension" },
+    "lg":   { "$value": "1024px", "$type": "dimension" },
+    "xl":   { "$value": "1280px", "$type": "dimension" },
+    "2xl":  { "$value": "1536px", "$type": "dimension" },
+    "3xl":  { "$value": "2000px", "$type": "dimension" }
+  },
+  "text": {
+    "title": {
+      "2xl": { "$value": "72px", "$type": "dimension" },
+      "xl":  { "$value": "60px", "$type": "dimension" },
+      "lg":  { "$value": "48px", "$type": "dimension" },
+      "md":  { "$value": "36px", "$type": "dimension" },
+      "sm":  { "$value": "30px", "$type": "dimension" }
+    },
+    "theme": {
+      "xl": { "$value": "20px", "$type": "dimension" },
+      "sm": { "$value": "14px", "$type": "dimension" },
+      "xs": { "$value": "12px", "$type": "dimension" }
+    }
+  }
+}
