@@ -4,7 +4,8 @@ import { ChevronDownIcon, FileCode, Folder, FolderOpen } from 'lucide-react';
 import { useSidebar } from '@/core/hooks/layout/default/useSidebar';
 import { navItems, othersItems, type NavItem, type NavSubItem } from './config/navigation';
 
-import logoSvg from '@/assets/images/logo/logo.png';
+import logoSvg from '@/assets/images/logo/people.png';
+import logoLightSvg from '@/assets/images/logo/people_light.png';
 
 const isSubGroup = (item: NavSubItem): boolean => Boolean(item.subItems?.length);
 
@@ -313,7 +314,7 @@ const AppSidebar: React.FC = () => {
 							<div className="hidden dark:flex items-center gap-3">
 								<div className="flex aspect-square size-10 items-center justify-center rounded-lg bg-transparent">
 									<img
-										src={logoSvg}
+										src={logoLightSvg}
 										alt="mf-app-boilerplate Logo"
 										className="size-10 bg-transparent"
 									/>
@@ -325,12 +326,22 @@ const AppSidebar: React.FC = () => {
 							</div>
 						</>
 					) : (
-						<img
-							src={logoSvg}
-							alt="mf-app-boilerplate Logo"
-							width={32}
-							height={32}
-						/>
+						<>
+							<img
+								src={logoSvg}
+								alt="mf-app-boilerplate Logo"
+								width={32}
+								height={32}
+								className="dark:hidden"
+							/>
+							<img
+								src={logoLightSvg}
+								alt="mf-app-boilerplate Logo"
+								width={32}
+								height={32}
+								className="hidden dark:block"
+							/>
+						</>
 					)}
 				</Link>
 			</div>
