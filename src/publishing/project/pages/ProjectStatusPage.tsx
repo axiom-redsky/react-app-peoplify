@@ -1,4 +1,4 @@
-import { Button } from '@/shared/ui';
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import StatusBadge from '@/shared/components/ui/StatusBadge';
 import { Download, SlidersHorizontal } from 'lucide-react';
@@ -25,7 +25,10 @@ export default function ProjectStatusPage(): React.ReactNode {
 			<PageHeader
 				title="전체 투입 현황"
 				actions={
-					<Button variant="outline" size="sm">
+					<Button
+						variant="outline"
+						size="sm"
+					>
 						<Download className="w-4 h-4 mr-1.5" />
 						엑셀 저장
 					</Button>
@@ -35,7 +38,10 @@ export default function ProjectStatusPage(): React.ReactNode {
 			{/* 요약 수치 */}
 			<div className="flex flex-wrap gap-3 mb-4">
 				{summaryCards.map((card) => (
-					<div key={card.label} className="bg-card rounded-lg border px-4 py-2 flex items-center gap-2">
+					<div
+						key={card.label}
+						className="bg-card rounded-lg border px-4 py-2 flex items-center gap-2"
+					>
 						<span className={`text-lg font-bold ${card.color}`}>{card.value}</span>
 						<span className="text-sm text-muted-foreground">{card.label}</span>
 					</div>
@@ -44,18 +50,43 @@ export default function ProjectStatusPage(): React.ReactNode {
 
 			{/* 필터 */}
 			<div className="flex flex-wrap gap-2 mb-4">
-				<select className="px-3 py-2 text-sm border rounded-lg outline-none focus:border-teal-500 bg-background">
-					<option>상태 ▾</option>
-					<option>투입중</option>
-					<option>벤치</option>
-					<option>휴가</option>
-				</select>
-				<select className="px-3 py-2 text-sm border rounded-lg outline-none focus:border-teal-500 bg-background">
-					<option>부서 ▾</option>
-				</select>
-				<select className="px-3 py-2 text-sm border rounded-lg outline-none focus:border-teal-500 bg-background">
-					<option>철수 임박(30일) ▾</option>
-				</select>
+				<Select defaultValue="all">
+					<SelectTrigger
+						size="lg"
+						className="bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
+					>
+						<SelectValue placeholder="상태" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">상태 전체</SelectItem>
+						<SelectItem value="active">투입중</SelectItem>
+						<SelectItem value="bench">벤치</SelectItem>
+						<SelectItem value="leave">휴가</SelectItem>
+					</SelectContent>
+				</Select>
+				<Select defaultValue="all">
+					<SelectTrigger
+						size="lg"
+						className="bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
+					>
+						<SelectValue placeholder="부서" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">부서 전체</SelectItem>
+					</SelectContent>
+				</Select>
+				<Select defaultValue="all">
+					<SelectTrigger
+						size="lg"
+						className="bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
+					>
+						<SelectValue placeholder="철수 임박(30일)" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">철수 임박 전체</SelectItem>
+						<SelectItem value="30">30일 이내</SelectItem>
+					</SelectContent>
+				</Select>
 				<button className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-lg text-muted-foreground hover:bg-muted transition-colors">
 					<SlidersHorizontal className="w-4 h-4" />
 					초기화
@@ -80,10 +111,13 @@ export default function ProjectStatusPage(): React.ReactNode {
 					</thead>
 					<tbody>
 						{allMembers.map((m) => (
-							<tr key={m.name} className={`border-t transition-colors hover:bg-muted/20 ${m.status === 'warning' ? 'bg-orange-50/50' : ''}`}>
+							<tr
+								key={m.name}
+								className={`border-t transition-colors hover:bg-muted/20 ${m.status === 'warning' ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''}`}
+							>
 								<td className="py-2.5 px-4">
 									<div className="flex items-center gap-2">
-										<div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-xs">
+										<div className="w-7 h-7 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-700 dark:text-teal-300 font-semibold text-xs">
 											{m.name[0]}
 										</div>
 										<span className="font-medium text-foreground">{m.name}</span>
@@ -93,7 +127,7 @@ export default function ProjectStatusPage(): React.ReactNode {
 								<td className="py-2.5 px-4 font-medium text-foreground">{m.project}</td>
 								<td className="py-2.5 px-4">
 									{m.role !== '—' && (
-										<span className="px-2 py-0.5 rounded text-xs bg-teal-50 text-teal-700 font-medium">{m.role}</span>
+										<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">{m.role}</span>
 									)}
 									{m.role === '—' && <span className="text-muted-foreground">—</span>}
 								</td>

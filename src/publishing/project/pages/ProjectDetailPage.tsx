@@ -1,4 +1,4 @@
-import { Button } from '@/shared/ui';
+import { Button } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import StatusBadge from '@/shared/components/ui/StatusBadge';
 import { Edit, UserPlus } from 'lucide-react';
@@ -122,7 +122,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 									</div>
 								</td>
 								<td className="py-2.5 px-4">
-									<span className="px-2 py-0.5 rounded text-xs bg-teal-50 text-teal-700 font-medium">{m.role}</span>
+									<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">{m.role}</span>
 								</td>
 								<td className="py-2.5 px-4 font-medium">{m.rate}</td>
 								<td className="py-2.5 px-4 text-muted-foreground">{m.start}</td>
@@ -138,7 +138,10 @@ export default function ProjectDetailPage(): React.ReactNode {
 				<h3 className="font-semibold text-foreground text-sm mb-3">기술 스택</h3>
 				<div className="flex flex-wrap gap-2">
 					{techStack.map((t) => (
-						<span key={t} className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium">
+						<span
+							key={t}
+							className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium"
+						>
 							{t}
 						</span>
 					))}

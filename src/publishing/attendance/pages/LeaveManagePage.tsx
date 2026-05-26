@@ -1,4 +1,4 @@
-import { Button } from '@/shared/ui';
+import { Button, Input } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 
 const leaveTypes = ['연차', '반차(오전)', '반차(오후)', '병가', '경조사'];
@@ -23,12 +23,15 @@ export default function LeaveManagePage(): React.ReactNode {
 						<h2 className="font-semibold text-foreground mb-3">연차 현황</h2>
 						<div className="grid grid-cols-2 gap-2">
 							{[
-								{ label: '총 부여', value: '15일', color: 'bg-slate-50 text-slate-700' },
-								{ label: '사용', value: '6일', color: 'bg-teal-50 text-teal-700' },
-								{ label: '잔여', value: '9일', color: 'bg-emerald-50 text-emerald-700' },
-								{ label: '신청중', value: '1일', color: 'bg-amber-50 text-amber-700' },
+								{ label: '총 부여', value: '15일', color: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' },
+								{ label: '사용', value: '6일', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
+								{ label: '잔여', value: '9일', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
+								{ label: '신청중', value: '1일', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300' },
 							].map((item) => (
-								<div key={item.label} className={`rounded-lg p-3 text-center ${item.color}`}>
+								<div
+									key={item.label}
+									className={`rounded-lg p-3 text-center ${item.color}`}
+								>
 									<p className="text-xs mb-1 opacity-70">{item.label}</p>
 									<p className="text-xl font-bold">{item.value}</p>
 								</div>
@@ -49,7 +52,7 @@ export default function LeaveManagePage(): React.ReactNode {
 											className={`px-3 py-1.5 text-xs rounded-full border font-medium transition-colors ${
 												idx === 0
 													? 'bg-teal-600 text-white border-teal-600'
-													: 'border-gray-200 text-muted-foreground hover:border-teal-400 hover:text-teal-600'
+													: 'border-slate-300 dark:border-slate-600 text-muted-foreground hover:border-teal-400 hover:text-teal-600'
 											}`}
 										>
 											{type}
@@ -59,26 +62,45 @@ export default function LeaveManagePage(): React.ReactNode {
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-foreground mb-1">시작일 *</label>
-								<input type="date" defaultValue="2026-05-28" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:border-teal-500" />
+								<Input
+									type="date"
+									defaultValue="2026-05-28"
+									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+								/>
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-foreground mb-1">종료일</label>
-								<input type="date" defaultValue="2026-05-28" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:border-teal-500" />
+								<Input
+									type="date"
+									defaultValue="2026-05-28"
+									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+								/>
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-foreground mb-1">사유 *</label>
 								<textarea
 									rows={2}
-									className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:border-teal-500 resize-none"
+									className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-muted/60 text-foreground outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none placeholder:text-muted-foreground"
 									placeholder="사유 입력..."
 								/>
 							</div>
-							<div className="p-2.5 bg-teal-50 rounded-lg text-xs text-teal-700">
+							<div className="p-2.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg text-xs text-teal-700 dark:text-teal-300">
 								★ 현장 투입 중 휴가 시 프로젝트 PM에게도 알림 자동 발송
 							</div>
 							<div className="flex gap-2">
-								<Button variant="outline" className="flex-1" size="sm">초기화</Button>
-								<Button className="flex-1" size="sm">신청</Button>
+								<Button
+									variant="outline"
+									className="flex-1"
+									size="sm"
+								>
+									초기화
+								</Button>
+								<Button
+									className="flex-1"
+									size="sm"
+								>
+									신청
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -89,12 +111,15 @@ export default function LeaveManagePage(): React.ReactNode {
 					<h2 className="font-semibold text-foreground mb-4">내 신청 내역</h2>
 					<div className="space-y-2">
 						{myLeaves.map((leave, idx) => (
-							<div key={idx} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/20 transition-colors">
+							<div
+								key={idx}
+								className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/20 transition-colors"
+							>
 								<div className="flex items-center gap-3">
 									<div className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-										leave.type === '연차' ? 'bg-teal-100 text-teal-700' :
-										leave.type === '반차' ? 'bg-sky-100 text-sky-700' :
-										'bg-red-100 text-red-700'
+										leave.type === '연차' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300' :
+										leave.type === '반차' ? 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300' :
+										'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
 									}`}>
 										{leave.type}
 									</div>
@@ -104,8 +129,8 @@ export default function LeaveManagePage(): React.ReactNode {
 									</div>
 								</div>
 								<span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-									leave.status === '승인' ? 'bg-emerald-100 text-emerald-700' :
-									'bg-amber-100 text-amber-700'
+									leave.status === '승인' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' :
+									'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
 								}`}>
 									{leave.status}
 								</span>

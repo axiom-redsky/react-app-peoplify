@@ -5,33 +5,67 @@ import { cn } from '@/shared/utils/cn';
 
 const kpiCards = [
 	{
-		label: '전체 인원', value: '32', unit: '명', sub: '재직 중 30명',
-		icon: Users, trend: '+2',
-		iconBg: 'bg-teal-500/15', iconColor: 'text-teal-400',
-		accent: 'from-teal-500/20 to-transparent', ring: 'ring-teal-500/20', border: 'border-t-teal-500',
+		label: '전체 인원',
+		value: '32',
+		unit: '명',
+		sub: '재직 중 30명',
+		icon: Users,
+		trend: '+2',
+		iconBg: 'bg-teal-500/15',
+		iconColor: 'text-teal-400',
+		accent: 'from-teal-500/20 to-transparent',
+		ring: 'ring-teal-500/20',
+		border: 'border-t-teal-500',
 	},
 	{
-		label: '투입 중', value: '26', unit: '명', sub: '26개 프로젝트 현장',
-		icon: UserCheck, trend: '81%',
-		iconBg: 'bg-emerald-500/15', iconColor: 'text-emerald-400',
-		accent: 'from-emerald-500/20 to-transparent', ring: 'ring-emerald-500/20', border: 'border-t-emerald-500',
+		label: '투입 중',
+		value: '26',
+		unit: '명',
+		sub: '26개 프로젝트 현장',
+		icon: UserCheck,
+		trend: '81%',
+		iconBg: 'bg-emerald-500/15',
+		iconColor: 'text-emerald-400',
+		accent: 'from-emerald-500/20 to-transparent',
+		ring: 'ring-emerald-500/20',
+		border: 'border-t-emerald-500',
 	},
 	{
-		label: '벤치(가용)', value: '6', unit: '명', sub: '배정 가능 인원',
-		icon: Users, trend: '19%',
-		iconBg: 'bg-amber-500/15', iconColor: 'text-amber-400',
-		accent: 'from-amber-500/20 to-transparent', ring: 'ring-amber-500/20', border: 'border-t-amber-500',
+		label: '벤치(가용)',
+		value: '6',
+		unit: '명',
+		sub: '배정 가능 인원',
+		icon: Users,
+		trend: '19%',
+		iconBg: 'bg-amber-500/15',
+		iconColor: 'text-amber-400',
+		accent: 'from-amber-500/20 to-transparent',
+		ring: 'ring-amber-500/20',
+		border: 'border-t-amber-500',
 	},
 	{
-		label: '진행 프로젝트', value: '5', unit: '건', sub: '완료1 · 예정1 별도',
-		icon: FolderKanban, trend: '3건',
-		iconBg: 'bg-sky-500/15', iconColor: 'text-sky-400',
-		accent: 'from-sky-500/20 to-transparent', ring: 'ring-sky-500/20', border: 'border-t-sky-500',
+		label: '진행 프로젝트',
+		value: '5',
+		unit: '건',
+		sub: '완료1 · 예정1 별도',
+		icon: FolderKanban,
+		trend: '3건',
+		iconBg: 'bg-sky-500/15',
+		iconColor: 'text-sky-400',
+		accent: 'from-sky-500/20 to-transparent',
+		ring: 'ring-sky-500/20',
+		border: 'border-t-sky-500',
 	},
 ];
 
 const activeProjects = [
-	{ name: 'A금융 차세대 코어뱅킹', client: 'A금융그룹', count: 7, period: '2025.03~2026.12', status: 'active' as const },
+	{
+		name: 'A금융 차세대 코어뱅킹',
+		client: 'A금융그룹',
+		count: 7,
+		period: '2025.03~2026.12',
+		status: 'active' as const,
+	},
 	{ name: 'B공공기관 ERP 구축', client: 'B공공기관', count: 5, period: '2025.06~2026.06', status: 'active' as const },
 	{ name: 'C제조 MES 고도화', client: 'C제조', count: 8, period: '2024.12~2026.03', status: 'active' as const },
 ];
@@ -61,9 +95,7 @@ export default function DashboardPage(): React.ReactNode {
 			<PageHeader
 				title="대시보드"
 				actions={
-					<span className="text-sm text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-lg">
-						2026년 5월 26일 (화)
-					</span>
+					<span className="text-sm text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-lg">2026년 5월 26일 (화)</span>
 				}
 			/>
 
@@ -77,7 +109,8 @@ export default function DashboardPage(): React.ReactNode {
 							className={cn(
 								'relative bg-card rounded-2xl border border-t-2 p-5 overflow-hidden',
 								'ring-1 transition-shadow hover:shadow-lg',
-								card.border, card.ring,
+								card.border,
+								card.ring,
 							)}
 						>
 							<div className={cn('absolute inset-0 bg-linear-to-br opacity-60', card.accent)} />
@@ -93,7 +126,8 @@ export default function DashboardPage(): React.ReactNode {
 								</div>
 								<p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{card.label}</p>
 								<p className="text-3xl font-bold text-foreground mt-0.5 leading-none">
-									{card.value}<span className="text-base font-medium text-muted-foreground ml-0.5">{card.unit}</span>
+									{card.value}
+									<span className="text-base font-medium text-muted-foreground ml-0.5">{card.unit}</span>
 								</p>
 								<p className="text-xs text-muted-foreground mt-2">{card.sub}</p>
 							</div>
@@ -160,12 +194,19 @@ export default function DashboardPage(): React.ReactNode {
 							{benchMembers.map((m, i) => {
 								const color = benchAvatarColors[i % benchAvatarColors.length];
 								return (
-									<div key={m.name} className="flex items-center justify-between">
+									<div
+										key={m.name}
+										className="flex items-center justify-between"
+									>
 										<div className="flex items-center gap-3">
-											<div className={cn(
-												'w-9 h-9 rounded-full ring-2 flex items-center justify-center font-semibold text-sm',
-												color.bg, color.text, color.ring,
-											)}>
+											<div
+												className={cn(
+													'w-9 h-9 rounded-full ring-2 flex items-center justify-center font-semibold text-sm',
+													color.bg,
+													color.text,
+													color.ring,
+												)}
+											>
 												{m.name[0]}
 											</div>
 											<div>
@@ -189,11 +230,16 @@ export default function DashboardPage(): React.ReactNode {
 							<div className="p-1.5 rounded-lg bg-orange-500/15">
 								<AlertTriangle className="w-4 h-4 text-orange-400" />
 							</div>
-							<h2 className="font-semibold text-foreground text-sm">철수 임박 <span className="text-orange-400">30일 이내</span></h2>
+							<h2 className="font-semibold text-foreground text-sm">
+								철수 임박 <span className="text-orange-400">30일 이내</span>
+							</h2>
 						</div>
 						<div className="space-y-3">
 							{urgentWithdrawals.map((u) => (
-								<div key={u.name} className="flex items-center justify-between p-3 bg-orange-500/5 rounded-xl border border-orange-500/10">
+								<div
+									key={u.name}
+									className="flex items-center justify-between p-3 bg-orange-500/5 rounded-xl border border-orange-500/10"
+								>
 									<div>
 										<p className="text-sm font-semibold text-foreground">{u.name}</p>
 										<p className="text-xs text-muted-foreground mt-0.5">

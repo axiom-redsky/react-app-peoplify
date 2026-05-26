@@ -1,4 +1,4 @@
-import { Button } from '@/shared/ui';
+import { Button } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Download, FileSpreadsheet } from 'lucide-react';
 
@@ -140,7 +140,7 @@ export default function ReportPage(): React.ReactNode {
 								<td className="py-2.5 px-4 font-medium">{m.rate}</td>
 								<td className="py-2.5 px-4 text-muted-foreground">{m.period}</td>
 								<td className="py-2.5 px-4">
-									<span className={`text-xs font-medium ${m.status === '투입중' ? 'text-emerald-600' : 'text-amber-600'}`}>
+									<span className={`text-xs font-medium ${m.status === '투입중' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
 										{m.status}
 									</span>
 								</td>

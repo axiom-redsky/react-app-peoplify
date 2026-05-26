@@ -1,4 +1,4 @@
-import { Button } from '@/shared/ui';
+import { Button } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import StatusBadge from '@/shared/components/ui/StatusBadge';
 import { Mail, Phone, Calendar, Edit, Trash2 } from 'lucide-react';
@@ -112,7 +112,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 								<td className="py-2.5 px-4 font-medium text-foreground">{proj.project}</td>
 								<td className="py-2.5 px-4 text-muted-foreground">{proj.client}</td>
 								<td className="py-2.5 px-4">
-									<span className="px-2 py-0.5 rounded text-xs bg-teal-50 text-teal-700 font-medium">
+									<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">
 										{proj.role}
 									</span>
 								</td>
@@ -134,7 +134,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 				<h3 className="font-semibold text-foreground text-sm mb-3">기술스택</h3>
 				<div className="flex flex-wrap gap-2">
 					{skills.map((skill) => (
-						<span key={skill} className="px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-sm font-medium border border-teal-100">
+						<span key={skill} className="px-3 py-1 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm font-medium border border-teal-200 dark:border-teal-700">
 							{skill}
 						</span>
 					))}

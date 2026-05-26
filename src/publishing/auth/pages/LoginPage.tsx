@@ -1,41 +1,37 @@
-import { Button } from '@/shared/ui';
+import { Button, Input } from '@axiom/components/ui';
 
 export default function LoginPage(): React.ReactNode {
 	return (
 		<div>
 			<div className="mb-6">
-				<h2 className="text-xl font-bold text-gray-900">로그인</h2>
-				<p className="mt-1 text-sm text-gray-500">계정 정보를 입력하세요</p>
+				<h2 className="text-xl font-bold text-foreground">로그인</h2>
+				<p className="mt-1 text-sm text-muted-foreground">계정 정보를 입력하세요</p>
 			</div>
 
 			<form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
 				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-1">
-						이메일
-					</label>
-					<input
+					<label className="block text-sm font-medium text-foreground mb-1">이메일</label>
+					<Input
 						type="email"
 						placeholder="name@company.com"
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-colors"
+						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 						defaultValue="admin@peoplify.com"
 					/>
 				</div>
 
 				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-1">
-						비밀번호
-					</label>
-					<input
+					<label className="block text-sm font-medium text-foreground mb-1">비밀번호</label>
+					<Input
 						type="password"
 						placeholder="••••••••"
-						className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-colors"
+						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 						defaultValue="password"
 					/>
 				</div>
 
 				<div className="flex items-center justify-between">
-					<label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-						<input type="checkbox" className="rounded border-gray-300 text-teal-600" />
+					<label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+						<input type="checkbox" className="rounded border-slate-300 text-teal-600" />
 						로그인 상태 유지
 					</label>
 					<button type="button" className="text-sm text-teal-600 hover:underline">
@@ -48,7 +44,7 @@ export default function LoginPage(): React.ReactNode {
 				</Button>
 			</form>
 
-			<div className="mt-6 pt-6 border-t border-gray-100 text-center text-xs text-gray-400">
+			<div className="mt-6 pt-6 border-t text-center text-xs text-muted-foreground">
 				관리자 문의: admin@peoplify.com
 			</div>
 		</div>

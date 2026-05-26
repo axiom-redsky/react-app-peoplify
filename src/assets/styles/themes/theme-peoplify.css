@@ -95,9 +95,9 @@
 .dark {
 	--background: oklch(0.145 0 0);
 	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.205 0 0);
+	--card: oklch(0.240 0 0);
 	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.205 0 0);
+	--popover: oklch(0.240 0 0);
 	--popover-foreground: oklch(0.985 0 0);
 	/* Teal-400: #2DD4BF */
 	--primary: oklch(0.827 0.119 181.9);
