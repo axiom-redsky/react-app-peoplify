@@ -287,7 +287,7 @@ const AppSidebar: React.FC = () => {
 	return (
 		<aside
 			className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200
-        ${isExpanded || isMobileOpen ? 'w-[290px]' : isHovered ? 'w-[290px]' : 'w-[90px]'}
+        ${isExpanded || isMobileOpen ? 'w-72.5' : isHovered ? 'w-72.5' : 'w-22.5'}
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0`}
 			onMouseEnter={() => !isExpanded && setIsHovered(true)}
@@ -340,7 +340,7 @@ const AppSidebar: React.FC = () => {
 						{navItems.length > 0 && (
 							<div>
 								<h2
-									className={`mb-4 text-xs flex leading-[20px] text-gray-400 ${
+									className={`mb-4 text-xs flex leading-5 text-gray-400 ${
 										!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
 									}`}
 								>
@@ -352,7 +352,7 @@ const AppSidebar: React.FC = () => {
 						{othersItems.length > 0 && (
 							<div>
 								<h2
-									className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+									className={`mb-4 text-xs uppercase flex leading-5 text-gray-400 ${
 										!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'
 									}`}
 								>
