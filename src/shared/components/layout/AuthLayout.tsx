@@ -2,7 +2,7 @@ import { Outlet } from 'react-router';
 
 export default function AuthLayout(): React.ReactNode {
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-700 via-teal-600 to-teal-800">
+		<div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-700 via-teal-600 to-teal-800 dark:from-slate-950 dark:via-slate-900 dark:to-teal-950">
 			{/* 배경 패턴 */}
 			<div className="absolute inset-0 opacity-10">
 				<div className="absolute inset-0" style={{
@@ -24,7 +24,7 @@ export default function AuthLayout(): React.ReactNode {
 				</div>
 
 				{/* 로그인 카드 */}
-				<div className="bg-white rounded-2xl shadow-2xl p-8">
+				<div className="bg-card rounded-2xl shadow-2xl p-8 border border-border">
 					<Outlet />
 				</div>
 

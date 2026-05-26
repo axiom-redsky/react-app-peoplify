@@ -10,6 +10,7 @@ import PubProjectRouter from '@/publishing/project/router';
 import PubAttendanceRouter from '@/publishing/attendance/router';
 import PubReportRouter from '@/publishing/report/router';
 import PubAuthRouter from '@/publishing/auth/router';
+import AuthRouter from '@/domains/auth/router';
 
 const routes: TAppRoute[] = [
 	{
@@ -45,6 +46,12 @@ const routes: TAppRoute[] = [
 		path: '/publishing',
 		element: <AuthLayout />,
 		children: PubAuthRouter,
+	},
+	// Auth 도메인 — 로그인 페이지 (AuthLayout 사용)
+	{
+		path: '/auth',
+		element: <AuthLayout />,
+		children: AuthRouter,
 	},
 	{
 		path: '*',

@@ -1,6 +1,17 @@
-import { Button, Input } from '@axiom/components/ui';
+import type React from 'react';
+import { useState } from 'react';
+import { Button, Input, Card, CardHeader, CardTitle, CardContent, CardDescription, Label } from '@axiom/components/ui';
 
 export default function LoginPage(): React.ReactNode {
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+
+	const handleLogin = () => {
+		// TODO: 실제 로그인 로직 구현 (useApi 등 활용)
+		console.log('Login attempt:', { email, password });
+		$router.push('/');
+	};
+
 	return (
 		<div>
 			<div className="mb-6">
@@ -51,6 +62,7 @@ export default function LoginPage(): React.ReactNode {
 				<Button
 					type="submit"
 					className="w-full"
+					size="lg"
 				>
 					로그인
 				</Button>
