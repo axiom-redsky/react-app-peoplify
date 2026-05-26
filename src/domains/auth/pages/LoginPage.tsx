@@ -4,8 +4,11 @@ import { Button, Input } from '@axiom/components/ui';
 import { callApi } from '@/core/api/api';
 
 interface LoginResponse {
-	token: string;
-	user: { id: number; name: string; email: string; role: string };
+	success: boolean;
+	data: {
+		token: string;
+		user: { id: number; name: string; email: string; role: string };
+	};
 }
 
 export default function LoginPage(): React.ReactNode {
@@ -24,11 +27,11 @@ export default function LoginPage(): React.ReactNode {
 				method: 'POST',
 				body: { email, password },
 			});
-			localStorage.setItem('access_token', result.data!.token);
+			console.log('로그인 토큰>>>>>', result.data!.data.token);
+			localStorage.setItem('access_token', result.data!.data.token);
 			$router.push('/');
 		} catch (err: unknown) {
-			const message =
-				err instanceof Error ? err.message : '로그인에 실패했습니다.';
+			const message = err instanceof Error ? err.message : '로그인에 실패했습니다.';
 			setError(message);
 		} finally {
 			setLoading(false);
@@ -68,9 +71,7 @@ export default function LoginPage(): React.ReactNode {
 					/>
 				</div>
 
-				{error && (
-					<p className="text-sm text-red-500 text-center">{error}</p>
-				)}
+				{error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
 				<div className="flex items-center justify-between">
 					<label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">

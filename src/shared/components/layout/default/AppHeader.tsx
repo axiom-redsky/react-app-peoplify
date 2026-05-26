@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { useSidebar } from '@/core/hooks/layout/default/useSidebar';
 import { ThemeToggleButton } from './ThemeToggleButton';
 import GithubLinkButton from './GithubLinkButton';
+import UserDropdown from './UserDropdown';
 
 import logoSvg from '@/assets/images/logo/logo.svg';
 
@@ -134,6 +135,7 @@ const AppHeader: React.FC = () => {
 					<GithubLinkButton
 						onClick={() => window.open('https://github.com/nickhealthy/multirepo-mf-boilerplate', '_blank')}
 					/>
+					<UserDropdown />
 				</div>
 			</div>
 		</header>
