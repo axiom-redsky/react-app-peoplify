@@ -60,18 +60,12 @@ services:
       POSTGRES_DB: peoplify
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
 
   server:
     build: ./server
     restart: always
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       - NODE_ENV=production
       - PORT=4000
@@ -90,4 +84,13 @@ services:
 
 volumes:
   pgdata:
+```
+
+# docker compose 실행
+```sh
+docker-compose -f docker-compose-nas.yml up -d --build
+```
+* 만약 Docker 데몬에 접근 권한이 없으면 `sudo`를 붙여서 실행
+```sh
+sudo docker-compose -f docker-compose-nas.yml up -d --build
 ```
