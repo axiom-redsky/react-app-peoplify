@@ -40,7 +40,7 @@ class BaseAxiosClient {
 	}
 
 	private requestInterceptor(requestConfig: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
-		// JWT access token 관련 체크 로직 ------------------------------
+		// JWT access token 관련 체크 로직
 		const token = localStorage.getItem('access_token');
 		if (token) {
 			requestConfig.headers = requestConfig.headers ?? {};
@@ -54,6 +54,12 @@ class BaseAxiosClient {
 	}
 
 	private errorInterceptor(error: AxiosError): Promise<never> {
+		// 401 Unauthorized 응답 시 토큰 삭제 및 리디렉션 처리
+		if (error.response?.status === 401) {
+			localStorage.removeItem('access_token');
+			// 전역 $router 객체를 사용하여 '/' 로 리디렉션
+			$router.push('/');
+		}
 		return Promise.reject(error);
 	}
 
