@@ -86,7 +86,7 @@ volumes:
   pgdata:
 ```
 
-# docker compose 실행
+## docker compose 실행
 ```sh
 docker-compose -f docker-compose-nas.yml up -d --build
 ```
@@ -94,3 +94,23 @@ docker-compose -f docker-compose-nas.yml up -d --build
 ```sh
 sudo docker-compose -f docker-compose-nas.yml up -d --build
 ```
+
+# 앞으로 업데이트 루틴
+* 로컬에서 개발 후 
+```
+git push
+```
+* NAS SSH에서
+```
+cd /volume1/docker/peoplify
+git pull
+sudo docker-compose -f docker-compose-nas.yml up -d --build
+```
+
+
+
+# 수동 방법
+* 로컬에서 git push 한 다음.
+* DSM 웹 접속 (hyun0238.quickconnect.to)
+제어판 → 작업 스케줄러
+peoplify-deploy 선택 → 실행 클릭
