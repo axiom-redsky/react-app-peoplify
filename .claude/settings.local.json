@@ -12,7 +12,10 @@
       "Bash(npx tsc *)",
       "PowerShell(Get-ChildItem -Path \"c:\\\\redsky\\\\work\\\\react\\\\peoplify_react\\\\react-app-peoplify\" -Recurse -Directory | Where-Object { $_.Name -match \"\\(auth|api|router\\)\" } | Select-Object -ExpandProperty FullName | Sort-Object)",
       "PowerShell(Get-ChildItem -Path \"c:\\\\redsky\\\\work\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\src\" -Recurse -Directory | Where-Object { $_.FullName -notmatch \"node_modules\" } | Select-Object -ExpandProperty FullName | Sort-Object)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\redsky\\\\work\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\plan\\\\\" -Force)",
+      "Bash(dir 'c:\\\\redsky\\\\work\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\plan\\\\')",
+      "Bash(dir 'c:\\\\redsky\\\\work\\\\react\\\\peoplify_react\\\\react-app-peoplify\\\\' /B /S /AD)"
     ]
   }
 }
