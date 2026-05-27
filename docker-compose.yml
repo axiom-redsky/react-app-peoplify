@@ -1,10 +1,31 @@
 services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: peoplify
+      POSTGRES_DB: peoplify
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   server:
     build: ./server
     restart: always
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
       - PORT=4000
+      - DATABASE_URL=postgresql://postgres:peoplify@db:5432/peoplify
+      - JWT_SECRET=${JWT_SECRET:-peoplify-prod-secret-please-change}
+      - JWT_EXPIRES_IN=7d
       - ALLOWED_ORIGIN=http://141.164.35.124
 
   frontend:
@@ -14,3 +35,6 @@ services:
     depends_on:
       - server
     restart: always
+
+volumes:
+  pgdata:
