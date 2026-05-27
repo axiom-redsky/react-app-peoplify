@@ -27,7 +27,6 @@ export default function LoginPage(): React.ReactNode {
 		isPending: isLoggingIn,
 		data: loginResult,
 		error: loginError,
-		reset: resetMutation,
 	} = useApi<LoginResponse, TLoginRequest>('/api/auth/login', {
 		method: 'POST',
 		type: 'mutation',

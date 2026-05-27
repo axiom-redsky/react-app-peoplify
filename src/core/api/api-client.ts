@@ -75,7 +75,11 @@ class BaseAxiosClient {
 		} else if (!apiConfig.baseURL) {
 			url = new URL(endpoint, window.location.origin);
 		} else {
-			url = new URL(endpoint, apiConfig.baseURL);
+			// baseURL이 상대 경로(예: /api)인 경우 window.location.origin 기준으로 절대 URL 변환
+			const absoluteBase = /^https?:\/\//.test(apiConfig.baseURL)
+				? apiConfig.baseURL
+				: new URL(apiConfig.baseURL, window.location.origin).href;
+			url = new URL(endpoint, absoluteBase);
 		}
 
 		if (method.toUpperCase() === 'GET' && params) {

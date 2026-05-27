@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: peoplify
+      POSTGRES_DB: peoplify
+    volumes:
+      - pgdata_local:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # 로컬에서 DB 직접 접근 가능 (DBeaver 등)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build: ./server
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - DATABASE_URL=postgresql://postgres:peoplify@db:5432/peoplify
+      - JWT_SECRET=peoplify-local-test-secret
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGIN=http://localhost
+    ports:
+      - "4000:4000"   # API 직접 테스트용 (Postman 등)
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: /api   # nginx 프록시를 통해 server로 전달
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: always
+
+volumes:
+  pgdata_local:
