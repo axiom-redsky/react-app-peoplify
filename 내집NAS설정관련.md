@@ -45,15 +45,49 @@ git clone https://github.com/axiom-redsky/react-app-peoplify .
 ```
 
 ## docker-compose.yml 수정
+* 사실 docker-compose.yml을 수정하기 보다는 집NAS용 yml을 따로 만들었다.
+* docker-compose-nas.yml 생성
 ```sh
-vi docker-compose.yml
-```
-* vi 에디터가 열리면 i 키를 눌러 편집모드로 전환 후 아래 두 곳을 수정합니다:  
-**수정할 부분 1 — ALLOWED_ORIGIN**
-```sh
-- ALLOWED_ORIGIN=http://192.168.45.150
-```
-**수정할 부분 2 — JWT_SECRET**
-```sh
-- JWT_SECRET=peoplify-redsky-2026-change-this-secret
+version: '3'
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: peoplify
+      POSTGRES_DB: peoplify
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build: ./server
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=postgresql://postgres:peoplify@db:5432/peoplify
+      - JWT_SECRET=peoplify-redsky-2026-nas-secret
+      - JWT_EXPIRES_IN=7d
+      - ALLOWED_ORIGIN=http://192.168.45.150
+
+  frontend:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: always
+
+volumes:
+  pgdata:
 ```
