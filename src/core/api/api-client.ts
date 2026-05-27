@@ -40,6 +40,7 @@ class BaseAxiosClient {
 	}
 
 	private requestInterceptor(requestConfig: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+		// JWT access token 관련 체크 로직 ------------------------------
 		const token = localStorage.getItem('access_token');
 		if (token) {
 			requestConfig.headers = requestConfig.headers ?? {};
