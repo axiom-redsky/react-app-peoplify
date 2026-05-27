@@ -1,0 +1,16 @@
+services:
+  server:
+    build: ./server
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - ALLOWED_ORIGIN=http://141.164.35.124
+
+  frontend:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: always
