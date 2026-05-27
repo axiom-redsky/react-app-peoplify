@@ -12,3 +12,13 @@ git push origin main
 
 push 토큰 적용방법
 git remote set-url origin https://ghp_새토큰@github.com/axiom-redsky/react-app-peoplify.git
+
+
+## vultr ssh 키
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACCUzW/nTCZDXMuB+xGhMxt38WGCuRPShWnT2x3cect9dwAAAJAT5ZnwE+WZ
+8AAAAAtzc2gtZWQyNTUxOQAAACCUzW/nTCZDXMuB+xGhMxt38WGCuRPShWnT2x3cect9dw
+AAAEA6OLSoRJXZRw2jAUoYi/2LSaHYVZILrjLgJIqgakcp5pTNb+dMJkNcy4H7EaEzG3fx
+YYK5E9KFadPbHdx5y313AAAABmRlcGxveQECAwQFBgc=
+-----END OPENSSH PRIVATE KEY-----
