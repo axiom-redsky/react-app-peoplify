@@ -42,8 +42,8 @@ export const navItems: NavItem[] = [
 		icon: <Users />,
 		name: '직원관리',
 		subItems: [
-			{ name: '직원 목록', icon: <List />, path: '/employees' },
-			{ name: '직원 등록', icon: <UserPlus />, path: '/employees/new' },
+			{ name: '직원 목록', icon: <List />, path: '/employee/employee-list' },
+			{ name: '직원 등록', icon: <UserPlus />, path: '/employee/employee-form' },
 		],
 	},
 	{
