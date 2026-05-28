@@ -58,14 +58,14 @@ export const navItems: NavItem[] = [
 		icon: <CalendarClock />,
 		name: '근태관리',
 		subItems: [
-			{ name: '월별 근무 보고', icon: <ClipboardList />, path: '/attendance' },
-			{ name: '휴가 관리', icon: <CalendarDays />, path: '/attendance/leave' },
+			{ name: '월별 근무 보고', icon: <ClipboardList />, path: '/attendance/monthly-report' },
+			{ name: '휴가 관리', icon: <CalendarDays />, path: '/attendance/leave-manage' },
 		],
 	},
 	{
 		icon: <BarChart3 />,
 		name: '리포트',
-		path: '/reports',
+		path: '/report/report',
 	},
 ];
 
