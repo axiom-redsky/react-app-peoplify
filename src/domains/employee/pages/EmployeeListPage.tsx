@@ -130,6 +130,7 @@ export default function EmployeeListPage(): React.ReactNode {
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 					<Input
 						onChange={handleSearchChange}
+						value={searchQuery}
 						className="h-9 pl-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 						placeholder="이름 검색..."
 					/>
@@ -178,10 +179,19 @@ export default function EmployeeListPage(): React.ReactNode {
 						<SelectItem value="warning">철수임박</SelectItem>
 					</SelectContent>
 				</Select>
-				<button className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+				<Button
+					variant="outline"
+					size="lg"
+					onClick={() => {
+						setSearchQuery('');
+						setCurrentPage(1);
+						refetch();
+					}}
+					className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+				>
 					<SlidersHorizontal className="w-4 h-4" />
 					초기화
-				</button>
+				</Button>
 			</div>
 
 			{/* 테이블 */}

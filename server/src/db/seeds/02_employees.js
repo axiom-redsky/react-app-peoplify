@@ -28,4 +28,7 @@ exports.seed = async function (knex) {
     { id: 19, name: '천지아', email: 'jia.chun@peoplify.com',     phone: '010-1001-0019', department: '개발팀', position: '프론트엔드 개발자', hire_date: '2022-04-11', employment_status: 'leave'    },
     { id: 20, name: '장민호', email: 'minho.jang@peoplify.com',   phone: '010-1001-0020', department: '개발팀', position: '백엔드 개발자',     hire_date: '2019-08-22', employment_status: 'resigned' },
   ]);
+
+  // 명시적 id로 삽입 후 시퀀스가 갱신되지 않아 신규 등록 시 PK 충돌 방지
+  await knex.raw("SELECT setval('employees_id_seq', (SELECT MAX(id) FROM employees))");
 };

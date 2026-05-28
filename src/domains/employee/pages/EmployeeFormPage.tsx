@@ -1,13 +1,106 @@
 import type React from 'react';
+import { useState } from 'react';
 import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Plus, X } from 'lucide-react';
+import { useApi } from '@axiom/hooks';
 
 const depts = ['개발팀', '디자인', '마케팅', 'HR', '영업', '기획'];
 const grades = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
 
+type TCreateEmployee = {
+	name: string;
+	email: string;
+	phone: string;
+	department: string;
+	position: string;
+	hire_date: string;
+	employment_status?: string;
+	skills?: string[];
+};
+
 export default function EmployeeFormPage(): React.ReactNode {
+	// 입력 필드 상태 관리
+	const [name, setName] = useState('');
+	const [email, setEmail] = useState('');
+	const [phone, setPhone] = useState('');
+	const [hireDate, setHireDate] = useState('');
+	const [department, setDepartment] = useState('');
+	const [position, setPosition] = useState('');
+	const [skills, setSkills] = useState<string[]>(['Java', 'Spring Boot', 'React']);
+	const [newSkillInput, setNewSkillInput] = useState('');
+
+	// POST API 호출
+	const {
+		mutate,
+		isPending: isSubmitting,
+		data: createResult,
+		error: createError,
+		reset: resetMutation,
+		invalidateQueries,
+	} = useApi<TCreateEmployee, TCreateEmployee>('/api/employees', {
+		method: 'POST',
+		type: 'mutation',
+	});
+
+	// 스킬 추가 핸들러
+	const handleAddSkill = (): void => {
+		const trimmed = newSkillInput.trim();
+		if (trimmed && !skills.includes(trimmed)) {
+			setSkills([...skills, trimmed]);
+			setNewSkillInput('');
+		}
+	};
+
+	// 스킬 제거 핸들러
+	const handleRemoveSkill = (skill: string): void => {
+		setSkills(skills.filter((s) => s !== skill));
+	};
+
+	// 추천 스킬 추가
+	const handleAddSuggestedSkill = (skill: string): void => {
+		if (!skills.includes(skill)) {
+			setSkills([...skills, skill]);
+		}
+	};
+
+	// 폼 제출 핸들러
+	const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+		e.preventDefault();
+
+		// 필수 필드 검증
+		if (!name || !email || !phone || !hireDate || !department || !position) {
+			alert('모든 필수 항목을 입력해주세요.');
+			return;
+		}
+
+		// API 호출
+		mutate(
+			{
+				name,
+				email,
+				phone,
+				department,
+				position,
+				hire_date: hireDate,
+				employment_status: 'active',
+				skills,
+			},
+			{
+				onSuccess: async () => {
+					// 목록 캐시 무효화
+					await invalidateQueries('/api/employees');
+					// 성공 후 직원 목록 페이지로 이동
+					$router.push('/employees');
+				},
+				onError: (error) => {
+					console.error('직원 등록 실패:', error.message);
+				},
+			},
+		);
+	};
+
 	return (
 		<div className="p-5">
 			<PageHeader
@@ -28,6 +121,8 @@ export default function EmployeeFormPage(): React.ReactNode {
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">이름 *</label>
 							<Input
+								value={name}
+								onChange={(e) => setName(e.target.value)}
 								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 								placeholder="홍길동"
 							/>
@@ -36,6 +131,8 @@ export default function EmployeeFormPage(): React.ReactNode {
 							<label className="block text-sm font-medium text-foreground mb-1">이메일 *</label>
 							<Input
 								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
 								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 								placeholder="name@company.com"
 							/>
@@ -43,6 +140,8 @@ export default function EmployeeFormPage(): React.ReactNode {
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">연락처 *</label>
 							<Input
+								value={phone}
+								onChange={(e) => setPhone(e.target.value)}
 								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 								placeholder="010-0000-0000"
 							/>
@@ -51,12 +150,17 @@ export default function EmployeeFormPage(): React.ReactNode {
 							<label className="block text-sm font-medium text-foreground mb-1">입사일 *</label>
 							<Input
 								type="date"
+								value={hireDate}
+								onChange={(e) => setHireDate(e.target.value)}
 								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 							/>
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">부서 *</label>
-							<Select>
+							<Select
+								value={department}
+								onValueChange={setDepartment}
+							>
 								<SelectTrigger
 									size="lg"
 									className="w-full bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
@@ -77,7 +181,10 @@ export default function EmployeeFormPage(): React.ReactNode {
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">직급 *</label>
-							<Select>
+							<Select
+								value={position}
+								onValueChange={setPosition}
+							>
 								<SelectTrigger
 									size="lg"
 									className="w-full bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
@@ -111,7 +218,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 
 					{/* 선택된 스킬 태그 */}
 					<div className="flex flex-wrap gap-2 mb-3 min-h-10 p-2 border border-dashed rounded-lg bg-muted/20">
-						{['Java', 'Spring Boot', 'React'].map((skill) => (
+						{skills.map((skill) => (
 							<span
 								key={skill}
 								className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm font-medium"
@@ -121,6 +228,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 									variant="ghost"
 									size="icon-xs"
 									className="rounded-full hover:bg-teal-200/50 dark:hover:bg-teal-800/50 hover:text-teal-900 dark:hover:text-teal-100"
+									onClick={() => handleRemoveSkill(skill)}
 								>
 									<X />
 								</Button>
@@ -131,12 +239,21 @@ export default function EmployeeFormPage(): React.ReactNode {
 					{/* 스킬 추가 입력 */}
 					<div className="flex gap-2 mb-3">
 						<Input
+							value={newSkillInput}
+							onChange={(e) => setNewSkillInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									handleAddSkill();
+								}
+							}}
 							className="flex-1 h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 							placeholder="기술스택 직접 입력..."
 						/>
 						<Button
 							size="sm"
 							variant="outline"
+							onClick={handleAddSkill}
 						>
 							<Plus className="w-4 h-4" />
 						</Button>
@@ -150,6 +267,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 								<button
 									key={skill}
 									className="px-2.5 py-1 text-xs border rounded-full hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-500 dark:hover:text-teal-400 transition-colors text-muted-foreground border-slate-300 dark:border-slate-600"
+									onClick={() => handleAddSuggestedSkill(skill)}
 								>
 									+ {skill}
 								</button>
@@ -158,10 +276,27 @@ export default function EmployeeFormPage(): React.ReactNode {
 					</div>
 				</div>
 
+				{/* 에러 메시지 */}
+				{createError && (
+					<div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+						<p className="text-sm text-red-600 dark:text-red-400">{createError.message}</p>
+					</div>
+				)}
+
 				{/* 액션 버튼 */}
 				<div className="flex justify-end gap-3">
-					<Button variant="outline">취소</Button>
-					<Button>직원 등록</Button>
+					<Button
+						variant="outline"
+						onClick={() => $router.back()}
+					>
+						취소
+					</Button>
+					<Button
+						onClick={handleSubmit}
+						disabled={isSubmitting}
+					>
+						{isSubmitting ? '등록 중...' : '직원 등록'}
+					</Button>
 				</div>
 			</div>
 		</div>
