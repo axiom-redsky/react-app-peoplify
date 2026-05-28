@@ -7,6 +7,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "dev:nas": "dotenv -e .env.nas -- nodemon src/index.js",
+    "dev:remote": "dotenv -e .env.remote -- nodemon src/index.js",
     "dev:vultr": "dotenv -e .env.vultr -- nodemon src/index.js",
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
