@@ -19,13 +19,13 @@ export default function ProjectDetailPage(): React.ReactNode {
 		<div className="p-5">
 			<PageHeader
 				title="A금융 차세대 코어뱅킹"
-				breadcrumb={[{ label: '프로젝트', path: '/projects' }, { label: 'A금융 차세대 코어뱅킹' }]}
+				breadcrumb={[
+					{ label: '프로젝트', path: '/projects' },
+					{ label: 'A금융 차세대 코어뱅킹' },
+				]}
 				actions={
 					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-						>
+						<Button variant="outline" size="sm">
 							<Edit className="w-4 h-4 mr-1.5" />
 							수정
 						</Button>
@@ -72,10 +72,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 						<span className="font-semibold text-teal-600">68%</span>
 					</div>
 					<div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-						<div
-							className="h-full bg-teal-500 rounded-full"
-							style={{ width: '68%' }}
-						/>
+						<div className="h-full bg-teal-500 rounded-full" style={{ width: '68%' }} />
 					</div>
 				</div>
 			</div>
@@ -115,10 +112,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 					</thead>
 					<tbody>
 						{members.map((m) => (
-							<tr
-								key={m.name}
-								className="border-t hover:bg-muted/20 transition-colors"
-							>
+							<tr key={m.name} className="border-t hover:bg-muted/20 transition-colors">
 								<td className="py-2.5 px-4">
 									<div className="flex items-center gap-2">
 										<div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-xs">
@@ -128,9 +122,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 									</div>
 								</td>
 								<td className="py-2.5 px-4">
-									<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">
-										{m.role}
-									</span>
+									<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">{m.role}</span>
 								</td>
 								<td className="py-2.5 px-4 font-medium">{m.rate}</td>
 								<td className="py-2.5 px-4 text-muted-foreground">{m.start}</td>
