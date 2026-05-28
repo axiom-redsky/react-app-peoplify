@@ -3,6 +3,7 @@ import loadable from '@loadable/component';
 
 const EmployeeListPage = loadable(() => import('@/domains/employee/pages/EmployeeListPage'));
 const EmployeeFormPage = loadable(() => import('@/domains/employee/pages/EmployeeFormPage'));
+const EmployeeDetailPage = loadable(() => import('@/domains/employee/pages/EmployeeDetailPage'));
 
 const routes: TAppRoute[] = [
 	{
@@ -14,6 +15,11 @@ const routes: TAppRoute[] = [
 		path: 'employee-form',
 		element: <EmployeeFormPage />,
 		name: '직원 등록',
+	},
+	{
+		path: 'employee-detail/:id',
+		element: <EmployeeDetailPage />,
+		name: '직원 상세',
 	},
 ];
 

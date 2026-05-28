@@ -177,7 +177,7 @@ export default function EmployeeListPage(): React.ReactNode {
 									employees.map((emp: TEmployee) => (
 										<tr
 											key={emp.id}
-											className="border-t hover:bg-muted/20 transition-colors"
+											className="border-t hover:bg-teal-50 dark:hover:bg-teal-950/90 transition-colors cursor-pointer"
 										>
 											<td className="py-3 px-4">
 												<div className="flex items-center gap-2">
@@ -193,7 +193,13 @@ export default function EmployeeListPage(): React.ReactNode {
 											<td className="py-3 px-4 text-muted-foreground">{emp.hire_date.split('T')[0]}</td>
 											<td className="py-3 px-4">{/*<StatusBadge status={emp.employment_status} />*/}</td>
 											<td className="py-3 px-4">
-												<button className="text-sm text-teal-600 hover:underline font-medium">상세</button>
+												<Button
+													variant="link"
+													className="text-teal-600 hover:text-teal-700 px-0"
+													onClick={() => $router.push(`/employee/employee-detail/${emp.id}`)}
+												>
+													상세보기
+												</Button>
 											</td>
 										</tr>
 									))
@@ -201,9 +207,9 @@ export default function EmployeeListPage(): React.ReactNode {
 									<tr>
 										<td
 											colSpan={7}
-											className="text-center text-muted-foreground py-8"
+											className="py-8 text-center text-muted-foreground"
 										>
-											데이터가 없습니다.
+											등록된 직원이 없습니다.
 										</td>
 									</tr>
 								)}
@@ -211,58 +217,42 @@ export default function EmployeeListPage(): React.ReactNode {
 						</table>
 
 						{/* 페이지네이션 */}
-						{totalPages > 0 && (
-							<div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
-								<p className="text-sm text-muted-foreground">
-									총 {response?.meta.total} 명 중 {employees.length} 명 표시
-								</p>
-								<div className="flex items-center gap-1">
-									{/* 이전 버튼 */}
-									<button
-										onClick={() => handlePageChange(currentPage - 1)}
-										disabled={currentPage === 1 || isFetching}
-										className="w-8 h-8 text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted text-muted-foreground"
-									>
-										<ChevronLeft className="w-4 h-4" />
-									</button>
-
-									{/* 페이지 번호 */}
-									{[...Array(totalPages)].map((_, index) => {
-										const page = index + 1;
-										// 현재 페이지와 가까운 페이지만 표시 (최대 5 개)
-										const showPage = page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1;
-
-										if (!showPage && page !== 2 && page !== totalPages - 1) {
-											return null;
-										}
-
-										return (
-											<button
-												key={page}
-												onClick={() => handlePageChange(page)}
-												disabled={isFetching}
-												className={`w-8 h-8 text-sm rounded-md transition-colors ${
-													page === currentPage
-														? 'bg-primary text-primary-foreground'
-														: 'hover:bg-muted text-muted-foreground'
-												}`}
-											>
-												{page}
-											</button>
-										);
-									})}
-
-									{/* 다음 버튼 */}
-									<button
-										onClick={() => handlePageChange(currentPage + 1)}
-										disabled={currentPage === totalPages || isFetching}
-										className="w-8 h-8 text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-muted text-muted-foreground"
-									>
-										<ChevronRight className="w-4 h-4" />
-									</button>
-								</div>
+						<div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+							<div className="text-sm text-muted-foreground">
+								총 {response?.meta.total ?? 0}개 중 {currentPage}페이지
 							</div>
-						)}
+							<div className="flex items-center gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									disabled={currentPage === 1}
+									onClick={() => handlePageChange(currentPage - 1)}
+								>
+									<ChevronLeft className="w-4 h-4" />
+								</Button>
+								<div className="flex items-center gap-1">
+									{Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+										<Button
+											key={page}
+											variant={currentPage === page ? 'default' : 'outline'}
+											size="sm"
+											onClick={() => handlePageChange(page)}
+											className="w-8 h-8 p-0"
+										>
+											{page}
+										</Button>
+									))}
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									disabled={currentPage === totalPages}
+									onClick={() => handlePageChange(currentPage + 1)}
+								>
+									<ChevronRight className="w-4 h-4" />
+								</Button>
+							</div>
+						</div>
 					</>
 				)}
 			</div>
