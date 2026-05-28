@@ -51,7 +51,7 @@ export const navItems: NavItem[] = [
 		name: '프로젝트',
 		subItems: [
 			{ name: '프로젝트 목록', icon: <List />, path: '/project/project-list' },
-			{ name: '투입 현황', icon: <Activity />, path: '/projects/status' },
+			{ name: '투입 현황', icon: <Activity />, path: '/project/project-assign' },
 		],
 	},
 	{
