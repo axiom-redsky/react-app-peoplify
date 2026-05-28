@@ -3,7 +3,7 @@ import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, Select
 import PageHeader from '@/shared/components/ui/PageHeader';
 //import StatusBadge from '@/shared/components/ui/StatusBadge';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, UserPlus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // 직원 타입 정의 — 실제 API response 구조에 맞춤
 type TEmployee = {
@@ -38,7 +38,13 @@ export default function EmployeeListPage(): React.ReactNode {
 	/** 페이지네이션 상태 */
 	const [currentPage, setCurrentPage] = useState<number>(1);
 
-	/** GET 조회 - 직원 목록 (페이지네이션 파라미터 포함) */
+	/** 검색어 상태 */
+	const [searchQuery, setSearchQuery] = useState<string>('');
+
+	/** 검색 타이머 ID — Debounce 구현용 */
+	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	/** GET 조회 - 직원 목록 (페이지네이션 + 검색 파라미터 포함) */
 	const {
 		data: response,
 		isPending,
@@ -49,8 +55,28 @@ export default function EmployeeListPage(): React.ReactNode {
 		params: {
 			page: currentPage,
 			limit: PAGE_LIMIT,
+			search: searchQuery || undefined,
 		},
 	});
+
+	// 검색어 변경 핸들러 (Debounce 적용)
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		setSearchQuery(value);
+
+		// 검색어 변경 시 페이지 1 로 리셋
+		setCurrentPage(1);
+
+		// 이전 타이머가 있으면 취소
+		if (searchTimeoutRef.current) {
+			clearTimeout(searchTimeoutRef.current);
+		}
+
+		// 800ms 후 API 재요청
+		searchTimeoutRef.current = setTimeout(() => {
+			refetch();
+		}, 800);
+	};
 
 	const [employees, setEmployees] = useState<TEmployee[]>([]);
 
@@ -69,12 +95,29 @@ export default function EmployeeListPage(): React.ReactNode {
 		}
 	};
 
+	// 직원등록 화면이동
+	const handleMoveEmployeeForm = () => {
+		$router.push('/employee/employee-form');
+	};
+
+	// 컴포넌트 언마운트 시 타이머 정리
+	useEffect(() => {
+		return () => {
+			if (searchTimeoutRef.current) {
+				clearTimeout(searchTimeoutRef.current);
+			}
+		};
+	}, []);
+
 	return (
 		<div className="p-5">
 			<PageHeader
 				title="직원 관리"
 				actions={
-					<Button size="lg">
+					<Button
+						size="lg"
+						onClick={handleMoveEmployeeForm}
+					>
 						<UserPlus className="w-4 h-4 mr-1.5" />
 						직원 등록
 					</Button>
@@ -86,6 +129,7 @@ export default function EmployeeListPage(): React.ReactNode {
 				<div className="relative flex-1 min-w-48">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 					<Input
+						onChange={handleSearchChange}
 						className="h-9 pl-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 						placeholder="이름 검색..."
 					/>
