@@ -35,9 +35,9 @@ export default function EmployeeFormPage(): React.ReactNode {
 	const {
 		mutate,
 		isPending: isSubmitting,
-		data: createResult,
+		//data: createResult,
 		error: createError,
-		reset: resetMutation,
+		//reset: resetMutation,
 		invalidateQueries,
 	} = useApi<TCreateEmployee, TCreateEmployee>('/api/employees', {
 		method: 'POST',

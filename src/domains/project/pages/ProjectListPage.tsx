@@ -207,7 +207,7 @@ export default function ProjectListPage(): React.ReactNode {
 			{/* 카드형 목록 */}
 			<div className="grid grid-cols-1 gap-3">
 				{projects?.data?.map((proj) => {
-					const status = mapStatus(proj.status);
+					//const status = mapStatus(proj.status);
 					const period = `${formatDate(proj.start_date)} ~ ${formatDate(proj.end_date)}`;
 					const tech = proj.tech_stack;
 
