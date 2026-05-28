@@ -3,14 +3,6 @@ import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, Select
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Plus, X } from 'lucide-react';
 
-/** 직원 정보 타입 */
-interface EmployeeFormData {
-	name: string;
-	email: string;
-	department: string;
-	position: string;
-}
-
 const depts = ['개발팀', '디자인', '마케팅', 'HR', '영업', '기획'];
 const grades = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
