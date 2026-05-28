@@ -44,17 +44,17 @@ const formatDate = (dateString: string): string => {
 };
 
 // 상태 매핑 (API → UI)
-const mapStatus = (apiStatus: string): '진행중' | '완료' | '보류' => {
-	switch (apiStatus) {
-		case 'in_progress':
-			return '진행중';
-		case 'completed':
-			return '완료';
-		case 'planned':
-		default:
-			return '보류';
-	}
-};
+//const mapStatus = (apiStatus: string): '진행중' | '완료' | '보류' => {
+//	switch (apiStatus) {
+//		case 'in_progress':
+//			return '진행중';
+//		case 'completed':
+//			return '완료';
+//		case 'planned':
+//		default:
+//			return '보류';
+//	}
+//};
 
 export default function ProjectListPage(): React.ReactNode {
 	// 프로젝트 목록 API 호출
