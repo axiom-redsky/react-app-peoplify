@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$d=[Console]::In.ReadToEnd()|ConvertFrom-Json;$f=$d.tool_input.file_path;if($f-like '*server*routes*.js'){$n=[IO.Path]::GetFileName($f);@{hookSpecificOutput=@{hookEventName='PostToolUse';additionalContext=\"server route file '$n' changed. Update the matching section in plan/api-spec.md to match the current code.\"}}|ConvertTo-Json -Compress}",
+            "shell": "powershell",
+            "timeout": 10,
+            "statusMessage": "API 명세 동기화 확인 중..."
+          }
+        ]
+      }
+    ]
+  }
+}
