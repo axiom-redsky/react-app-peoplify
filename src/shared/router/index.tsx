@@ -19,6 +19,7 @@ import PubReportRouter from '@/publishing/report/router';
 import PubAuthRouter from '@/publishing/auth/router';
 import AuthRouter from '@/domains/auth/router';
 import EmployeeRouter from '@/domains/employee/router';
+import ProjectRouter from '@/domains/project/router';
 
 // 일반적인 라우터 연결 형식 ========================================================
 /*
@@ -85,6 +86,7 @@ const routes: TAppRoute[] = [
 			{ path: '/', element: <RootLayout />, children: MainRouter },
 			{ path: '/example', element: <RootLayout />, children: ExampleRouter },
 			{ path: '/employee', element: <RootLayout />, children: EmployeeRouter },
+			{ path: '/project', element: <RootLayout />, children: ProjectRouter },
 			{ path: '*', element: <RootLayout /> },
 		],
 	},

@@ -92,7 +92,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 					// 목록 캐시 무효화
 					await invalidateQueries('/api/employees');
 					// 성공 후 직원 목록 페이지로 이동
-					$router.push('/employees');
+					$router.push('/employee/employee-list');
 				},
 				onError: (error) => {
 					console.error('직원 등록 실패:', error.message);

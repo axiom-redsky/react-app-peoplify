@@ -50,7 +50,7 @@ export const navItems: NavItem[] = [
 		icon: <FolderKanban />,
 		name: '프로젝트',
 		subItems: [
-			{ name: '프로젝트 목록', icon: <List />, path: '/projects' },
+			{ name: '프로젝트 목록', icon: <List />, path: '/project/project-list' },
 			{ name: '투입 현황', icon: <Activity />, path: '/projects/status' },
 		],
 	},
