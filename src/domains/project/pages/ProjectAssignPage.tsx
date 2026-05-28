@@ -1,18 +1,4 @@
-import { useState } from 'react';
-import { useApi } from '@axiom/hooks';
-import {
-	Button,
-	Input,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	Card,
-	CardContent,
-	CardHeader,
-	Skeleton,
-} from '@axiom/components/ui';
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { SlidersHorizontal, CheckSquare } from 'lucide-react';
 
@@ -27,100 +13,7 @@ const benchMembers = [
 
 const roles = ['PM', 'PL', '개발', 'QA', '디자인', 'BA'];
 
-// 프로젝트 타입 정의
-interface Project {
-	id: number;
-	name: string;
-	client: string;
-	status: 'planned' | 'in_progress' | 'completed';
-}
-
-// 담당자 타입 정의
-interface Assignee {
-	id: number;
-	name: string;
-	role: string;
-	available: boolean;
-}
-
-// 날짜 포맷팅 유틸리티
-const formatDate = (dateString: string): string => {
-	const date = new Date(dateString);
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const day = String(date.getDate()).padStart(2, '0');
-	return `${year}.${month}.${day}`;
-};
-
 export default function ProjectAssignPage(): React.ReactNode {
-	// 할당 완료 상태 표시
-	const [showSuccess, setShowSuccess] = useState(false);
-	// 프로젝트 목록 API 호출
-	const { data: projects, isLoading: projectsLoading } = useApi<{ data: Project[] }>('/api/projects');
-
-	// 담당자 목록 API 호출
-	const { data: assignees, isLoading: assigneesLoading } = useApi<{ data: Assignee[] }>('/api/assignees');
-
-	// 로딩 상태
-	if (projectsLoading || assigneesLoading) {
-		return (
-			<div className="p-5 space-y-4">
-				<PageHeader
-					title="프로젝트 담당자 할당"
-					breadcrumb={[{ label: '프로젝트관리', path: '/projects' }, { label: '담당자 할당' }]}
-				/>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<Card>
-						<CardHeader>
-							<Skeleton className="h-6 w-32 mb-2" />
-							<Skeleton className="h-4 w-48" />
-						</CardHeader>
-						<CardContent>
-							<div className="space-y-2">
-								{Array.from({ length: 5 }).map((_, i) => (
-									<div
-										key={i}
-										className="flex items-center gap-3"
-									>
-										<Skeleton className="h-4 w-8" />
-										<Skeleton className="h-4 w-48" />
-									</div>
-								))}
-							</div>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardHeader>
-							<Skeleton className="h-6 w-32 mb-2" />
-							<Skeleton className="h-4 w-48" />
-						</CardHeader>
-						<CardContent>
-							<div className="space-y-2">
-								{Array.from({ length: 5 }).map((_, i) => (
-									<div
-										key={i}
-										className="flex items-center gap-3"
-									>
-										<Skeleton className="h-4 w-8" />
-										<Skeleton className="h-4 w-32" />
-									</div>
-								))}
-							</div>
-						</CardContent>
-					</Card>
-				</div>
-			</div>
-		);
-	}
-
-	const handleAssign = () => {
-		setShowSuccess(true);
-		setTimeout(() => {
-			setShowSuccess(false);
-			$router.back();
-		}, 2000);
-	};
-
 	return (
 		<div className="p-5">
 			<PageHeader
