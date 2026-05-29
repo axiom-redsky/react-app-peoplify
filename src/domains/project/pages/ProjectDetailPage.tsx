@@ -81,12 +81,12 @@ export default function ProjectDetailPage(): React.ReactNode {
 					<div className="flex gap-2">
 						<Button
 							variant="outline"
-							size="sm"
+							size="lg"
 						>
 							<Edit className="w-4 h-4 mr-1.5" />
 							수정
 						</Button>
-						<Button size="sm">
+						<Button size="lg">
 							<UserPlus className="w-4 h-4 mr-1.5" />
 							인력 배정
 						</Button>
