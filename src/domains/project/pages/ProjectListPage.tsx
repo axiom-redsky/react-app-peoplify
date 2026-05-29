@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useApi } from '@axiom/hooks';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@axiom/components/ui';
 import {
