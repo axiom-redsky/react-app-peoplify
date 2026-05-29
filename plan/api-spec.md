@@ -89,6 +89,11 @@ KPI 4종 집계.
 ### GET `/api/dashboard/active-projects`
 진행 중인 프로젝트 목록 + 투입인원 수 + 기술스택.
 
+**조건**
+- `projects.status = 'active'` 인 프로젝트만 반환
+- `deployed_count`: 현재 투입 중인 인원만 집계 (`start_date <= TODAY AND (end_date IS NULL OR end_date >= TODAY)`)
+- `tech_stack`: 중복 제거된 기술스택 배열 (없으면 `[]`)
+
 **Response**
 ```json
 {

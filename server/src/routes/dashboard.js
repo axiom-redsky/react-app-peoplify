@@ -55,8 +55,8 @@ router.get('/active-projects', async (req, res, next) => {
       .leftJoin('assignments', function () {
         this.on('projects.id', 'assignments.project_id')
           .andOnVal('assignments.start_date', '<=', db.raw('CURRENT_DATE'))
-          .andWhere(function () {
-            this.whereNull('assignments.end_date').orWhere(
+          .andOn(function () {
+            this.onNull('assignments.end_date').orOnVal(
               'assignments.end_date',
               '>=',
               db.raw('CURRENT_DATE'),
