@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useState, useRef } from 'react';
 import { useApi } from '@axiom/hooks';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@axiom/components/ui';
 import {
@@ -16,13 +17,6 @@ import StatusBadge from '@/shared/components/ui/StatusBadge';
 import type { StatusType } from '@/shared/components/ui/StatusBadge';
 
 import { Search, Plus, Calendar, Users } from 'lucide-react';
-
-const tabs = [
-	{ label: '전체', count: 5 },
-	{ label: '진행 중', count: 3 },
-	{ label: '완료', count: 1 },
-	{ label: '예정', count: 1 },
-];
 
 // 프로젝트 타입 정의 (API 응답 구조에 맞춤)
 interface Project {
@@ -48,10 +42,66 @@ export default function ProjectListPage(): React.ReactNode {
 	// 프로젝트 목록 API 호출
 	const { data: projects, isLoading, error } = useApi<{ data: Project[] }>('/api/projects');
 
-	// 프로젝트 상세보기 버튼클릭
+	// 상태 탭 선택 상태
+	const [activeTab, setActiveTab] = useState(0);
+
+	// 검색어 상태
+	const [searchQuery, setSearchQuery] = useState('');
+
+	// 탭 정의 (레이블만 고정, count 는 동적 계산)
+	const tabs = [{ label: '전체' }, { label: '진행 중' }, { label: '완료' }, { label: '예정' }];
+
+	// 탭별 카운트 계산 (API 데이터 기반)
+	const getTabCount = (tabIndex: number): number => {
+		if (!projects?.data) return 0;
+
+		switch (tabIndex) {
+			case 0: // 전체
+				return projects.data.length;
+			case 1: // 진행 중 (active)
+				return projects.data.filter((p) => p.status === 'active').length;
+			case 2: // 완료 (complete)
+				return projects.data.filter((p) => p.status === 'complete').length;
+			case 3: // 예정 (planned)
+				return projects.data.filter((p) => p.status === 'planned').length;
+			default:
+				return 0;
+		}
+	};
+
+	// 프로젝트 상세보기 버튼 클릭
 	const handleDetailProject = (id: any) => {
 		$router.push(`/project/${id}`);
 	};
+
+	// 탭 클릭 핸들러
+	const handleTabClick = (index: number) => {
+		setActiveTab(index);
+	};
+
+	// 검색어 변경 핸들러
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		setSearchQuery(value);
+	};
+
+	// 필터링 로직: 상태 탭 + 검색어
+	const filteredProjects = projects?.data?.filter((proj: Project) => {
+		// 상태 필터링
+		const statusMatch =
+			activeTab === 0 || // 전체
+			(activeTab === 1 && proj.status === 'active') || // 진행 중
+			(activeTab === 2 && proj.status === 'complete') || // 완료
+			(activeTab === 3 && proj.status === 'planned'); // 예정
+
+		// 검색어 필터링
+		const searchMatch =
+			searchQuery === '' ||
+			proj.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			proj.client.toLowerCase().includes(searchQuery.toLowerCase());
+
+		return statusMatch && searchMatch;
+	});
 
 	// 로딩 상태
 	if (isLoading) {
@@ -134,7 +184,7 @@ export default function ProjectListPage(): React.ReactNode {
 			<PageHeader
 				title="프로젝트 관리"
 				actions={
-					<Button size="sm">
+					<Button size="lg">
 						<Plus className="w-4 h-4 mr-1.5" />
 						프로젝트 등록
 					</Button>
@@ -146,15 +196,16 @@ export default function ProjectListPage(): React.ReactNode {
 				{tabs.map((tab, idx) => (
 					<button
 						key={tab.label}
+						onClick={() => handleTabClick(idx)}
 						className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
-							idx === 0
+							idx === activeTab
 								? 'border-teal-600 text-teal-600'
 								: 'border-transparent text-muted-foreground hover:text-foreground'
 						}`}
 					>
 						{tab.label}
 						<span className="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-muted text-muted-foreground">
-							{tab.count}
+							{getTabCount(idx)}
 						</span>
 					</button>
 				))}
@@ -167,6 +218,8 @@ export default function ProjectListPage(): React.ReactNode {
 					<Input
 						className="h-9 pl-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
 						placeholder="프로젝트명·고객사 검색..."
+						value={searchQuery}
+						onChange={handleSearchChange}
 					/>
 				</div>
 				<Select defaultValue="all">
@@ -199,7 +252,7 @@ export default function ProjectListPage(): React.ReactNode {
 
 			{/* 카드형 목록 */}
 			<div className="grid grid-cols-1 gap-3">
-				{projects?.data?.map((proj) => {
+				{filteredProjects?.map((proj) => {
 					const period = `${formatDate(proj.start_date)} ~ ${formatDate(proj.end_date)}`;
 					const tech = proj.tech_stack;
 					return (

@@ -72,6 +72,11 @@ export default function ProjectDetailPage(): React.ReactNode {
 		return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 	};
 
+	// 인력 배정 버튼 클릭
+	const handleAssignEmployeeProj = () => {
+		$router.push(`/project/${id}/assign`);
+	};
+
 	return (
 		<div className="p-5">
 			<PageHeader
@@ -81,12 +86,21 @@ export default function ProjectDetailPage(): React.ReactNode {
 					<div className="flex gap-2">
 						<Button
 							variant="outline"
+							onClick={() => $router.back()}
+						>
+							목록으로
+						</Button>
+						<Button
+							variant="outline"
 							size="lg"
 						>
 							<Edit className="w-4 h-4 mr-1.5" />
 							수정
 						</Button>
-						<Button size="lg">
+						<Button
+							size="lg"
+							onClick={handleAssignEmployeeProj}
+						>
 							<UserPlus className="w-4 h-4 mr-1.5" />
 							인력 배정
 						</Button>
