@@ -5,7 +5,6 @@ import { cn } from '@/shared/utils/cn';
 import { useApi } from '@axiom/hooks';
 import dayjs from 'dayjs';
 
-// ─── 타입 정의 ────────────────────────────────────────────────────────────────────
 
 type TDashboardSummary = {
 	totalEmployees: number;
@@ -35,7 +34,15 @@ type TBenchMember = {
 	skills: string[];
 };
 
-// ─── 상수 데이터 ───────────────────────────────────────────────────────────────────
+// 철수 임박 데이터 타입
+type TUrgentWithdrawal = {
+	employee_id: number;
+	employee_name: string;
+	department: string;
+	project_name: string;
+	end_date: string;
+	days_remaining: string;
+};
 
 const kpiCards = [
 	{
@@ -98,19 +105,10 @@ const benchAvatarColors = [
 	{ bg: 'bg-rose-500/20', text: 'text-rose-400', ring: 'ring-rose-500/30' },
 ];
 
-const urgentWithdrawals = [
-	{ name: '최유나', project: 'A 금융', date: '06.15', dday: 'D-20' },
-	{ name: '정다은', project: 'B 공공', date: '06.28', dday: 'D-33' },
-];
-
-// ─── 유틸리티 ─────────────────────────────────────────────────────────────────────
-
-/** 날짜 포맷팅 (YYYY-MM-DD → YYYY.MM.DD) */
 const formatDate = (dateString: string): string => {
 	return dayjs(dateString).format('YYYY.MM.DD');
 };
 
-/** 입사일로부터 재직 기간 계산 (예: 2 년 3 개월) */
 const calculateTenure = (hireDate: string): string => {
 	const hire = dayjs(hireDate);
 	const now = dayjs();
@@ -127,8 +125,6 @@ const calculateTenure = (hireDate: string): string => {
 	}
 	return `${now.diff(hire, 'day')}일`;
 };
-
-// ─── 컴포넌트 ─────────────────────────────────────────────────────────────────────
 
 export default function MainIndex(): React.ReactNode {
 	/** KPI 데이터 조회 */
@@ -151,6 +147,10 @@ export default function MainIndex(): React.ReactNode {
 		isPending: isBenchPending,
 		error: benchError,
 	} = useApi<{ data: TBenchMember[]; success: boolean }>('/api/dashboard/bench-members');
+
+  // 철수 임박 API 호출
+  const { data: urgentWithdrawals } =
+	useApi<{ data: TUrgentWithdrawal[]; success: boolean }>('/api/dashboard/urgent-withdrawals');
 
 	// 로딩/에러 상태
 	const isPending = isSummaryPending || isProjectsPending || isBenchPending;
@@ -338,19 +338,19 @@ export default function MainIndex(): React.ReactNode {
 								</h2>
 							</div>
 							<div className="space-y-3">
-								{urgentWithdrawals.map((u) => (
+								{urgentWithdrawals?.data?.map((u: TUrgentWithdrawal) => (
 									<div
-										key={u.name}
+										key={u.employee_id}
 										className="flex items-center justify-between p-3 bg-orange-500/5 rounded-xl border border-orange-500/10"
 									>
 										<div>
-											<p className="text-sm font-semibold text-foreground">{u.name}</p>
+											<p className="text-sm font-semibold text-foreground">{u.employee_name}</p>
 											<p className="text-xs text-muted-foreground mt-0.5">
-												<span className="text-orange-400">{u.project}</span> · 철수 {u.date}
+												<span className="text-orange-400">{u.project_name}</span> · 철수 {u.end_date}
 											</p>
 										</div>
 										<span className="text-xs font-bold text-orange-400 bg-orange-500/15 px-2.5 py-1 rounded-full">
-											{u.dday}
+											{u.days_remaining}
 										</span>
 									</div>
 								))}
