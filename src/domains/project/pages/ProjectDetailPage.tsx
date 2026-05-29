@@ -1,31 +1,88 @@
 import { Button } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
-import StatusBadge from '@/shared/components/ui/StatusBadge';
+import StatusBadge, { type StatusType } from '@/shared/components/ui/StatusBadge';
 import { Edit, UserPlus } from 'lucide-react';
+import { useParams } from 'react-router';
+import { useApi } from '@axiom/hooks';
+import dayjs from 'dayjs';
 
-const members = [
-	{ name: '홍길동', role: 'PM', rate: '100%', start: '25.03.01', end: '26.12.31' },
-	{ name: '김민준', role: 'PL', rate: '100%', start: '25.03.01', end: '26.09.30' },
-	{ name: '이서연', role: '개발', rate: '100%', start: '25.05.01', end: '26.12.31' },
-	{ name: '박지훈', role: '개발', rate: '100%', start: '25.05.01', end: '26.06.30' },
-	{ name: '최유나', role: 'QA', rate: '50%', start: '25.08.01', end: '26.12.31' },
-];
+type TProjectAssignment = {
+	id: number;
+	role: string;
+	rate_pct: number;
+	start_date: string;
+	end_date: string | null;
+	employee_id: number;
+	employee_name: string;
+	department: string;
+	position: string;
+};
 
-const techStack = ['Java', 'Spring Boot', 'Oracle', 'iBatis', 'MSA', 'Git', 'Jenkins'];
+// API 응답 데이터 타입 정의
+type TProjectDetailData = {
+	id: number;
+	name: string;
+	client: string;
+	start_date: string;
+	end_date: string;
+	description: string;
+	progress_pct: number;
+	status: string;
+	tech_stack: string[];
+};
+
+type TProjectDetail = {
+	data: TProjectDetailData;
+	assignments: TProjectAssignment[];
+	client: string;
+	created_at: string;
+	success: boolean;
+	updated_at: string;
+};
+
 const tabs = ['개요', '투입 인력', '일정', '계약'];
 
 export default function ProjectDetailPage(): React.ReactNode {
+	const { id } = useParams<{ id: string }>();
+	const PROJECTS_ENDPOINT = `/api/projects/${id}` as const;
+
+	const { data, isPending, error } = useApi<TProjectDetail>(PROJECTS_ENDPOINT);
+
+	// 데이터 추출
+	const project = data?.data;
+	const assignments = data?.assignments ?? [];
+	const client = data?.client ?? project?.client;
+
+	// 멤버 목록 변환
+	const members = assignments.map((a) => ({
+		name: a.employee_name,
+		role: a.position,
+		rate: `${a.rate_pct}%`,
+		start: a.start_date,
+		end: a.end_date ?? '미정',
+	}));
+
+	// 기술스택
+	const techStack = project?.tech_stack ?? [];
+
+	// 날짜 포맷팅
+	const formatDate = (dateStr: string) => {
+		const date = new Date(dateStr);
+		console.log('날짜 dayjs 확인::', dateStr, dayjs(dateStr).format('YYYY-MM-DD'));
+		return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+	};
+
 	return (
 		<div className="p-5">
 			<PageHeader
-				title="A금융 차세대 코어뱅킹"
-				breadcrumb={[
-					{ label: '프로젝트', path: '/projects' },
-					{ label: 'A금융 차세대 코어뱅킹' },
-				]}
+				title={project?.name ?? '프로젝트 상세'}
+				breadcrumb={[{ label: '프로젝트', path: '/projects' }, { label: project?.name ?? '로딩 중...' }]}
 				actions={
 					<div className="flex gap-2">
-						<Button variant="outline" size="sm">
+						<Button
+							variant="outline"
+							size="sm"
+						>
 							<Edit className="w-4 h-4 mr-1.5" />
 							수정
 						</Button>
@@ -39,42 +96,57 @@ export default function ProjectDetailPage(): React.ReactNode {
 
 			{/* 개요 카드 */}
 			<div className="bg-card rounded-xl border p-5 mb-4">
-				<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-					<div>
-						<p className="text-xs text-muted-foreground mb-0.5">고객사</p>
-						<p className="font-semibold text-foreground">A금융그룹</p>
-					</div>
-					<div>
-						<p className="text-xs text-muted-foreground mb-0.5">프로젝트 기간</p>
-						<p className="font-semibold text-foreground">2025.03.01 ~ 2026.12.31</p>
-					</div>
-					<div>
-						<p className="text-xs text-muted-foreground mb-0.5">PM</p>
-						<p className="font-semibold text-foreground">홍길동 부장</p>
-					</div>
-					<div>
-						<p className="text-xs text-muted-foreground mb-0.5">계약 유형</p>
-						<p className="font-semibold text-foreground">T&M (시간·재료)</p>
-					</div>
-					<div>
-						<p className="text-xs text-muted-foreground mb-0.5">총 계약금액</p>
-						<p className="font-semibold text-foreground">12억 원</p>
-					</div>
-					<div className="col-span-2">
-						<p className="text-xs text-muted-foreground mb-0.5">상태</p>
-						<StatusBadge status="active" />
-					</div>
-				</div>
-				{/* 진척도 바 */}
-				<div>
-					<div className="flex justify-between text-sm mb-1">
-						<span className="text-muted-foreground">현재 진척도</span>
-						<span className="font-semibold text-teal-600">68%</span>
-					</div>
-					<div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-						<div className="h-full bg-teal-500 rounded-full" style={{ width: '68%' }} />
-					</div>
-				</div>
+				{isPending ? (
+					<p className="text-sm text-gray-500">로딩 중…</p>
+				) : error ? (
+					<p className="text-sm text-red-600">에러: {error.message}</p>
+				) : project ? (
+					<>
+						<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+							<div>
+								<p className="text-xs text-muted-foreground mb-0.5">프로젝트명</p>
+								<p className="font-semibold text-foreground">{project.name}</p>
+							</div>
+							<div>
+								<p className="text-xs text-muted-foreground mb-0.5">고객사</p>
+								<p className="font-semibold text-foreground">{client}</p>
+							</div>
+							<div>
+								<p className="text-xs text-muted-foreground mb-0.5">프로젝트 기간</p>
+								<p className="font-semibold text-foreground">
+									{formatDate(project.start_date)} ~ {formatDate(project.end_date)}
+								</p>
+							</div>
+							<div>
+								<p className="text-xs text-muted-foreground mb-0.5">상태</p>
+								<StatusBadge status={project.status as StatusType} />
+							</div>
+							<div>
+								<p className="text-xs text-muted-foreground mb-0.5">진척도</p>
+								<p className="font-semibold text-foreground">{project.progress_pct}%</p>
+							</div>
+							<div className="col-span-2">
+								<p className="text-xs text-muted-foreground mb-0.5">프로젝트 설명</p>
+								<p className="text-sm text-foreground">{project.description}</p>
+							</div>
+						</div>
+						{/* 진척도 바 */}
+						<div>
+							<div className="flex justify-between text-sm mb-1">
+								<span className="text-muted-foreground">현재 진척도</span>
+								<span className="font-semibold text-teal-600">{project.progress_pct}%</span>
+							</div>
+							<div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+								<div
+									className="h-full bg-teal-500 rounded-full transition-all duration-300"
+									style={{ width: `${project.progress_pct}%` }}
+								/>
+							</div>
+						</div>
+					</>
+				) : (
+					<p className="text-sm text-gray-500">데이터를 불러올 수 없습니다</p>
+				)}
 			</div>
 
 			{/* 탭 */}
@@ -98,7 +170,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 			{/* 투입 인력 탭 */}
 			<div className="bg-card rounded-xl border overflow-hidden mb-4">
 				<div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
-					<h3 className="font-semibold text-foreground text-sm">투입 인력 (7명)</h3>
+					<h3 className="font-semibold text-foreground text-sm">투입 인력 ({members.length}명)</h3>
 				</div>
 				<table className="w-full text-sm">
 					<thead className="bg-muted/50">
@@ -111,24 +183,40 @@ export default function ProjectDetailPage(): React.ReactNode {
 						</tr>
 					</thead>
 					<tbody>
-						{members.map((m) => (
-							<tr key={m.name} className="border-t hover:bg-muted/20 transition-colors">
-								<td className="py-2.5 px-4">
-									<div className="flex items-center gap-2">
-										<div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-xs">
-											{m.name[0]}
+						{members.length > 0 ? (
+							members.map((m) => (
+								<tr
+									key={m.name}
+									className="border-t hover:bg-muted/20 transition-colors"
+								>
+									<td className="py-2.5 px-4">
+										<div className="flex items-center gap-2">
+											<div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-xs">
+												{m.name[0]}
+											</div>
+											<span className="font-medium text-foreground">{m.name}</span>
 										</div>
-										<span className="font-medium text-foreground">{m.name}</span>
-									</div>
+									</td>
+									<td className="py-2.5 px-4">
+										<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">
+											{m.role}
+										</span>
+									</td>
+									<td className="py-2.5 px-4 font-medium">{m.rate}</td>
+									<td className="py-2.5 px-4 text-muted-foreground">{m.start}</td>
+									<td className="py-2.5 px-4 text-muted-foreground">{m.end}</td>
+								</tr>
+							))
+						) : (
+							<tr>
+								<td
+									colSpan={5}
+									className="py-8 text-center text-muted-foreground"
+								>
+									아직 투입 인력이 없습니다
 								</td>
-								<td className="py-2.5 px-4">
-									<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">{m.role}</span>
-								</td>
-								<td className="py-2.5 px-4 font-medium">{m.rate}</td>
-								<td className="py-2.5 px-4 text-muted-foreground">{m.start}</td>
-								<td className="py-2.5 px-4 text-muted-foreground">{m.end}</td>
 							</tr>
-						))}
+						)}
 					</tbody>
 				</table>
 			</div>

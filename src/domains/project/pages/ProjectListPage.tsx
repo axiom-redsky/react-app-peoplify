@@ -12,7 +12,8 @@ import {
 	Skeleton,
 } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
-//import StatusBadge from '@/shared/components/ui/StatusBadge';
+import StatusBadge from '@/shared/components/ui/StatusBadge';
+import type { StatusType } from '@/shared/components/ui/StatusBadge';
 
 import { Search, Plus, Calendar, Users } from 'lucide-react';
 
@@ -30,7 +31,7 @@ interface Project {
 	client: string;
 	start_date: string;
 	end_date: string;
-	status: 'planned' | 'in_progress' | 'completed';
+	status: StatusType;
 	tech_stack: string[];
 }
 
@@ -43,22 +44,14 @@ const formatDate = (dateString: string): string => {
 	return `${year}.${month}.${day}`;
 };
 
-// 상태 매핑 (API → UI)
-//const mapStatus = (apiStatus: string): '진행중' | '완료' | '보류' => {
-//	switch (apiStatus) {
-//		case 'in_progress':
-//			return '진행중';
-//		case 'completed':
-//			return '완료';
-//		case 'planned':
-//		default:
-//			return '보류';
-//	}
-//};
-
 export default function ProjectListPage(): React.ReactNode {
 	// 프로젝트 목록 API 호출
 	const { data: projects, isLoading, error } = useApi<{ data: Project[] }>('/api/projects');
+
+	// 프로젝트 상세보기 버튼클릭
+	const handleDetailProject = (id: any) => {
+		$router.push(`/project/${id}`);
+	};
 
 	// 로딩 상태
 	if (isLoading) {
@@ -207,10 +200,8 @@ export default function ProjectListPage(): React.ReactNode {
 			{/* 카드형 목록 */}
 			<div className="grid grid-cols-1 gap-3">
 				{projects?.data?.map((proj) => {
-					//const status = mapStatus(proj.status);
 					const period = `${formatDate(proj.start_date)} ~ ${formatDate(proj.end_date)}`;
 					const tech = proj.tech_stack;
-
 					return (
 						<div
 							key={proj.id}
@@ -220,7 +211,7 @@ export default function ProjectListPage(): React.ReactNode {
 								<div className="flex-1 min-w-0">
 									<div className="flex items-center gap-2 mb-1">
 										<h3 className="font-semibold text-foreground truncate">{proj.name}</h3>
-										{/*<StatusBadge status={status} />*/}
+										<StatusBadge status={proj.status} />
 									</div>
 									<p className="text-sm text-muted-foreground mb-2">{proj.client}</p>
 									<div className="flex flex-wrap gap-4 text-sm">
@@ -248,6 +239,7 @@ export default function ProjectListPage(): React.ReactNode {
 									variant="outline"
 									size="sm"
 									className="shrink-0"
+									onClick={() => handleDetailProject(proj.id)}
 								>
 									상세
 								</Button>
