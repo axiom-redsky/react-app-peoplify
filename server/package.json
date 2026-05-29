@@ -13,7 +13,9 @@
     "migrate:rollback": "knex migrate:rollback",
     "migrate:nas": "dotenv -e .env.nas -- knex migrate:latest",
     "seed": "knex seed:run",
-    "seed:nas": "dotenv -e .env.nas -- knex seed:run"
+    "seed:nas": "dotenv -e .env.nas -- knex seed:run",
+    "seed:remote": "dotenv -e .env.remote -- knex seed:run",
+    "seed:vultr": "dotenv -e .env.vultr -- knex seed:run"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

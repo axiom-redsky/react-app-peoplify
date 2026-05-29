@@ -55,4 +55,6 @@ exports.seed = async function (knex) {
       description: '빅데이터 플랫폼 구축 및 실시간 분석 시스템',
     },
   ]);
+
+  await knex.raw("SELECT setval('projects_id_seq', (SELECT MAX(id) FROM projects))");
 };

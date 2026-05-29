@@ -50,7 +50,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// POST /api/assignments  — 투입 등록
+// POST /api/assignments  — 투입 등록 (단일 또는 다중 employee_id 지원)
 router.post('/', async (req, res, next) => {
   try {
     const { employee_id, project_id, role, rate_pct = 100, start_date, end_date } = req.body;
@@ -62,11 +62,19 @@ router.post('/', async (req, res, next) => {
       });
     }
 
-    const [assignment] = await db('assignments')
-      .insert({ employee_id, project_id, role, rate_pct, start_date, end_date })
-      .returning('*');
+    const employeeIds = Array.isArray(employee_id) ? employee_id : [employee_id];
+    const rows = employeeIds.map((eid) => ({
+      employee_id: eid,
+      project_id,
+      role,
+      rate_pct,
+      start_date,
+      end_date,
+    }));
 
-    res.status(201).json({ success: true, data: assignment });
+    const assignments = await db('assignments').insert(rows).returning('*');
+
+    res.status(201).json({ success: true, data: assignments });
   } catch (err) {
     next(err);
   }

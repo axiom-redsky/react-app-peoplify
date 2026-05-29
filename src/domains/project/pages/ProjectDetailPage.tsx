@@ -5,6 +5,7 @@ import { Edit, UserPlus } from 'lucide-react';
 import { useParams } from 'react-router';
 import { useApi } from '@axiom/hooks';
 import dayjs from 'dayjs';
+import { useState, useEffect } from 'react';
 
 type TProjectAssignment = {
 	id: number;
@@ -32,12 +33,24 @@ type TProjectDetailData = {
 };
 
 type TProjectDetail = {
-	data: TProjectDetailData;
 	assignments: TProjectAssignment[];
 	client: string;
 	created_at: string;
-	success: boolean;
+	description: string;
+	end_date: string;
+	id: number;
+	name: string;
+	progress_pct: number;
+	start_date: string;
+	status: string;
+	tech_stack: any[];
 	updated_at: string;
+};
+
+// API 응답 wrapper 타입
+type TProjectDetailResponse = {
+	success: boolean;
+	data: TProjectDetail;
 };
 
 const tabs = ['개요', '투입 인력', '일정', '계약'];
@@ -46,21 +59,38 @@ export default function ProjectDetailPage(): React.ReactNode {
 	const { id } = useParams<{ id: string }>();
 	const PROJECTS_ENDPOINT = `/api/projects/${id}` as const;
 
-	const { data, isPending, error } = useApi<TProjectDetail>(PROJECTS_ENDPOINT);
+	const { data, isPending, error } = useApi<TProjectDetailResponse>(PROJECTS_ENDPOINT);
 
-	// 데이터 추출
-	const project = data?.data;
-	const assignments = data?.assignments ?? [];
-	const client = data?.client ?? project?.client;
+	// 상태 관리
+	const [project, setProject] = useState<TProjectDetailData | undefined>(undefined);
+	const [assignments, setAssignments] = useState<TProjectAssignment[]>([]);
+	const [client, setClient] = useState<string>('');
+	const [members, setMembers] = useState<{ name: string; role: string; rate: string; start: string; end: string }[]>(
+		[],
+	);
 
-	// 멤버 목록 변환
-	const members = assignments.map((a) => ({
-		name: a.employee_name,
-		role: a.position,
-		rate: `${a.rate_pct}%`,
-		start: a.start_date,
-		end: a.end_date ?? '미정',
-	}));
+	// 데이터 추출 및 members 변환
+	useEffect(() => {
+		if (data?.data) {
+			setProject(data.data);
+			setAssignments(data.data.assignments ?? []);
+			setClient(data.data.client);
+		}
+	}, [data]);
+
+	// members 변환 (assignments가 undefined일 경우 빈 배열로 처리)
+	useEffect(() => {
+		const transformedMembers = Array.isArray(assignments)
+			? assignments.map((a) => ({
+					name: a.employee_name,
+					role: a.position,
+					rate: `${a.rate_pct}%`,
+					start: a.start_date,
+					end: a.end_date ?? '미정',
+				}))
+			: [];
+		setMembers(transformedMembers);
+	}, [assignments]);
 
 	// 기술스택
 	const techStack = project?.tech_stack ?? [];
@@ -216,9 +246,9 @@ export default function ProjectDetailPage(): React.ReactNode {
 											{m.role}
 										</span>
 									</td>
-									<td className="py-2.5 px-4 font-medium">{m.rate}</td>
-									<td className="py-2.5 px-4 text-muted-foreground">{m.start}</td>
-									<td className="py-2.5 px-4 text-muted-foreground">{m.end}</td>
+									<td className="py-2.5 px-4 font-medium text-muted-foreground">{m.rate}</td>
+									<td className="py-2.5 px-4 text-muted-foreground">{dayjs(m.start).format('YYYY.MM.DD')}</td>
+									<td className="py-2.5 px-4 text-muted-foreground">{dayjs(m.end).format('YYYY.MM.DD')}</td>
 								</tr>
 							))
 						) : (

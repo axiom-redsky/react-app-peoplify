@@ -436,23 +436,23 @@ KPI 4종 집계.
 ---
 
 ### POST `/api/assignments`
-투입 등록.
+투입 등록. `employee_id`에 단일 숫자 또는 숫자 배열을 전달하면 해당 인원 수만큼 행을 bulk insert한다.
 
 **Request Body**
 ```json
 {
-  "employee_id": 1,
+  "employee_id": [1, 2, 3],
   "project_id": 2,
-  "role": "백엔드 개발자",
+  "role": "개발",
   "rate_pct": 100,
-  "start_date": "2024-07-01",
-  "end_date": "2025-03-31"
+  "start_date": "2026-06-01",
+  "end_date": "2026-12-31"
 }
 ```
 
 | 필드 | 필수 | 설명 |
 |------|------|------|
-| `employee_id` | ✅ | |
+| `employee_id` | ✅ | 단일 `number` 또는 `number[]` (다중 배정 지원) |
 | `project_id` | ✅ | |
 | `start_date` | ✅ | |
 | `rate_pct` | | 기본값 `100` (투입률 %) |
@@ -460,7 +460,7 @@ KPI 4종 집계.
 
 **Response** `201`
 ```json
-{ "success": true, "data": { "id": 19, "employee_id": 1, "project_id": 2, ... } }
+{ "success": true, "data": [{ "id": 19, "employee_id": 1, "project_id": 2, ... }, ...] }
 ```
 
 ---

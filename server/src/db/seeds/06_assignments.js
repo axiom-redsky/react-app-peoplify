@@ -32,4 +32,6 @@ exports.seed = async function (knex) {
     { id: 17, employee_id: 17, project_id: 5, role: '백엔드 개발',       rate_pct: 100, start_date: '2024-06-01', end_date: '2025-12-31' },
     { id: 18, employee_id: 18, project_id: 5, role: '시스템 분석',       rate_pct: 100, start_date: '2024-01-01', end_date: '2025-12-31' },
   ]);
+
+  await knex.raw("SELECT setval('assignments_id_seq', (SELECT MAX(id) FROM assignments))");
 };
