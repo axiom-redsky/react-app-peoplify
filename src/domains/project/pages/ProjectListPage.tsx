@@ -199,7 +199,7 @@ export default function ProjectListPage(): React.ReactNode {
 						onClick={() => handleTabClick(idx)}
 						className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
 							idx === activeTab
-								? 'border-teal-600 text-teal-600'
+								? 'border-brand-600 text-brand-600'
 								: 'border-transparent text-muted-foreground hover:text-foreground'
 						}`}
 					>
@@ -216,7 +216,7 @@ export default function ProjectListPage(): React.ReactNode {
 				<div className="relative flex-1 min-w-48">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
 					<Input
-						className="h-9 pl-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+						className="h-9 pl-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 						placeholder="프로젝트명·고객사 검색..."
 						value={searchQuery}
 						onChange={handleSearchChange}
@@ -258,7 +258,7 @@ export default function ProjectListPage(): React.ReactNode {
 					return (
 						<div
 							key={proj.id}
-							className="bg-card rounded-xl border p-4 hover:border-teal-200 dark:hover:border-teal-700 hover:shadow-sm transition-all"
+							className="bg-card rounded-xl border p-4 hover:border-brand-200 dark:hover:border-brand-700 hover:shadow-sm transition-all"
 						>
 							<div className="flex items-start justify-between gap-3">
 								<div className="flex-1 min-w-0">

@@ -7,7 +7,7 @@ export const ThemeToggleButton: React.FC = () => {
 	return (
 		<button
 			onClick={toggleTheme}
-			className="relative flex items-center justify-center text-gray-500 transition-colors bg-white border border-gray-200 rounded-full hover:text-dark-900 h-11 w-11 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+			className="relative flex items-center justify-center h-11 w-11 rounded-full bg-card text-gray-500 shadow-[0_2px_4px_rgba(169,184,200,0.25)] transition-colors hover:bg-accent hover:text-gray-700 dark:text-white dark:shadow-[0_2px_3px_#1a1a2f] dark:hover:bg-white/10"
 		>
 			{/* 다크모드일 때: 해 아이콘 표시 */}
 			<svg

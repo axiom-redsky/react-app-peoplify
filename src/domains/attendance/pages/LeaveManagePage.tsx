@@ -24,7 +24,7 @@ export default function LeaveManagePage(): React.ReactNode {
 						<div className="grid grid-cols-2 gap-2">
 							{[
 								{ label: '총 부여', value: '15일', color: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' },
-								{ label: '사용', value: '6일', color: 'bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-300' },
+								{ label: '사용', value: '6일', color: 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300' },
 								{ label: '잔여', value: '9일', color: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300' },
 								{ label: '신청중', value: '1일', color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300' },
 							].map((item) => (
@@ -51,8 +51,8 @@ export default function LeaveManagePage(): React.ReactNode {
 											key={type}
 											className={`px-3 py-1.5 text-xs rounded-full border font-medium transition-colors ${
 												idx === 0
-													? 'bg-teal-600 text-white border-teal-600'
-													: 'border-slate-300 dark:border-slate-600 text-muted-foreground hover:border-teal-400 hover:text-teal-600'
+													? 'bg-brand-600 text-white border-brand-600'
+													: 'border-slate-300 dark:border-slate-600 text-muted-foreground hover:border-brand-400 hover:text-brand-600'
 											}`}
 										>
 											{type}
@@ -65,7 +65,7 @@ export default function LeaveManagePage(): React.ReactNode {
 								<Input
 									type="date"
 									defaultValue="2026-05-28"
-									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 								/>
 							</div>
 							<div>
@@ -73,18 +73,18 @@ export default function LeaveManagePage(): React.ReactNode {
 								<Input
 									type="date"
 									defaultValue="2026-05-28"
-									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 								/>
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-foreground mb-1">사유 *</label>
 								<textarea
 									rows={2}
-									className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-muted/60 text-foreground outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 resize-none placeholder:text-muted-foreground"
+									className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 dark:border-slate-600 bg-muted/60 text-foreground outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 resize-none placeholder:text-muted-foreground"
 									placeholder="사유 입력..."
 								/>
 							</div>
-							<div className="p-2.5 bg-teal-50 dark:bg-teal-900/20 rounded-lg text-xs text-teal-700 dark:text-teal-300">
+							<div className="p-2.5 bg-brand-50 dark:bg-brand-900/20 rounded-lg text-xs text-brand-700 dark:text-brand-300">
 								★ 현장 투입 중 휴가 시 프로젝트 PM에게도 알림 자동 발송
 							</div>
 							<div className="flex gap-2">
@@ -117,7 +117,7 @@ export default function LeaveManagePage(): React.ReactNode {
 							>
 								<div className="flex items-center gap-3">
 									<div className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-										leave.type === '연차' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300' :
+										leave.type === '연차' ? 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300' :
 										leave.type === '반차' ? 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300' :
 										'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
 									}`}>

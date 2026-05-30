@@ -144,7 +144,7 @@ const AppSidebar: React.FC = () => {
 										/>
 									) : (
 										<Folder
-											className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400"
+											className="h-4 w-4 shrink-0 text-gray-500 dark:text-[#dedefd]"
 											aria-hidden
 										/>
 									)}
@@ -163,7 +163,7 @@ const AppSidebar: React.FC = () => {
 				if (!subItem.path) return null;
 				const isSecondDepthLeaf = trailPrefix.length === 0;
 				const showLeafIcon = Boolean(subItem.icon) || isSecondDepthLeaf;
-				const leafIconClass = isActive(subItem.path) ? 'text-brand-500' : 'text-gray-500 dark:text-gray-400';
+				const leafIconClass = isActive(subItem.path) ? 'text-brand-500' : 'text-gray-500 dark:text-[#dedefd]';
 				return (
 					<li key={`${subItem.path}-${trail.join('-')}`}>
 						<Link
@@ -287,7 +287,7 @@ const AppSidebar: React.FC = () => {
 
 	return (
 		<aside
-			className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white border-gray-200 text-gray-900 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 h-screen transition-all duration-300 ease-in-out z-50 border-r
+			className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-sidebar border-sidebar-border text-gray-900 dark:text-gray-100 h-screen transition-all duration-300 ease-in-out z-50 border-r
         ${isExpanded || isMobileOpen ? 'w-72.5' : isHovered ? 'w-72.5' : 'w-22.5'}
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0`}

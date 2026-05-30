@@ -158,7 +158,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 
 			{/* 직원 요약 카드 */}
 			<div className="bg-card rounded-xl border p-5 mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
-				<div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-2xl font-bold">
+				<div className="w-16 h-16 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-2xl font-bold">
 					{String(employee.name).charAt(0)}
 				</div>
 				<div className="flex-1">
@@ -187,7 +187,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 				<div className="text-right">
 					<p className="text-sm text-muted-foreground">현 투입 프로젝트</p>
 					<p className="font-semibold text-foreground">{employee.assignment_history?.[0]?.project_name || '-'}</p>
-					<p className="text-sm text-teal-600 font-medium">
+					<p className="text-sm text-brand-600 font-medium">
 						{employee.assignment_history?.[0]?.rate_pct
 							? `투입률 ${employee.assignment_history[0].rate_pct}%`
 							: '미투입'}
@@ -203,12 +203,12 @@ export default function EmployeeDetailPage(): React.ReactNode {
 							key={tab}
 							className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
 								idx === 1
-									? 'border-teal-600 text-teal-600'
+									? 'border-brand-600 text-brand-600'
 									: 'border-transparent text-muted-foreground hover:text-foreground'
 							}`}
 						>
 							{tab}
-							{tab === '투입 이력' && <span className="ml-1 text-xs text-teal-500">★</span>}
+							{tab === '투입 이력' && <span className="ml-1 text-xs text-brand-500">★</span>}
 						</button>
 					))}
 				</div>
@@ -240,7 +240,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 									<td className="py-2.5 px-4 font-medium text-foreground">{proj.project_name}</td>
 									<td className="py-2.5 px-4 text-muted-foreground">{proj.client}</td>
 									<td className="py-2.5 px-4">
-										<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">
+										<span className="px-2 py-0.5 rounded text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium">
 											{proj.role}
 										</span>
 									</td>

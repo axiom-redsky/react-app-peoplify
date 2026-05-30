@@ -8,11 +8,11 @@ interface StatusBadgeProps {
 }
 
 const statusConfig: Record<StatusType, { label: string; className: string }> = {
-	active:   { label: '투입중', className: 'bg-emerald-100 text-emerald-700 ring-emerald-200' },
-	bench:    { label: '벤치',   className: 'bg-amber-100 text-amber-700 ring-amber-200' },
-	warning:  { label: '철수임박', className: 'bg-orange-100 text-orange-700 ring-orange-200' },
-	complete: { label: '완료',   className: 'bg-slate-100 text-slate-600 ring-slate-200' },
-	planned:  { label: '예정',   className: 'bg-sky-100 text-sky-700 ring-sky-200' },
+	active:   { label: '투입중', className: 'bg-emerald-500/15 text-emerald-600 ring-emerald-500/20 dark:text-emerald-400' },
+	bench:    { label: '벤치',   className: 'bg-amber-500/15 text-amber-600 ring-amber-500/20 dark:text-amber-400' },
+	warning:  { label: '철수임박', className: 'bg-orange-500/15 text-orange-600 ring-orange-500/20 dark:text-orange-400' },
+	complete: { label: '완료',   className: 'bg-slate-500/15 text-slate-600 ring-slate-500/20 dark:text-slate-300' },
+	planned:  { label: '예정',   className: 'bg-sky-500/15 text-sky-600 ring-sky-500/20 dark:text-sky-400' },
 };
 
 export default function StatusBadge({ status, className }: StatusBadgeProps): React.ReactNode {

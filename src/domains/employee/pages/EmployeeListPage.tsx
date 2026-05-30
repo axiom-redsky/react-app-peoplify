@@ -131,7 +131,7 @@ export default function EmployeeListPage(): React.ReactNode {
 					<Input
 						onChange={handleSearchChange}
 						value={searchQuery}
-						className="h-9 pl-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+						className="h-9 pl-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-primary focus-visible:ring-primary/20"
 						placeholder="이름 검색..."
 					/>
 				</div>
@@ -231,11 +231,11 @@ export default function EmployeeListPage(): React.ReactNode {
 									employees.map((emp: TEmployee) => (
 										<tr
 											key={emp.id}
-											className="border-t hover:bg-teal-50 dark:hover:bg-teal-950/90 transition-colors cursor-pointer"
+											className="border-t hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors cursor-pointer"
 										>
 											<td className="py-3 px-4">
 												<div className="flex items-center gap-2">
-													<div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-xs">
+													<div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center text-brand-600 dark:text-brand-300 font-semibold text-xs">
 														{emp.name[0]}
 													</div>
 													<span className="font-medium text-foreground">{emp.name}</span>
@@ -249,7 +249,7 @@ export default function EmployeeListPage(): React.ReactNode {
 											<td className="py-3 px-4">
 												<Button
 													variant="link"
-													className="text-teal-600 hover:text-teal-700 px-0"
+													className="text-primary hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 px-0"
 													onClick={() => $router.push(`/employee/employee-detail/${emp.id}`)}
 												>
 													상세보기

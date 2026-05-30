@@ -2,7 +2,7 @@ import { Outlet } from 'react-router';
 
 export default function AuthLayout(): React.ReactNode {
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-linear-to-br from-teal-700 via-teal-600 to-teal-800 dark:from-slate-950 dark:via-slate-900 dark:to-teal-950">
+		<div className="min-h-screen flex items-center justify-center bg-linear-to-br from-brand-700 via-brand-500 to-brand-800 dark:from-[#1a1a2e] dark:via-[#2e2e4a] dark:to-brand-950">
 			{/* 배경 패턴 */}
 			<div className="absolute inset-0 opacity-10">
 				<div
@@ -33,7 +33,7 @@ export default function AuthLayout(): React.ReactNode {
 						</svg>
 					</div>
 					<h1 className="text-3xl font-bold text-white tracking-tight">Peoplify</h1>
-					<p className="mt-1 text-teal-100 text-sm">인력 투입 관리 시스템</p>
+					<p className="mt-1 text-white/80 text-sm">인력 투입 관리 시스템</p>
 				</div>
 
 				{/* 로그인 카드 */}
@@ -41,7 +41,7 @@ export default function AuthLayout(): React.ReactNode {
 					<Outlet />
 				</div>
 
-				<p className="text-center mt-6 text-teal-200 text-xs">© 2026 Peoplify. All rights reserved.</p>
+				<p className="text-center mt-6 text-white/70 text-xs">© 2026 Peoplify. All rights reserved.</p>
 			</div>
 		</div>
 	);

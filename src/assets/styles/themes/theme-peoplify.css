@@ -1,9 +1,10 @@
 /*
- * theme-peoplify.css — Peoplify 브랜드 테마
+ * theme-peoplify.css — Peoplify 브랜드 테마 (Zanex 스타일)
  *
- * 사이드바: 항상 다크(slate-900) 배경으로 고정
- * Primary:  Teal (#0D9488 = teal-600)
- * 다크모드: primary → teal-400로 전환
+ * 참조: https://laravel.spruko.com/zanex/ltr/vertical-light
+ * Primary:  Indigo/Violet (#6259ca)
+ * 라이트:   배경 #f2f3f9 · 카드/사이드바 #fff · 보더 #eaedf1
+ * 다크:     배경 #2e2e4a · 카드/사이드바 #30304d · 보더 white/10
  */
 
 /* shadcn CSS vars → Tailwind 유틸 연결 브리지 */
@@ -50,80 +51,79 @@
 	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* 라이트 테마 */
+/* 라이트 테마 — Zanex vertical-light */
 :root {
-	--background: oklch(1 0 0);
-	--foreground: oklch(0.145 0 0);
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.145 0 0);
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.145 0 0);
-	/* Teal-600: #0D9488 */
-	--primary: oklch(0.578 0.124 177.8);
-	--primary-foreground: oklch(1 0 0);
-	--secondary: oklch(0.97 0 0);
-	--secondary-foreground: oklch(0.205 0 0);
-	--muted: oklch(0.97 0 0);
-	--muted-foreground: oklch(0.556 0 0);
-	--accent: oklch(0.97 0 0);
-	--accent-foreground: oklch(0.205 0 0);
-	--destructive: oklch(0.577 0.245 27.325);
-	--border: oklch(0.922 0 0);
-	--input: oklch(0.922 0 0);
-	/* Teal-600 ring */
-	--ring: oklch(0.578 0.124 177.8);
-	--chart-1: oklch(0.578 0.124 177.8);
-	--chart-2: oklch(0.652 0.103 177.8);
-	--chart-3: oklch(0.748 0.089 177.8);
-	--chart-4: oklch(0.848 0.066 177.8);
-	--chart-5: oklch(0.946 0.038 177.8);
-	--radius: 0.625rem;
-	/* 사이드바: slate-900 다크 고정 */
-	--sidebar: oklch(0.129 0.022 261.7);
-	--sidebar-foreground: oklch(0.944 0.006 261.7);
-	/* Teal-400: #2DD4BF */
-	--sidebar-primary: oklch(0.827 0.119 181.9);
-	--sidebar-primary-foreground: oklch(0.129 0.022 261.7);
-	/* teal-800/30% 톤 */
-	--sidebar-accent: oklch(0.271 0.066 175.1 / 40%);
-	--sidebar-accent-foreground: oklch(0.827 0.119 181.9);
-	--sidebar-border: oklch(0.279 0.022 261.7);
-	--sidebar-ring: oklch(0.578 0.124 177.8);
+	--background: #f2f3f9;
+	--foreground: #0d0c22;
+	--card: #ffffff;
+	--card-foreground: #0d0c22;
+	--popover: #ffffff;
+	--popover-foreground: #0d0c22;
+	/* Primary: Indigo/Violet #6259ca */
+	--primary: #6259ca;
+	--primary-foreground: #ffffff;
+	--secondary: #eef0f7;
+	--secondary-foreground: #0d0c22;
+	--muted: #f0f1f8;
+	--muted-foreground: #76839a;
+	--accent: #eef0f7;
+	--accent-foreground: #6259ca;
+	/* Danger #f82649 */
+	--destructive: #f82649;
+	--border: #eaedf1;
+	--input: #eaedf1;
+	--ring: #6259ca;
+	/* 차트: primary / success / info / warning / light-primary */
+	--chart-1: #6259ca;
+	--chart-2: #09ad95;
+	--chart-3: #45aaf2;
+	--chart-4: #f7b731;
+	--chart-5: #9e88f5;
+	--radius: 0.5rem;
+	/* 사이드바: 라이트=흰색 (Zanex vertical-light) */
+	--sidebar: #ffffff;
+	--sidebar-foreground: #8a98ac;
+	--sidebar-primary: #6259ca;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: rgba(98, 89, 202, 0.1);
+	--sidebar-accent-foreground: #6259ca;
+	--sidebar-border: #eaedf1;
+	--sidebar-ring: #6259ca;
 }
 
-/* 다크 테마 */
+/* 다크 테마 — Zanex vertical-dark */
 .dark {
-	--background: oklch(0.145 0 0);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.240 0 0);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.240 0 0);
-	--popover-foreground: oklch(0.985 0 0);
-	/* Teal-400: #2DD4BF */
-	--primary: oklch(0.827 0.119 181.9);
-	--primary-foreground: oklch(0.129 0.022 261.7);
-	--secondary: oklch(0.269 0 0);
-	--secondary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.269 0 0);
-	--muted-foreground: oklch(0.708 0 0);
-	--accent: oklch(0.269 0 0);
-	--accent-foreground: oklch(0.985 0 0);
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.827 0.119 181.9);
-	--chart-1: oklch(0.827 0.119 181.9);
-	--chart-2: oklch(0.748 0.089 177.8);
-	--chart-3: oklch(0.652 0.103 177.8);
-	--chart-4: oklch(0.578 0.124 177.8);
-	--chart-5: oklch(0.474 0.134 177.8);
-	/* 사이드바: slate-950 (더 어둡게) */
-	--sidebar: oklch(0.090 0.018 261.7);
-	--sidebar-foreground: oklch(0.944 0.006 261.7);
-	--sidebar-primary: oklch(0.827 0.119 181.9);
-	--sidebar-primary-foreground: oklch(0.090 0.018 261.7);
-	--sidebar-accent: oklch(0.271 0.066 175.1 / 30%);
-	--sidebar-accent-foreground: oklch(0.827 0.119 181.9);
-	--sidebar-border: oklch(1 0 0 / 8%);
-	--sidebar-ring: oklch(0.827 0.119 181.9);
+	/* 본문은 카드(#30304d)보다 어둡게 → 카드가 떠오름 (Zanex 본문값) */
+	--background: #22223d;
+	--foreground: #dedefd;
+	--card: #30304d;
+	--card-foreground: #dedefd;
+	--popover: #30304d;
+	--popover-foreground: #dedefd;
+	--primary: #6259ca;
+	--primary-foreground: #ffffff;
+	--secondary: #3a3a5c;
+	--secondary-foreground: #dedefd;
+	--muted: #3a3a5c;
+	--muted-foreground: #9999bf;
+	--accent: #3a3a5c;
+	--accent-foreground: #dedefd;
+	--destructive: #f82649;
+	--border: rgba(255, 255, 255, 0.1);
+	--input: rgba(255, 255, 255, 0.12);
+	--ring: #8278d6;
+	--chart-1: #8278d6;
+	--chart-2: #09ad95;
+	--chart-3: #467fcf;
+	--chart-4: #f7b731;
+	--chart-5: #9e88f5;
+	/* 사이드바: 다크=#30304d */
+	--sidebar: #30304d;
+	--sidebar-foreground: #9999bf;
+	--sidebar-primary: #8278d6;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: rgba(98, 89, 202, 0.25);
+	--sidebar-accent-foreground: #dedefd;
+	--sidebar-border: rgba(255, 255, 255, 0.1);
+	--sidebar-ring: #8278d6;
 }

@@ -83,7 +83,7 @@ export default function LoginPage(): React.ReactNode {
 					<Input
 						type="email"
 						placeholder="name@company.com"
-						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
 					/>
@@ -94,7 +94,7 @@ export default function LoginPage(): React.ReactNode {
 					<Input
 						type="password"
 						placeholder="••••••••"
-						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+						className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 					/>
@@ -106,13 +106,13 @@ export default function LoginPage(): React.ReactNode {
 					<label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
 						<input
 							type="checkbox"
-							className="rounded border-slate-300 dark:border-slate-600 text-teal-600 dark:bg-muted dark:accent-teal-400"
+							className="rounded border-slate-300 dark:border-slate-600 text-brand-600 dark:bg-muted dark:accent-brand-400"
 						/>
 						로그인 상태 유지
 					</label>
 					<button
 						type="button"
-						className="text-sm text-teal-600 hover:underline"
+						className="text-sm text-brand-600 hover:underline"
 					>
 						비밀번호 찾기
 					</button>

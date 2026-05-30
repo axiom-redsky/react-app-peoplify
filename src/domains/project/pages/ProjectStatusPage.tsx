@@ -204,7 +204,7 @@ export default function ProjectStatusPage(): React.ReactNode {
 								>
 									<td className="py-2.5 px-4">
 										<div className="flex items-center gap-2">
-											<div className="w-7 h-7 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center text-teal-700 dark:text-teal-300 font-semibold text-xs">
+											<div className="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-700 dark:text-brand-300 font-semibold text-xs">
 												{m.name[0]}
 											</div>
 											<span className="font-medium text-foreground">{m.name}</span>
@@ -214,7 +214,7 @@ export default function ProjectStatusPage(): React.ReactNode {
 									<td className="py-2.5 px-4 font-medium text-foreground">{m.project}</td>
 									<td className="py-2.5 px-4">
 										{m.role !== '—' && (
-											<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">
+											<span className="px-2 py-0.5 rounded text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium">
 												{m.role}
 											</span>
 										)}

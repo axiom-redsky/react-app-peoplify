@@ -70,6 +70,50 @@ export default function BadgeComponent(): React.ReactNode {
 				</ExCard>
 			</section>
 
+			{/* ── 1-2. Zanex 스타일 (솔리드 · 모양 · 그라데이션) ───────── */}
+			<section className="space-y-4">
+				<SectionHeader
+					title="1-2. Zanex 스타일 (솔리드 · Pill · Gradient)"
+					description="success · info · warning · danger 솔리드 색상과 shape(pill/rounded) · gradient 옵션을 지원합니다."
+				/>
+				<ExCard
+					label="솔리드 색상 — variant"
+					code={`<Badge variant="default">Primary</Badge>
+<Badge variant="secondary">Default</Badge>
+<Badge variant="success">Success</Badge>
+<Badge variant="danger">Danger</Badge>
+<Badge variant="info">Info</Badge>
+<Badge variant="warning">Warning</Badge>`}
+				>
+					<Badge variant="default">Primary</Badge>
+					<Badge variant="secondary">Default</Badge>
+					<Badge variant="success">Success</Badge>
+					<Badge variant="danger">Danger</Badge>
+					<Badge variant="info">Info</Badge>
+					<Badge variant="warning">Warning</Badge>
+				</ExCard>
+				<ExCard
+					label='shape="rounded" — 각진 Badge'
+					code={`<Badge variant="success" shape="rounded">Success</Badge>`}
+				>
+					<Badge variant="default" shape="rounded">Primary</Badge>
+					<Badge variant="success" shape="rounded">Success</Badge>
+					<Badge variant="danger" shape="rounded">Danger</Badge>
+					<Badge variant="info" shape="rounded">Info</Badge>
+					<Badge variant="warning" shape="rounded">Warning</Badge>
+				</ExCard>
+				<ExCard
+					label="gradient — 그라데이션"
+					code={`<Badge variant="success" gradient>Success</Badge>`}
+				>
+					<Badge variant="default" gradient>Primary</Badge>
+					<Badge variant="success" gradient>Success</Badge>
+					<Badge variant="danger" gradient>Danger</Badge>
+					<Badge variant="info" gradient>Info</Badge>
+					<Badge variant="warning" gradient>Warning</Badge>
+				</ExCard>
+			</section>
+
 			{/* ── 2. With Icon ────────────────────────────────────── */}
 			<section className="space-y-4">
 				<SectionHeader

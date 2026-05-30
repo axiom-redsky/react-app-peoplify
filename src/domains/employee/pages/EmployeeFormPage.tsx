@@ -112,7 +112,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 				{/* 기본정보 섹션 */}
 				<div className="bg-card rounded-xl border p-5 mb-4">
 					<h2 className="font-semibold text-foreground mb-4 text-sm flex items-center gap-2">
-						<span className="w-5 h-5 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center">
+						<span className="w-5 h-5 rounded-full bg-brand-600 text-white text-xs flex items-center justify-center">
 							1
 						</span>
 						기본 정보
@@ -123,7 +123,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 							<Input
 								value={name}
 								onChange={(e) => setName(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 								placeholder="홍길동"
 							/>
 						</div>
@@ -133,7 +133,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 								type="email"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 								placeholder="name@company.com"
 							/>
 						</div>
@@ -142,7 +142,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 							<Input
 								value={phone}
 								onChange={(e) => setPhone(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 								placeholder="010-0000-0000"
 							/>
 						</div>
@@ -152,7 +152,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 								type="date"
 								value={hireDate}
 								onChange={(e) => setHireDate(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 							/>
 						</div>
 						<div>
@@ -209,11 +209,11 @@ export default function EmployeeFormPage(): React.ReactNode {
 				{/* 기술스택 섹션 */}
 				<div className="bg-card rounded-xl border p-5 mb-4">
 					<h2 className="font-semibold text-foreground mb-4 text-sm flex items-center gap-2">
-						<span className="w-5 h-5 rounded-full bg-teal-600 text-white text-xs flex items-center justify-center">
+						<span className="w-5 h-5 rounded-full bg-brand-600 text-white text-xs flex items-center justify-center">
 							2
 						</span>
 						기술스택
-						<span className="text-xs font-normal text-teal-600">★ 신규</span>
+						<span className="text-xs font-normal text-brand-600">★ 신규</span>
 					</h2>
 
 					{/* 선택된 스킬 태그 */}
@@ -221,13 +221,13 @@ export default function EmployeeFormPage(): React.ReactNode {
 						{skills.map((skill) => (
 							<span
 								key={skill}
-								className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 text-sm font-medium"
+								className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-sm font-medium"
 							>
 								{skill}
 								<Button
 									variant="ghost"
 									size="icon-xs"
-									className="rounded-full hover:bg-teal-200/50 dark:hover:bg-teal-800/50 hover:text-teal-900 dark:hover:text-teal-100"
+									className="rounded-full hover:bg-brand-200/50 dark:hover:bg-brand-800/50 hover:text-brand-900 dark:hover:text-brand-100"
 									onClick={() => handleRemoveSkill(skill)}
 								>
 									<X />
@@ -247,7 +247,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 									handleAddSkill();
 								}
 							}}
-							className="flex-1 h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-teal-500 focus-visible:ring-teal-500/20"
+							className="flex-1 h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 							placeholder="기술스택 직접 입력..."
 						/>
 						<Button
@@ -266,7 +266,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 							{skillSuggestions.map((skill) => (
 								<button
 									key={skill}
-									className="px-2.5 py-1 text-xs border rounded-full hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-500 dark:hover:text-teal-400 transition-colors text-muted-foreground border-slate-300 dark:border-slate-600"
+									className="px-2.5 py-1 text-xs border rounded-full hover:border-brand-400 hover:text-brand-600 dark:hover:border-brand-500 dark:hover:text-brand-400 transition-colors text-muted-foreground border-slate-300 dark:border-slate-600"
 									onClick={() => handleAddSuggestedSkill(skill)}
 								>
 									+ {skill}

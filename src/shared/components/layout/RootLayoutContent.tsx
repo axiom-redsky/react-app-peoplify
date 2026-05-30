@@ -11,7 +11,7 @@ export default function RootLayoutContent(): React.ReactNode {
 
 	// Layout 구조는 프로젝트 상황에 따라 변경하여 사용합니다.
 	return (
-		<div className="min-h-screen xl:flex bg-gray-50 dark:bg-gray-950">
+		<div className="min-h-screen xl:flex bg-background">
 			<div>
 				<AppSidebar />
 				<Backdrop />

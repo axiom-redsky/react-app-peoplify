@@ -74,7 +74,7 @@ export default function ReportPage(): React.ReactNode {
 					<button
 						key={f}
 						className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
-							idx === 0 ? 'bg-teal-600 text-white' : 'bg-card border text-muted-foreground hover:bg-muted'
+							idx === 0 ? 'bg-brand-600 text-white' : 'bg-card border text-muted-foreground hover:bg-muted'
 						}`}
 					>
 						{f}
@@ -94,11 +94,11 @@ export default function ReportPage(): React.ReactNode {
 								<div key={proj.name}>
 									<div className="flex justify-between text-sm mb-1">
 										<span className="text-foreground">{proj.name}</span>
-										<span className="font-semibold text-teal-600">{proj.count}명</span>
+										<span className="font-semibold text-brand-600">{proj.count}명</span>
 									</div>
 									<div className="w-full h-2 bg-muted rounded-full overflow-hidden">
 										<div
-											className="h-full bg-teal-500 rounded-full transition-all"
+											className="h-full bg-brand-500 rounded-full transition-all"
 											style={{ width: `${pct}%` }}
 										/>
 									</div>
@@ -117,9 +117,9 @@ export default function ReportPage(): React.ReactNode {
 								key={m.month}
 								className="flex-1 flex flex-col items-center gap-1"
 							>
-								<span className="text-xs font-semibold text-teal-600">{m.rate}%</span>
+								<span className="text-xs font-semibold text-brand-600">{m.rate}%</span>
 								<div
-									className="w-full bg-teal-500 rounded-t-md transition-all hover:bg-teal-600"
+									className="w-full bg-brand-500 rounded-t-md transition-all hover:bg-brand-600"
 									style={{ height: `${(m.rate / 100) * 96}px` }}
 								/>
 								<span className="text-xs text-muted-foreground">{m.month}</span>
@@ -158,7 +158,7 @@ export default function ReportPage(): React.ReactNode {
 								<td className="py-2.5 px-4 text-foreground">{m.project}</td>
 								<td className="py-2.5 px-4">
 									{m.role !== '—' ? (
-										<span className="px-2 py-0.5 rounded text-xs bg-teal-50 text-teal-700 font-medium">{m.role}</span>
+										<span className="px-2 py-0.5 rounded text-xs bg-brand-50 text-brand-700 font-medium">{m.role}</span>
 									) : (
 										<span className="text-muted-foreground">—</span>
 									)}

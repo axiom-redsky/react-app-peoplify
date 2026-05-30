@@ -36,11 +36,11 @@ const AppHeader: React.FC = () => {
 	}, []);
 
 	return (
-		<header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900">
+		<header className="sticky top-0 flex w-full bg-card border-b border-border z-99999">
 			<div className="flex items-center justify-between w-full gap-2 px-3 py-3 sm:gap-4 lg:px-6 lg:py-4">
 				{/* 사이드바 토글 버튼 */}
 				<button
-					className="flex shrink-0 items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
+					className="flex shrink-0 items-center justify-center w-10 h-10 lg:h-11 lg:w-11 rounded-lg bg-card text-gray-500 shadow-[0_2px_4px_rgba(169,184,200,0.25)] hover:bg-accent dark:text-white dark:shadow-[0_2px_3px_#1a1a2f] transition-colors"
 					onClick={handleToggle}
 					aria-label="Toggle Sidebar"
 				>
@@ -119,7 +119,7 @@ const AppHeader: React.FC = () => {
 								ref={inputRef}
 								type="text"
 								placeholder="Search or type command..."
-								className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
+								className="h-11 w-full rounded-lg border border-border bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:bg-white/5 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[430px]"
 							/>
 							<button className="absolute right-2.5 top-1/2 inline-flex -translate-y-1/2 items-center gap-0.5 rounded-lg border border-gray-200 bg-gray-50 px-[7px] py-[4.5px] text-xs -tracking-[0.2px] text-gray-500 dark:border-gray-800 dark:bg-white/3 dark:text-gray-400">
 								<span> ⌘ </span>

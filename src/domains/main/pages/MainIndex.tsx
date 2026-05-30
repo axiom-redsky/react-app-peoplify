@@ -52,11 +52,11 @@ const kpiCards = [
 		sub: '재직 중',
 		icon: Users,
 		trend: '+2',
-		iconBg: 'bg-teal-500/15',
-		iconColor: 'text-teal-400',
-		accent: 'from-teal-500/20 to-transparent',
-		ring: 'ring-teal-500/20',
-		border: 'border-t-teal-500',
+		iconBg: 'bg-indigo-500/15',
+		iconColor: 'text-indigo-500 dark:text-indigo-400',
+		accent: 'from-indigo-500/20 to-transparent',
+		ring: 'ring-indigo-500/20',
+		border: 'border-t-indigo-500',
 	},
 	{
 		label: '투입 중',
@@ -66,7 +66,7 @@ const kpiCards = [
 		icon: UserCheck,
 		trend: '81%',
 		iconBg: 'bg-emerald-500/15',
-		iconColor: 'text-emerald-400',
+		iconColor: 'text-emerald-500 dark:text-emerald-400',
 		accent: 'from-emerald-500/20 to-transparent',
 		ring: 'ring-emerald-500/20',
 		border: 'border-t-emerald-500',
@@ -79,7 +79,7 @@ const kpiCards = [
 		icon: Users,
 		trend: '19%',
 		iconBg: 'bg-amber-500/15',
-		iconColor: 'text-amber-400',
+		iconColor: 'text-amber-500 dark:text-amber-400',
 		accent: 'from-amber-500/20 to-transparent',
 		ring: 'ring-amber-500/20',
 		border: 'border-t-amber-500',
@@ -92,7 +92,7 @@ const kpiCards = [
 		icon: FolderKanban,
 		trend: '3 건',
 		iconBg: 'bg-sky-500/15',
-		iconColor: 'text-sky-400',
+		iconColor: 'text-sky-500 dark:text-sky-400',
 		accent: 'from-sky-500/20 to-transparent',
 		ring: 'ring-sky-500/20',
 		border: 'border-t-sky-500',
@@ -177,7 +177,7 @@ export default function MainIndex(): React.ReactNode {
 						<div
 							key={card.label}
 							className={cn(
-								'relative bg-card rounded-2xl border border-t-2 p-5 overflow-hidden',
+								'relative bg-card rounded-xl border border-t-2 p-5 overflow-hidden',
 								'ring-1 transition-shadow hover:shadow-lg',
 								card.border,
 								card.ring,
@@ -223,7 +223,7 @@ export default function MainIndex(): React.ReactNode {
 			{!isPending && !error && (
 				<div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 					{/* 진행 중 프로젝트 */}
-					<div className="lg:col-span-2 bg-card rounded-2xl border p-5">
+					<div className="lg:col-span-2 bg-card rounded-xl border p-5">
 						<div className="flex items-center justify-between mb-4">
 							<h2 className="font-semibold text-foreground">진행 중 프로젝트</h2>
 							<span className="text-xs text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
@@ -258,7 +258,7 @@ export default function MainIndex(): React.ReactNode {
 											{proj.tech_stack.slice(0, 3).map((tech) => (
 												<span
 													key={tech}
-													className="text-[10px] px-1.5 py-0.5 bg-sky-500/10 text-sky-400 rounded"
+													className="text-[10px] px-1.5 py-0.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded"
 												>
 													{tech}
 												</span>
@@ -286,7 +286,7 @@ export default function MainIndex(): React.ReactNode {
 					{/* 우측 사이드 */}
 					<div className="space-y-4">
 						{/* 벤치 인원 현황 */}
-						<div className="bg-card rounded-2xl border p-5">
+						<div className="bg-card rounded-xl border p-5">
 							<div className="flex items-center justify-between mb-4">
 								<h2 className="font-semibold text-foreground">벤치 인원 현황</h2>
 								<span className="text-xs font-medium text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full">
@@ -328,7 +328,7 @@ export default function MainIndex(): React.ReactNode {
 						</div>
 
 						{/* 철수 임박 알림 */}
-						<div className="bg-card rounded-2xl border border-orange-500/20 p-5 ring-1 ring-orange-500/10">
+						<div className="bg-card rounded-xl border border-orange-500/20 p-5 ring-1 ring-orange-500/10">
 							<div className="flex items-center gap-2.5 mb-4">
 								<div className="p-1.5 rounded-lg bg-orange-500/15">
 									<AlertTriangle className="w-4 h-4 text-orange-400" />

@@ -178,11 +178,11 @@ export default function ProjectDetailPage(): React.ReactNode {
 						<div>
 							<div className="flex justify-between text-sm mb-1">
 								<span className="text-muted-foreground">현재 진척도</span>
-								<span className="font-semibold text-teal-600">{project.progress_pct}%</span>
+								<span className="font-semibold text-brand-600">{project.progress_pct}%</span>
 							</div>
 							<div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
 								<div
-									className="h-full bg-teal-500 rounded-full transition-all duration-300"
+									className="h-full bg-brand-500 rounded-full transition-all duration-300"
 									style={{ width: `${project.progress_pct}%` }}
 								/>
 							</div>
@@ -201,7 +201,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 							key={tab}
 							className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
 								idx === 1
-									? 'border-teal-600 text-teal-600'
+									? 'border-brand-600 text-brand-600'
 									: 'border-transparent text-muted-foreground hover:text-foreground'
 							}`}
 						>
@@ -235,14 +235,14 @@ export default function ProjectDetailPage(): React.ReactNode {
 								>
 									<td className="py-2.5 px-4">
 										<div className="flex items-center gap-2">
-											<div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-xs">
+											<div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-semibold text-xs">
 												{m.name[0]}
 											</div>
 											<span className="font-medium text-foreground">{m.name}</span>
 										</div>
 									</td>
 									<td className="py-2.5 px-4">
-										<span className="px-2 py-0.5 rounded text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium">
+										<span className="px-2 py-0.5 rounded text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium">
 											{m.role}
 										</span>
 									</td>
