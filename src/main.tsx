@@ -3,6 +3,9 @@ import { AppProviders } from '@/core/providers/AppProviders.tsx';
 import App from './App.tsx';
 import './assets/styles/app.css';
 import { initApiConfig } from '@/core/api/api-config';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+dayjs.locale('ko');
 
 // 앱에서 REST API 호출용 API 설정(전역에 저장된 : window.__MF_APP_CONFIG__) =============================
 const apiConfig = {
