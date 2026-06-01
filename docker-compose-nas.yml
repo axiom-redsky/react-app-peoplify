@@ -8,6 +8,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: peoplify
       POSTGRES_DB: peoplify
+    ports:
+      - "5433:5432"   # 로컬 개발 PC에서 NAS DB 접속용 (호스트 5432는 네이티브 PG가 점유)
     volumes:
       - ./postgres:/var/lib/postgresql/data
 
