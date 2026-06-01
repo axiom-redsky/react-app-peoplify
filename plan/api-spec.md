@@ -499,6 +499,286 @@ KPI 4종 집계.
 
 ---
 
+## 월별 근무 보고 (Work Reports)
+
+> 모든 엔드포인트 **인증 필요**
+> `users`와 `employees`가 분리되어 있어, "내" 화면은 `employee_id`를 명시적으로 전달한다.
+> 상태값: `submitted`(제출) · `approved`(승인) · `none`(미제출, 팀 현황에서만 사용)
+
+### GET `/api/work-reports`
+특정 직원의 월별 보고 이력 (최근순).
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `employee_id` | number | **필수**. 대상 직원 |
+| `year` | number | 연도 필터 (선택) |
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 4,
+      "employee_id": 1,
+      "year": 2026,
+      "month": 5,
+      "work_days": 22,
+      "overtime_hours": 8,
+      "note": null,
+      "status": "submitted",
+      "submitted_at": "2026-05-20T00:00:00.000Z",
+      "approved_at": null
+    }
+  ]
+}
+```
+
+---
+
+### GET `/api/work-reports/team`
+팀 보고 현황 (Manager 뷰). 재직(`active`) 직원 전체를 기준으로 해당 월 보고를 LEFT JOIN 하며, 보고가 없으면 `status: "none"`(미제출).
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `year` | number | **필수** |
+| `month` | number | **필수** (1~12) |
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "employee_id": 1,
+      "employee_name": "김민준",
+      "department": "개발팀",
+      "report_id": 4,
+      "work_days": 22,
+      "overtime_hours": 8,
+      "status": "submitted"
+    },
+    {
+      "employee_id": 3,
+      "employee_name": "박지훈",
+      "department": "개발팀",
+      "report_id": null,
+      "work_days": null,
+      "overtime_hours": null,
+      "status": "none"
+    }
+  ]
+}
+```
+
+---
+
+### POST `/api/work-reports`
+보고 제출. 동일 `employee_id + year + month` 가 있으면 **덮어쓰기(upsert)** 되며 `status`는 `submitted`로 초기화된다.
+
+**Request Body**
+```json
+{
+  "employee_id": 1,
+  "year": 2026,
+  "month": 5,
+  "work_days": 22,
+  "overtime_hours": 8,
+  "note": "현장 특이사항"
+}
+```
+
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `employee_id` | ✅ | |
+| `year` | ✅ | |
+| `month` | ✅ | 1~12 |
+| `work_days` | ✅ | 근무일수 |
+| `overtime_hours` | | 기본값 `0` |
+| `note` | | 현장 특이사항 |
+
+**Response** `201`
+```json
+{ "success": true, "data": { "id": 4, "employee_id": 1, "year": 2026, "month": 5, "status": "submitted", ... } }
+```
+
+---
+
+### PATCH `/api/work-reports/:id/status`
+보고 승인/승인취소 (Manager).
+
+**Request Body**
+```json
+{ "status": "approved" }
+```
+
+| 값 | 설명 |
+|----|------|
+| `approved` | 승인 (`approved_at` 자동 기록) |
+| `submitted` | 승인 취소 (제출 상태로 되돌림) |
+
+**Response**
+```json
+{ "success": true, "data": { ...수정된 보고 } }
+```
+
+---
+
+### POST `/api/work-reports/notify`
+해당 월 미제출자에게 알림 발송 (데모: 대상자 집계 후 반환).
+
+**Request Body**
+```json
+{ "year": 2026, "month": 5 }
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "message": "미제출자 2명에게 알림을 발송했습니다.",
+  "data": [
+    { "employee_id": 3, "employee_name": "박지훈" }
+  ]
+}
+```
+
+---
+
+## 휴가 관리 (Leaves)
+
+> 모든 엔드포인트 **인증 필요**
+> 휴가 종류(`type`): `annual`(연차) · `half_day_am`(반차-오전) · `half_day_pm`(반차-오후) · `sick`(병가) · `bereavement`(경조사)
+> 상태(`status`): `pending`(승인대기) · `approved`(승인) · `rejected`(반려)
+> 연차 잔여 차감 대상은 `annual` · `half_day_am` · `half_day_pm` 이며 `sick` · `bereavement`는 제외된다.
+
+### GET `/api/leaves`
+특정 직원의 휴가 신청 내역 (최근순).
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `employee_id` | number | **필수** |
+| `status` | string | 상태 필터 (선택) |
+| `year` | number | 시작일 기준 연도 필터 (선택) |
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 5,
+      "employee_id": 1,
+      "type": "annual",
+      "start_date": "2026-05-28",
+      "end_date": "2026-05-28",
+      "days": "1.0",
+      "reason": "연차 사용",
+      "status": "pending"
+    }
+  ]
+}
+```
+
+---
+
+### GET `/api/leaves/balance`
+연차 현황 (총부여/사용/잔여/신청중).
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `employee_id` | number | **필수** |
+| `year` | number | 기본값: 올해 |
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "year": 2026,
+    "total_days": 15,
+    "used_days": 6,
+    "pending_days": 1,
+    "remaining_days": 9
+  }
+}
+```
+- `used_days`: `approved` + 연차 차감 대상 휴가 일수 합계
+- `pending_days`: `pending` + 연차 차감 대상 휴가 일수 합계 (신청중)
+- `remaining_days`: `total_days - used_days` (신청중은 미차감)
+
+---
+
+### POST `/api/leaves`
+휴가 신청. 신청 시 `status`는 항상 `pending`.
+
+**Request Body**
+```json
+{
+  "employee_id": 1,
+  "type": "annual",
+  "start_date": "2026-06-10",
+  "end_date": "2026-06-11",
+  "reason": "개인 사유"
+}
+```
+
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `employee_id` | ✅ | |
+| `type` | ✅ | 휴가 종류 |
+| `start_date` | ✅ | |
+| `end_date` | | 미입력 시 `start_date`와 동일 |
+| `days` | | 미입력 시 자동 계산 (반차 `0.5`, 그 외 기간 일수) |
+| `reason` | | 사유 |
+
+**Response** `201`
+```json
+{ "success": true, "data": { "id": 6, "employee_id": 1, "type": "annual", "days": "2.0", "status": "pending", ... } }
+```
+
+---
+
+### PATCH `/api/leaves/:id/status`
+휴가 승인/반려 (Manager).
+
+**Request Body**
+```json
+{ "status": "approved" }
+```
+
+| 값 | 설명 |
+|----|------|
+| `approved` | 승인 |
+| `rejected` | 반려 |
+
+**Response**
+```json
+{ "success": true, "data": { ...수정된 휴가 } }
+```
+
+---
+
+### DELETE `/api/leaves/:id`
+휴가 신청 취소. **승인 대기(`pending`) 상태만** 취소 가능 (행 삭제).
+
+**Response**
+```json
+{ "success": true, "message": "휴가 신청이 취소되었습니다." }
+```
+
+승인/반려된 신청을 취소 시도하면 `400`.
+
+---
+
 ## 헬스체크
 
 ### GET `/api/health`

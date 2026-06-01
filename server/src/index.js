@@ -7,6 +7,8 @@ const dashboardRouter = require('./routes/dashboard');
 const employeesRouter = require('./routes/employees');
 const projectsRouter = require('./routes/projects');
 const assignmentsRouter = require('./routes/assignments');
+const workReportsRouter = require('./routes/workReports');
+const leavesRouter = require('./routes/leaves');
 
 const authMiddleware = require('./middleware/authMiddleware');
 const errorHandler = require('./middleware/errorHandler');
@@ -28,6 +30,8 @@ app.use('/api/dashboard', authMiddleware, dashboardRouter);
 app.use('/api/employees', authMiddleware, employeesRouter);
 app.use('/api/projects', authMiddleware, projectsRouter);
 app.use('/api/assignments', authMiddleware, assignmentsRouter);
+app.use('/api/work-reports', authMiddleware, workReportsRouter);
+app.use('/api/leaves', authMiddleware, leavesRouter);
 
 // ── 헬스체크 ──────────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
