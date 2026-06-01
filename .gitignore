@@ -25,3 +25,7 @@ dist-ssr
 
 *storybook.log
 storybook-static
+
+# PostgreSQL bind-mount data (NAS) — 절대 커밋 금지
+/postgres/
+docker-compose.yml.bak
