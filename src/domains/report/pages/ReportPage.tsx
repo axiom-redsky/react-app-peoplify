@@ -163,7 +163,7 @@ export default function ReportPage(): React.ReactNode {
 										<span className="text-muted-foreground">—</span>
 									)}
 								</td>
-								<td className="py-2.5 px-4 font-medium">{m.rate}</td>
+								<td className="py-2.5 px-4 font-medium text-muted-foreground">{m.rate}</td>
 								<td className="py-2.5 px-4 text-muted-foreground">{m.period}</td>
 								<td className="py-2.5 px-4">
 									<span
