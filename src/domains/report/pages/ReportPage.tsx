@@ -4,15 +4,6 @@ import { Download, FileSpreadsheet } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
 import dayjs from 'dayjs';
 
-const monthlyRates = [
-	{ month: '1월', rate: 70 },
-	{ month: '2월', rate: 78 },
-	{ month: '3월', rate: 82 },
-	{ month: '4월', rate: 80 },
-	{ month: '5월', rate: 85 },
-	{ month: '6월', rate: 81 },
-];
-
 const memberSummary = [
 	{
 		name: '김민준',
@@ -44,11 +35,24 @@ type TProjectDeployment = {
 	deployed_count: number;
 };
 
+type TDeploymentTrend = {
+	year: string;
+	month: string;
+	deployed: string;
+	total: string;
+	rate: string;
+};
+
 export default function ReportPage(): React.ReactNode {
 	const { data } = useApi<{
 		data: { year: number; month: number; projects: TProjectDeployment[] };
 		success: boolean;
 	}>('/api/reports/project-deployment');
+	const {
+		data: trendData,
+		isPending,
+		error,
+	} = useApi<{ data: TDeploymentTrend[]; success: boolean }>('/api/reports/deployment-trend');
 
 	const projectStats = data?.data?.projects ?? [
 		{ name: 'A금융 차세대', deployed_count: 0, id: 0, status: '' },
@@ -69,6 +73,10 @@ export default function ReportPage(): React.ReactNode {
 			return null;
 		}
 	};
+
+	const trend = trendData?.data ?? [];
+	const maxRate = Math.max(...trend.map((m) => Number(m.rate)), 1);
+	const avgRate = trend.length ? Math.round(trend.reduce((sum, m) => sum + Number(m.rate), 0) / trend.length) : null;
 
 	return (
 		<div className="p-5">
@@ -159,22 +167,63 @@ export default function ReportPage(): React.ReactNode {
 				</div>
 
 				{/* 투입률 추이 */}
-				<div className="bg-card rounded-xl border p-4">
-					<h2 className="font-semibold text-foreground mb-4 text-sm">투입률 추이 (월별)</h2>
-					<div className="flex items-end justify-around gap-2 h-32">
-						{monthlyRates.map((m) => (
-							<div
-								key={m.month}
-								className="flex-1 flex flex-col items-center gap-1"
-							>
-								<span className="text-xs font-semibold text-brand-600">{m.rate}%</span>
-								<div
-									className="w-full bg-brand-500 rounded-t-md transition-all hover:bg-brand-600"
-									style={{ height: `${(m.rate / 100) * 96}px` }}
-								/>
-								<span className="text-xs text-muted-foreground">{m.month}</span>
+				<div className="bg-card rounded-xl border p-5">
+					<div className="flex items-center justify-between mb-5">
+						<h2 className="font-semibold text-foreground text-sm">투입률 추이 (월별)</h2>
+						{avgRate !== null && (
+							<span className="rounded-md bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">평균 {avgRate}%</span>
+						)}
+					</div>
+					<div>
+						{/* 막대 영역 */}
+						<div className="relative flex h-40 items-end justify-around gap-2">
+							{/* 기준선 */}
+							<div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
+								{[0, 1, 2, 3, 4].map((i) => (
+									<div
+										key={i}
+										className={i === 4 ? 'border-t border-border' : 'border-t border-dashed border-border/40'}
+									/>
+								))}
 							</div>
-						))}
+							{trend.map((m: TDeploymentTrend) => {
+								const rate = Number(m.rate);
+								const isMax = rate === maxRate;
+								return (
+									<div
+										key={`${m.year}-${m.month}`}
+										className="group relative flex h-full flex-1 flex-col items-center justify-end"
+									>
+										<span
+											className={`mb-1.5 text-xs font-bold tabular-nums transition-colors ${
+												isMax ? 'text-brand-500' : 'text-muted-foreground group-hover:text-foreground'
+											}`}
+										>
+											{rate}%
+										</span>
+										<div
+											className={`w-full max-w-10 rounded-t-md transition-all duration-500 ease-out ${
+												isMax
+													? 'bg-linear-to-t from-brand-600 to-brand-300 shadow-lg shadow-brand-500/30'
+													: 'bg-linear-to-t from-brand-600/70 to-brand-400/70 group-hover:from-brand-600 group-hover:to-brand-400'
+											}`}
+											style={{ height: `${rate}%` }}
+										/>
+									</div>
+								);
+							})}
+						</div>
+						{/* 월 라벨 */}
+						<div className="mt-2 flex justify-around gap-2">
+							{trend.map((m: TDeploymentTrend) => (
+								<span
+									key={`${m.year}-${m.month}-label`}
+									className="flex-1 text-center text-xs text-muted-foreground"
+								>
+									{`${m.month}월`}
+								</span>
+							))}
+						</div>
 					</div>
 				</div>
 			</div>
