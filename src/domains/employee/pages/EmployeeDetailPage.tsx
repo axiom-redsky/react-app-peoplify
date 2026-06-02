@@ -138,7 +138,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => $router.push(`/employees/${employee.id}/edit`)}
+							onClick={() => $router.push(`/employee/employee-edit/${employee.id}`)}
 						>
 							<Edit className="w-4 h-4 mr-1.5" />
 							수정
@@ -273,7 +273,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 				>
 					목록으로
 				</Button>
-				<Button onClick={() => $router.push(`/employees/${employee.id}/edit`)}>수정</Button>
+				<Button onClick={() => $router.push(`/employee/employee-edit/${employee.id}`)}>수정</Button>
 			</div>
 		</div>
 	);
