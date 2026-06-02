@@ -1,14 +1,8 @@
-import { Button } from '@axiom/components/ui';
+import { Button, Card, CardHeader, CardTitle, CardContent, CardDescription } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Download, FileSpreadsheet } from 'lucide-react';
-
-const projectStats = [
-	{ name: 'A금융 차세대', count: 7 },
-	{ name: 'B공공 ERP', count: 5 },
-	{ name: 'C제조 MES', count: 8 },
-	{ name: 'D유통 (예정)', count: 0 },
-	{ name: 'E통신 (완료)', count: 6 },
-];
+import { useApi } from '@axiom/hooks';
+import dayjs from 'dayjs';
 
 const monthlyRates = [
 	{ month: '1월', rate: 70 },
@@ -43,7 +37,39 @@ const memberSummary = [
 
 const periodFilters = ['이번달', '지난달', '분기', '연도', '직접입력'];
 
+type TProjectDeployment = {
+	id: number;
+	name: string;
+	status: string;
+	deployed_count: number;
+};
+
 export default function ReportPage(): React.ReactNode {
+	const { data } = useApi<{
+		data: { year: number; month: number; projects: TProjectDeployment[] };
+		success: boolean;
+	}>('/api/reports/project-deployment');
+
+	const projectStats = data?.data?.projects ?? [
+		{ name: 'A금융 차세대', deployed_count: 0, id: 0, status: '' },
+		{ name: 'B공공 ERP', deployed_count: 0, id: 0, status: '' },
+		{ name: 'C제조 MES', deployed_count: 0, id: 0, status: '' },
+		{ name: 'D유통 (예정)', deployed_count: 0, id: 0, status: '' },
+		{ name: 'E통신 (완료)', deployed_count: 0, id: 0, status: '' },
+	];
+
+	const projStatusBadge = (status: string): { label: string; cls: string } | null => {
+		if (status === 'complete') {
+			return { label: '완료', cls: 'bg-muted text-muted-foreground' };
+		} else if (status === 'active') {
+			return { label: '진행중', cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' };
+		} else if (status === 'planned') {
+			return { label: '예정', cls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' };
+		} else {
+			return null;
+		}
+	};
+
 	return (
 		<div className="p-5">
 			<PageHeader
@@ -84,27 +110,51 @@ export default function ReportPage(): React.ReactNode {
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 				{/* 프로젝트별 투입 인원 */}
-				<div className="bg-card rounded-xl border p-4">
-					<h2 className="font-semibold text-foreground mb-4 text-sm">프로젝트별 투입 인원 (5월)</h2>
-					<div className="space-y-3">
-						{projectStats.map((proj) => {
-							const max = Math.max(...projectStats.map((p) => p.count));
-							const pct = max > 0 ? (proj.count / max) * 100 : 0;
-							return (
-								<div key={proj.name}>
-									<div className="flex justify-between text-sm mb-1">
-										<span className="text-foreground">{proj.name}</span>
-										<span className="font-semibold text-brand-600">{proj.count}명</span>
+				<div className="bg-card rounded-xl border p-5">
+					<div className="flex items-center justify-between mb-5">
+						<h2 className="font-semibold text-foreground text-sm">프로젝트별 투입 인원</h2>
+						<span className="rounded-md bg-muted/60 px-2 py-0.5 text-xs text-muted-foreground">
+							{dayjs().format('M월 기준')}
+						</span>
+					</div>
+					<div className="space-y-4">
+						{[...projectStats]
+							.sort((a, b) => b.deployed_count - a.deployed_count)
+							.map((proj: TProjectDeployment, idx) => {
+								const max = Math.max(...projectStats.map((p) => p.deployed_count), 1);
+								const pct = (proj.deployed_count / max) * 100;
+								const badge = projStatusBadge(proj.status);
+								return (
+									<div
+										key={proj.name}
+										className="group"
+									>
+										<div className="mb-1.5 flex items-center justify-between gap-2">
+											<div className="flex min-w-0 items-center gap-2">
+												<span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-[11px] font-bold text-muted-foreground">
+													{idx + 1}
+												</span>
+												<span className="truncate text-sm text-foreground">{proj.name}</span>
+												{badge && (
+													<span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${badge.cls}`}>
+														{badge.label}
+													</span>
+												)}
+											</div>
+											<span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
+												{proj.deployed_count}
+												<span className="ml-0.5 text-xs font-normal text-muted-foreground">명</span>
+											</span>
+										</div>
+										<div className="relative h-2.5 w-full overflow-hidden rounded-full bg-muted/60">
+											<div
+												className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-brand-600 to-brand-400 transition-all duration-700 ease-out group-hover:from-brand-500 group-hover:to-brand-300"
+												style={{ width: `${pct}%` }}
+											/>
+										</div>
 									</div>
-									<div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-										<div
-											className="h-full bg-brand-500 rounded-full transition-all"
-											style={{ width: `${pct}%` }}
-										/>
-									</div>
-								</div>
-							);
-						})}
+								);
+							})}
 					</div>
 				</div>
 
