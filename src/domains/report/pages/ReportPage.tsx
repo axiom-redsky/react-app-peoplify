@@ -254,13 +254,14 @@ export default function ReportPage(): React.ReactNode {
 								</td>
 								<td className="py-2.5 px-4 font-medium text-muted-foreground">{m.rate_pct}%</td>
 								<td className="py-2.5 px-4 text-muted-foreground">
-									{m.start_date} ~ {m.end_date || '현재'}
+									{dayjs(m.start_date).format('YYYY.MM.DD')} ~{' '}
+									{m.end_date ? dayjs(m.end_date).format('YYYY.MM.DD') : '현재'}
 								</td>
 								<td className="py-2.5 px-4">
 									<span
-										className={`text-xs font-medium ${m.status === '투입중' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}
+										className={`text-xs font-medium ${m.status === 'deployed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}
 									>
-										{m.status}
+										{m.status === 'deployed' ? '투입중' : '미투입(벤치)'}
 									</span>
 								</td>
 							</tr>
