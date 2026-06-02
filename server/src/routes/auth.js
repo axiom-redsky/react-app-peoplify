@@ -26,7 +26,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role, employee_id: user.employee_id },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN },
     );
@@ -35,7 +35,13 @@ router.post('/login', async (req, res, next) => {
       success: true,
       data: {
         token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          employee_id: user.employee_id,
+        },
       },
     });
   } catch (err) {
@@ -52,7 +58,15 @@ router.get('/me', authMiddleware, async (req, res, next) => {
     }
     return res.json({
       success: true,
-      data: { user: { id: user.id, name: user.name, email: user.email, role: user.role } },
+      data: {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          employee_id: user.employee_id,
+        },
+      },
     });
   } catch (err) {
     next(err);

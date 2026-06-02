@@ -1,18 +1,21 @@
 import { useNavigate } from 'react-router';
 import { LogOut, User } from 'lucide-react';
+import { useAuth } from '@axiom/hooks';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/shared/lib/shadcn/ui/dropdown-menu';
 
 const UserDropdown: React.FC = () => {
 	const navigate = useNavigate();
+	const { user, logout } = useAuth();
 
 	const handleLogout = () => {
-		localStorage.removeItem('access_token');
+		logout();
 		navigate('/auth/login');
 	};
 
@@ -28,8 +31,12 @@ const UserDropdown: React.FC = () => {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"
-				className="w-44"
+				className="w-48"
 			>
+				<DropdownMenuLabel className="flex flex-col gap-0.5">
+					<span className="text-sm font-semibold text-foreground">{user?.name ?? '게스트'}</span>
+					{user?.email && <span className="text-xs font-normal text-muted-foreground">{user.email}</span>}
+				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<DropdownMenuItem
 					onClick={handleLogout}

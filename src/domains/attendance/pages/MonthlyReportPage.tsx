@@ -1,7 +1,7 @@
 import { Button, Input } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Bell } from 'lucide-react';
-import { useApi } from '@axiom/hooks';
+import { useApi, useAuth } from '@axiom/hooks';
 
 type TTeamReport = {
 	employee_id: number;
@@ -27,6 +27,8 @@ type TWorkReport = {
 };
 
 export default function MonthlyReportPage(): React.ReactNode {
+	const { user } = useAuth();
+	const employeeId = user?.employee_id ?? null;
 	const currentYear = new Date().getFullYear();
 	const currentMonth = new Date().getMonth() + 1;
 
@@ -38,12 +40,15 @@ export default function MonthlyReportPage(): React.ReactNode {
 	});
 	const { data: reports } = useApi<{ data: TWorkReport[]; success: boolean }>('/api/work-reports', {
 		params: {
-			employee_id: 1, // 실제 구현 시 사용자 ID 로 대체 필요
-			year: 2026, // 실제 구현 시 현재 연도로 대체 필요
+			employee_id: employeeId ?? undefined,
+			year: currentYear,
 		},
+		// 로그인 사용자의 employee_id 가 확보된 경우에만 조회
+		queryOptions: { enabled: employeeId != null },
 	});
 
-	const recentReports = reports?.data?.map((r) => ({
+	// 최근 보고 이력은 최근순 상위 4건만 노출
+	const recentReports = reports?.data?.slice(0, 4).map((r) => ({
 		month: `${r.year}년 ${r.month}월`,
 		summary: `근무 ${r.work_days}일 초과 ${r.overtime_hours}시간`,
 		status: r.status === 'approved' ? '승인' : r.status === 'submitted' ? '승인 대기' : '미제출',

@@ -1,13 +1,13 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { useApi } from '@axiom/hooks';
+import { useApi, useAuth, type AuthUser } from '@axiom/hooks';
 import { Button, Input } from '@axiom/components/ui';
 
 interface LoginResponse {
 	success: boolean;
 	data: {
 		token: string;
-		user: { id: number; name: string; email: string; role: string };
+		user: AuthUser;
 	};
 }
 
@@ -17,6 +17,7 @@ type TLoginRequest = {
 };
 
 export default function LoginPage(): React.ReactNode {
+	const { setUser } = useAuth();
 	const [email, setEmail] = useState('admin@peoplify.com');
 	const [password, setPassword] = useState('password');
 	const [error, setError] = useState('');
@@ -56,9 +57,11 @@ export default function LoginPage(): React.ReactNode {
 	useEffect(() => {
 		if (loginResult?.data?.token) {
 			localStorage.setItem('access_token', loginResult.data.token);
+			// 로그인 응답의 사용자 정보를 전역 상태에 반영 (employee_id 포함)
+			setUser(loginResult.data.user);
 			$router.push('/');
 		}
-	}, [loginResult]);
+	}, [loginResult, setUser]);
 
 	// 로그인 에러 상태 업데이트 (useApi 의 error 객체 사용)
 	useEffect(() => {

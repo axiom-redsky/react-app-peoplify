@@ -8,6 +8,9 @@
 
 ## 인증 (Auth)
 
+> `user.employee_id`: 로그인 사용자와 연결된 직원 ID. "내" 화면(예: 월별 근무 보고)에서 사용한다.
+> 직원과 연결되지 않은 관리 전용 계정은 `null`일 수 있다. (토큰 payload에도 포함됨)
+
 ### POST `/api/auth/login`
 로그인. 토큰 발급.
 
@@ -31,7 +34,8 @@
       "id": 1,
       "name": "관리자",
       "email": "admin@peoplify.com",
-      "role": "admin"
+      "role": "admin",
+      "employee_id": 1
     }
   }
 }
@@ -47,7 +51,7 @@
 {
   "success": true,
   "data": {
-    "user": { "id": 1, "name": "관리자", "email": "admin@peoplify.com", "role": "admin" }
+    "user": { "id": 1, "name": "관리자", "email": "admin@peoplify.com", "role": "admin", "employee_id": 1 }
   }
 }
 ```

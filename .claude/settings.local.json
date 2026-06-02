@@ -19,7 +19,9 @@
       "Read(//d/tmp/**)",
       "Bash(node -e ' *)",
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,1\\)\\)\")",
-      "PowerShell(npm run build:tokens 2>&1)"
+      "PowerShell(npm run build:tokens 2>&1)",
+      "Bash(cd c:/redsky/work/react/peoplify_react && ls -la)",
+      "Read(//c/redsky/work/react/peoplify_react/**)"
     ]
   }
 }
