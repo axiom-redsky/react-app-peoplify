@@ -1,4 +1,4 @@
-import { Button, Card, CardHeader, CardTitle, CardContent, CardDescription } from '@axiom/components/ui';
+import { Button } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Download, FileSpreadsheet } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
@@ -48,11 +48,7 @@ export default function ReportPage(): React.ReactNode {
 		data: { year: number; month: number; projects: TProjectDeployment[] };
 		success: boolean;
 	}>('/api/reports/project-deployment');
-	const {
-		data: trendData,
-		isPending,
-		error,
-	} = useApi<{ data: TDeploymentTrend[]; success: boolean }>('/api/reports/deployment-trend');
+	const { data: trendData } = useApi<{ data: TDeploymentTrend[]; success: boolean }>('/api/reports/deployment-trend');
 
 	const projectStats = data?.data?.projects ?? [
 		{ name: 'A금융 차세대', deployed_count: 0, id: 0, status: '' },
