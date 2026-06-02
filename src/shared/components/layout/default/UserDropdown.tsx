@@ -31,7 +31,7 @@ const UserDropdown: React.FC = () => {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"
-				className="w-48"
+				className="w-48 z-100000"
 			>
 				<DropdownMenuLabel className="flex flex-col gap-0.5">
 					<span className="text-sm font-semibold text-foreground">{user?.name ?? '게스트'}</span>
