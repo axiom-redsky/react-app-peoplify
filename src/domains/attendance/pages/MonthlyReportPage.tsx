@@ -1,23 +1,76 @@
 import { Button, Input } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Bell } from 'lucide-react';
+import { useApi } from '@axiom/hooks';
 
-const teamReports = [
-	{ name: '김민준', workDays: 22, overtime: '8h', status: '제출', action: '승인' },
-	{ name: '이서연', workDays: 22, overtime: '0h', status: '승인', action: '—' },
-	{ name: '박지훈', workDays: null, overtime: null, status: '미제출', action: '알림' },
-	{ name: '최유나', workDays: 20, overtime: '0h', status: '제출', action: '승인' },
-	{ name: '정다은', workDays: 22, overtime: '4h', status: '승인', action: '—' },
-	{ name: '홍길동', workDays: null, overtime: null, status: '미제출', action: '알림' },
-];
+type TTeamReport = {
+	employee_id: number;
+	employee_name: string;
+	department: string;
+	report_id: number | null;
+	work_days: number | null;
+	overtime_hours: number | null;
+	status: 'submitted' | 'none' | 'approved';
+};
 
-const recentReports = [
-	{ month: '2026년 4월', summary: '근무 22일  초과 4시간', status: '승인' },
-	{ month: '2026년 3월', summary: '근무 21일  초과 0시간', status: '승인' },
-	{ month: '2026년 2월', summary: '근무 20일  초과 12시간', status: '승인' },
-];
+type TWorkReport = {
+	id: number;
+	employee_id: number;
+	year: number;
+	month: number;
+	work_days: number;
+	overtime_hours: number;
+	note: string | null;
+	status: 'submitted' | 'none' | 'approved';
+	submitted_at: string;
+	approved_at: string | null;
+};
 
 export default function MonthlyReportPage(): React.ReactNode {
+	const currentYear = new Date().getFullYear();
+	const currentMonth = new Date().getMonth() + 1;
+
+	const { data: teamReports } = useApi<{ data: TTeamReport[]; success: boolean }>('/api/work-reports/team', {
+		params: {
+			year: currentYear,
+			month: currentMonth,
+		},
+	});
+	const { data: reports } = useApi<{ data: TWorkReport[]; success: boolean }>('/api/work-reports', {
+		params: {
+			employee_id: 1, // 실제 구현 시 사용자 ID 로 대체 필요
+			year: 2026, // 실제 구현 시 현재 연도로 대체 필요
+		},
+	});
+
+	const recentReports = reports?.data?.map((r) => ({
+		month: `${r.year}년 ${r.month}월`,
+		summary: `근무 ${r.work_days}일 초과 ${r.overtime_hours}시간`,
+		status: r.status === 'approved' ? '승인' : r.status === 'submitted' ? '승인 대기' : '미제출',
+	}));
+
+	// API 데이터를 UI 로직에 맞게 변환
+	const formattedTeamReports = teamReports?.data?.map((report) => {
+		const statusMap: Record<string, string> = {
+			none: '미제출',
+			submitted: '제출',
+			approved: '승인',
+		};
+
+		const actionMap: Record<string, string> = {
+			none: '알림',
+			submitted: '승인',
+			approved: '—',
+		};
+
+		return {
+			name: report.employee_name,
+			workDays: report.work_days,
+			overtime: report.overtime_hours !== null ? `${report.overtime_hours}h` : '—',
+			status: statusMap[report.status] || '미제출',
+			action: actionMap[report.status] || '알림',
+		};
+	});
 	return (
 		<div className="p-5">
 			<PageHeader title="월별 근무 보고" />
@@ -66,7 +119,7 @@ export default function MonthlyReportPage(): React.ReactNode {
 					<div className="bg-card rounded-xl border p-4">
 						<h3 className="font-semibold text-foreground mb-3 text-sm">최근 보고 이력</h3>
 						<div className="space-y-2">
-							{recentReports.map((r) => (
+							{recentReports?.map((r) => (
 								<div
 									key={r.month}
 									className="flex items-center justify-between py-2 border-b last:border-0"
@@ -108,7 +161,7 @@ export default function MonthlyReportPage(): React.ReactNode {
 								</tr>
 							</thead>
 							<tbody>
-								{teamReports.map((m) => (
+								{formattedTeamReports?.map((m) => (
 									<tr
 										key={m.name}
 										className={`border-t transition-colors ${m.status === '미제출' ? 'bg-red-50/50 dark:bg-red-900/10' : 'hover:bg-muted/20'}`}
