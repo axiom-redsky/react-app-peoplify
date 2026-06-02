@@ -4,27 +4,27 @@ import { Download, FileSpreadsheet } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
 import dayjs from 'dayjs';
 
-const memberSummary = [
-	{
-		name: '김민준',
-		dept: '개발팀',
-		project: 'A금융 차세대',
-		role: 'PL',
-		rate: '100%',
-		period: '25.03~26.09',
-		status: '투입중',
-	},
-	{ name: '이서연', dept: '디자인', project: '벤치', role: '—', rate: '0%', period: '—', status: '벤치' },
-	{
-		name: '박지훈',
-		dept: '마케팅',
-		project: 'C제조 MES',
-		role: '개발',
-		rate: '100%',
-		period: '24.12~26.03',
-		status: '투입중',
-	},
-];
+//const memberSummary = [
+//	{
+//		name: '김민준',
+//		dept: '개발팀',
+//		project: 'A금융 차세대',
+//		role: 'PL',
+//		rate: '100%',
+//		period: '25.03~26.09',
+//		status: '투입중',
+//	},
+//	{ name: '이서연', dept: '디자인', project: '벤치', role: '—', rate: '0%', period: '—', status: '벤치' },
+//	{
+//		name: '박지훈',
+//		dept: '마케팅',
+//		project: 'C제조 MES',
+//		role: '개발',
+//		rate: '100%',
+//		period: '24.12~26.03',
+//		status: '투입중',
+//	},
+//];
 
 const periodFilters = ['이번달', '지난달', '분기', '연도', '직접입력'];
 
@@ -43,12 +43,30 @@ type TDeploymentTrend = {
 	rate: string;
 };
 
+type TMemberSummary = {
+	employee_id: number;
+	employee_name: string;
+	department: string;
+	project_name: string;
+	role: string;
+	rate_pct: number;
+	start_date: string;
+	end_date: string | null;
+	status: string;
+};
+
 export default function ReportPage(): React.ReactNode {
 	const { data } = useApi<{
 		data: { year: number; month: number; projects: TProjectDeployment[] };
 		success: boolean;
 	}>('/api/reports/project-deployment');
 	const { data: trendData } = useApi<{ data: TDeploymentTrend[]; success: boolean }>('/api/reports/deployment-trend');
+	const {
+		data: memberSummaryData,
+		isPending,
+		error,
+	} = useApi<{ data: TMemberSummary[]; success: boolean }>('/api/reports/member-summary');
+	const memberSummary = memberSummaryData?.data;
 
 	const projectStats = data?.data?.projects ?? [
 		{ name: 'A금융 차세대', deployed_count: 0, id: 0, status: '' },
@@ -243,14 +261,14 @@ export default function ReportPage(): React.ReactNode {
 						</tr>
 					</thead>
 					<tbody>
-						{memberSummary.map((m) => (
+						{memberSummary?.map((m) => (
 							<tr
-								key={m.name}
+								key={m.employee_id}
 								className="border-t hover:bg-muted/20 cursor-pointer transition-colors"
 							>
-								<td className="py-2.5 px-4 font-medium text-foreground">{m.name}</td>
-								<td className="py-2.5 px-4 text-muted-foreground">{m.dept}</td>
-								<td className="py-2.5 px-4 text-foreground">{m.project}</td>
+								<td className="py-2.5 px-4 font-medium text-foreground">{m.employee_name}</td>
+								<td className="py-2.5 px-4 text-muted-foreground">{m.department}</td>
+								<td className="py-2.5 px-4 text-foreground">{m.project_name}</td>
 								<td className="py-2.5 px-4">
 									{m.role !== '—' ? (
 										<span className="px-2 py-0.5 rounded text-xs bg-brand-50 text-brand-700 font-medium">{m.role}</span>
@@ -258,8 +276,10 @@ export default function ReportPage(): React.ReactNode {
 										<span className="text-muted-foreground">—</span>
 									)}
 								</td>
-								<td className="py-2.5 px-4 font-medium text-muted-foreground">{m.rate}</td>
-								<td className="py-2.5 px-4 text-muted-foreground">{m.period}</td>
+								<td className="py-2.5 px-4 font-medium text-muted-foreground">{m.rate_pct}%</td>
+								<td className="py-2.5 px-4 text-muted-foreground">
+									{m.start_date} ~ {m.end_date || '현재'}
+								</td>
 								<td className="py-2.5 px-4">
 									<span
 										className={`text-xs font-medium ${m.status === '투입중' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}

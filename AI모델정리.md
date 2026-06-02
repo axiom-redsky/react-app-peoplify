@@ -18,6 +18,7 @@ ollama create qwen3.5-35b-64k -f /dev/shm/Modelfile
 
 
 # 인스턴스 생성 시 시작 스크립트 자동화
+* 2x RTX 3090 vRAM: 48
 * 인스턴스 생성 시 On-start script 입력란에: 인스턴스 뜰 때마다 자동 세팅! (~10분 소요)
 ```
 #!/bin/bash
