@@ -109,7 +109,7 @@ router.get('/member-summary', async (req, res, next) => {
       SELECT DISTINCT ON (e.id)
         e.id          AS employee_id,
         e.name        AS employee_name,
-        e.department,
+        d.name        AS department,
         p.name        AS project_name,
         a.role,
         a.rate_pct,
@@ -117,6 +117,7 @@ router.get('/member-summary', async (req, res, next) => {
         a.end_date,
         CASE WHEN a.id IS NULL THEN 'bench' ELSE 'deployed' END AS status
       FROM employees e
+      LEFT JOIN departments d ON d.id = e.department_id
       LEFT JOIN assignments a
         ON a.employee_id = e.id
         AND a.start_date <= CURRENT_DATE

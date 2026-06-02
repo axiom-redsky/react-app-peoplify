@@ -98,13 +98,14 @@ router.get('/bench-members', async (req, res, next) => {
 
     const benchEmployees = await db('employees')
       .leftJoin('employee_skills', 'employees.id', 'employee_skills.employee_id')
+      .leftJoin('departments', 'employees.department_id', 'departments.id')
       .whereNotIn('employees.id', currentlyDeployedIds)
       .where('employees.employment_status', 'active')
-      .groupBy('employees.id')
+      .groupBy('employees.id', 'departments.name')
       .select(
         'employees.id',
         'employees.name',
-        'employees.department',
+        'departments.name as department',
         'employees.position',
         'employees.hire_date',
         db.raw("ARRAY_REMOVE(ARRAY_AGG(DISTINCT employee_skills.skill), NULL) as skills"),
@@ -123,6 +124,7 @@ router.get('/urgent-withdrawals', async (req, res, next) => {
   try {
     const rows = await db('assignments')
       .join('employees', 'assignments.employee_id', 'employees.id')
+      .leftJoin('departments', 'employees.department_id', 'departments.id')
       .join('projects', 'assignments.project_id', 'projects.id')
       .where('assignments.start_date', '<=', db.raw('CURRENT_DATE'))
       .where(function () {
@@ -137,7 +139,7 @@ router.get('/urgent-withdrawals', async (req, res, next) => {
       .select(
         'employees.id as employee_id',
         'employees.name as employee_name',
-        'employees.department',
+        'departments.name as department',
         'projects.name as project_name',
         'assignments.end_date',
         db.raw('assignments.end_date - CURRENT_DATE as days_remaining'),

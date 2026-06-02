@@ -10,6 +10,8 @@ const assignmentsRouter = require('./routes/assignments');
 const workReportsRouter = require('./routes/workReports');
 const leavesRouter = require('./routes/leaves');
 const reportsRouter = require('./routes/reports');
+const departmentsRouter = require('./routes/departments');
+const commonCodesRouter = require('./routes/commonCodes');
 
 const authMiddleware = require('./middleware/authMiddleware');
 const errorHandler = require('./middleware/errorHandler');
@@ -34,6 +36,8 @@ app.use('/api/assignments', authMiddleware, assignmentsRouter);
 app.use('/api/work-reports', authMiddleware, workReportsRouter);
 app.use('/api/leaves', authMiddleware, leavesRouter);
 app.use('/api/reports', authMiddleware, reportsRouter);
+app.use('/api/departments', authMiddleware, departmentsRouter);
+app.use('/api/common-codes', authMiddleware, commonCodesRouter);
 
 // ── 헬스체크 ──────────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

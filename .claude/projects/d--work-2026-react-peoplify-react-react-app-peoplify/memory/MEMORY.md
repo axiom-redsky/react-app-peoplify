@@ -1,0 +1,1 @@
+- [Common-code SI pattern](common-code-si-pattern.md) — user prefers server-driven 공통코드 API + departments master, not frontend constants

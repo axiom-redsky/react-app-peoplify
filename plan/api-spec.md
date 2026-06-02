@@ -175,11 +175,14 @@ KPI 4종 집계.
 
 | 파라미터 | 타입 | 설명 |
 |----------|------|------|
-| `status` | string | `active` \| `leave` \| `resigned` |
-| `department` | string | 부서명 |
+| `status` | string | `active` \| `leave` \| `resigned` (공통코드 `EMPLOYMENT_STATUS`) |
+| `department` | string | 부서명 (`departments.name`) |
+| `department_id` | number | 부서 ID (`departments.id`) — `department`보다 우선 권장 |
 | `search` | string | 이름 또는 이메일 검색 (부분일치) |
 | `page` | number | 페이지 번호 (기본값: 1) |
 | `limit` | number | 페이지당 건수 (기본값: 20) |
+
+> `department`는 `departments` 마스터로 정규화되어 있다(`employees.department_id` FK). 응답의 `department` 필드는 조인된 부서명이며, 등록/수정 시 `department_id`(권장) 또는 `department`(부서명, 자동 매칭) 중 하나로 전달한다.
 
 **Response**
 ```json
@@ -873,6 +876,206 @@ KPI 4종 집계.
     }
   ]
 }
+```
+
+---
+
+## 부서 (Departments)
+
+> 모든 엔드포인트 **인증 필요**
+> 부서는 조직 마스터(`departments`)로 관리되며 `employees.department_id`가 이를 참조한다(ON DELETE SET NULL).
+
+### GET `/api/departments`
+부서 목록 (`sort_order` → `id` 순).
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `use_yn` | `true` | 사용중(`use_yn=true`)인 부서만 조회 |
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "code": "DEV", "name": "개발팀", "description": null, "sort_order": 1, "use_yn": true }
+  ]
+}
+```
+
+---
+
+### GET `/api/departments/:id`
+부서 상세 + 소속 직원 수.
+
+**Response**
+```json
+{ "success": true, "data": { "id": 1, "code": "DEV", "name": "개발팀", "sort_order": 1, "use_yn": true, "employee_count": 13 } }
+```
+
+---
+
+### POST `/api/departments`
+부서 등록.
+
+**Request Body**
+```json
+{ "code": "INFRA", "name": "인프라팀", "description": "클라우드/인프라", "sort_order": 5, "use_yn": true }
+```
+
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `name` | ✅ | 부서명 (unique) |
+| `code` | | 부서 코드 (unique) |
+| `sort_order` | | 기본값 `0` |
+| `use_yn` | | 기본값 `true` |
+
+**Response** `201` — 생성된 부서. 코드/부서명 중복 시 `409`.
+
+---
+
+### PUT `/api/departments/:id`
+부서 수정.
+
+**Response** — 수정된 부서. 코드/부서명 중복 시 `409`.
+
+---
+
+### DELETE `/api/departments/:id`
+부서 삭제. **소속 직원이 있으면 `400`** (재배정 후 삭제). 없으면 행 삭제.
+
+**Response**
+```json
+{ "success": true, "message": "부서가 삭제되었습니다." }
+```
+
+---
+
+## 공통코드 (Common Codes)
+
+> 모든 엔드포인트 **인증 필요**
+> SI 표준 코드그룹(`common_code_group`) + 코드상세(`common_code`) 구조. 조회는 기본적으로 `use_yn=true`만 반환하며 `?include_disabled=true`로 비활성 포함 가능.
+> 기본 제공 그룹: `EMPLOYMENT_STATUS`(재직상태) · `DEPLOYMENT_STATUS`(투입상태) · `PROJECT_STATUS`(프로젝트상태) · `WORK_REPORT_STATUS`(근무보고상태) · `LEAVE_TYPE`(휴가종류) · `LEAVE_STATUS`(휴가상태)
+
+### GET `/api/common-codes`
+여러 그룹의 코드를 그룹별로 묶어서 반환.
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `groups` | string | 콤마구분 그룹코드 (예: `EMPLOYMENT_STATUS,LEAVE_TYPE`). 미지정 시 전체 그룹 |
+| `include_disabled` | `true` | 비활성(`use_yn=false`) 코드 포함 |
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "EMPLOYMENT_STATUS": [
+      { "id": 1, "group_code": "EMPLOYMENT_STATUS", "code": "active", "code_name": "재직", "sort_order": 1, "use_yn": true, "extra1": null, "extra2": null, "extra3": null }
+    ]
+  }
+}
+```
+
+---
+
+### GET `/api/common-codes/:groupCode`
+단일 그룹의 코드 배열 (`sort_order` 순). 그룹 미존재 시 `404`.
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "group_code": "EMPLOYMENT_STATUS", "code": "active",   "code_name": "재직", "sort_order": 1, "use_yn": true },
+    { "id": 2, "group_code": "EMPLOYMENT_STATUS", "code": "leave",    "code_name": "휴직", "sort_order": 2, "use_yn": true },
+    { "id": 3, "group_code": "EMPLOYMENT_STATUS", "code": "resigned", "code_name": "퇴직", "sort_order": 3, "use_yn": true }
+  ]
+}
+```
+
+---
+
+### GET `/api/common-codes/groups`
+코드그룹 목록.
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    { "group_code": "EMPLOYMENT_STATUS", "group_name": "재직상태", "description": "직원 재직 상태", "use_yn": true }
+  ]
+}
+```
+
+---
+
+### POST `/api/common-codes/groups`
+코드그룹 등록.
+
+**Request Body**
+```json
+{ "group_code": "PRIORITY", "group_name": "우선순위", "description": "업무 우선순위", "use_yn": true }
+```
+
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `group_code` | ✅ | 그룹 코드 (PK, unique) |
+| `group_name` | ✅ | 그룹명 |
+
+**Response** `201`. `group_code` 중복 시 `409`.
+
+---
+
+### PUT `/api/common-codes/groups/:groupCode`
+코드그룹 수정 (`group_name`, `description`, `use_yn`).
+
+---
+
+### DELETE `/api/common-codes/groups/:groupCode`
+코드그룹 삭제. **하위 코드는 CASCADE 삭제**된다.
+
+```json
+{ "success": true, "message": "코드그룹이 삭제되었습니다." }
+```
+
+---
+
+### POST `/api/common-codes`
+코드 등록.
+
+**Request Body**
+```json
+{ "group_code": "EMPLOYMENT_STATUS", "code": "sabbatical", "code_name": "안식휴직", "sort_order": 4, "use_yn": true, "extra1": "#888888" }
+```
+
+| 필드 | 필수 | 설명 |
+|------|------|------|
+| `group_code` | ✅ | 소속 그룹 (존재해야 함, 없으면 `400`) |
+| `code` | ✅ | 코드값 (그룹 내 unique) |
+| `code_name` | ✅ | 코드명 |
+| `sort_order` | | 기본값 `0` |
+| `use_yn` | | 기본값 `true` |
+| `extra1~3` | | 확장 메타(뱃지 색상/아이콘 등) |
+
+**Response** `201`. 그룹 내 `code` 중복 시 `409`.
+
+---
+
+### PUT `/api/common-codes/:id`
+코드 수정 (코드상세 `id` 기준). `code`, `code_name`, `sort_order`, `use_yn`, `extra1~3` 수정 가능. 그룹 내 `code` 중복 시 `409`.
+
+---
+
+### DELETE `/api/common-codes/:id`
+코드 삭제 (코드상세 `id` 기준).
+
+```json
+{ "success": true, "message": "코드가 삭제되었습니다." }
 ```
 
 ---

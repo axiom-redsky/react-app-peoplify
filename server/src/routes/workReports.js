@@ -47,11 +47,12 @@ router.get('/team', async (req, res, next) => {
           .andOn('work_reports.year', '=', db.raw('?', [year]))
           .andOn('work_reports.month', '=', db.raw('?', [month]));
       })
+      .leftJoin('departments', 'employees.department_id', 'departments.id')
       .where('employees.employment_status', 'active')
       .select(
         'employees.id as employee_id',
         'employees.name as employee_name',
-        'employees.department',
+        'departments.name as department',
         'work_reports.id as report_id',
         'work_reports.work_days',
         'work_reports.overtime_hours',

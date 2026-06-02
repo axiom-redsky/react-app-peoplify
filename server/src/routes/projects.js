@@ -43,6 +43,7 @@ router.get('/:id', async (req, res, next) => {
 
     const assignments = await db('assignments')
       .join('employees', 'assignments.employee_id', 'employees.id')
+      .leftJoin('departments', 'employees.department_id', 'departments.id')
       .where('assignments.project_id', project.id)
       .select(
         'assignments.id',
@@ -52,7 +53,7 @@ router.get('/:id', async (req, res, next) => {
         'assignments.end_date',
         'employees.id as employee_id',
         'employees.name as employee_name',
-        'employees.department',
+        'departments.name as department',
         'employees.position',
       )
       .orderBy('assignments.start_date', 'desc');

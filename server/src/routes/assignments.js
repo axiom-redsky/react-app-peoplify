@@ -10,6 +10,7 @@ router.get('/', async (req, res, next) => {
 
     let query = db('assignments')
       .join('employees', 'assignments.employee_id', 'employees.id')
+      .leftJoin('departments', 'employees.department_id', 'departments.id')
       .join('projects', 'assignments.project_id', 'projects.id')
       .select(
         'assignments.id',
@@ -19,7 +20,7 @@ router.get('/', async (req, res, next) => {
         'assignments.end_date',
         'employees.id as employee_id',
         'employees.name as employee_name',
-        'employees.department',
+        'departments.name as department',
         'projects.id as project_id',
         'projects.name as project_name',
         'projects.client',
