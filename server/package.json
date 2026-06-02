@@ -12,6 +12,8 @@
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
     "migrate:nas": "dotenv -e .env.nas -- knex migrate:latest",
+    "migrate:remote": "dotenv -e .env.remote -- knex migrate:latest",
+    "migrate:vultr": "dotenv -e .env.vultr -- knex migrate:latest",
     "seed": "knex seed:run",
     "seed:nas": "dotenv -e .env.nas -- knex seed:run",
     "seed:remote": "dotenv -e .env.remote -- knex seed:run",
