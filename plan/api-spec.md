@@ -783,6 +783,100 @@ KPI 4종 집계.
 
 ---
 
+## 통계 / 리포트 (Reports)
+
+> 모든 엔드포인트 **인증 필요**
+> 통계/리포트 화면(프로젝트별 투입 인원 · 투입률 추이 · 개인별 투입 요약)을 위한 집계 전용 API.
+> "투입 겹침" 판정: `start_date <= 기간끝 AND (end_date IS NULL OR end_date >= 기간시작)`
+
+### GET `/api/reports/project-deployment`
+프로젝트별 투입 인원. 대상 월에 투입이 겹친 직원 수를 프로젝트별로 집계 (모든 상태의 프로젝트 포함).
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `year` | number | 대상 연도 (기본값: 올해) |
+| `month` | number | 대상 월 1~12 (기본값: 이번 달) |
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "year": 2026,
+    "month": 5,
+    "projects": [
+      { "id": 1, "name": "A금융 차세대", "status": "active", "deployed_count": 7 },
+      { "id": 4, "name": "D유통", "status": "planned", "deployed_count": 0 }
+    ]
+  }
+}
+```
+
+---
+
+### GET `/api/reports/deployment-trend`
+월별 투입률 추이. 각 달에 투입이 겹친 직원 수를 재직(`active`) 직원 수로 나눈 백분율.
+
+**Query Parameters**
+
+| 파라미터 | 타입 | 설명 |
+|----------|------|------|
+| `months` | number | 이번 달 포함 직전 N개월 (기본값: `6`, 범위 1~24) |
+
+- `rate`: `ROUND(deployed / total * 100)` (재직자 0명이면 `0`)
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    { "year": 2026, "month": 1, "deployed": 12, "total": 18, "rate": 67 },
+    { "year": 2026, "month": 5, "deployed": 15, "total": 18, "rate": 83 }
+  ]
+}
+```
+
+---
+
+### GET `/api/reports/member-summary`
+개인별 투입 요약. 재직 직원 전체 + 현재 투입 정보(투입률 높은 건 우선, 동률 시 최근 시작일).
+현재 투입이 없으면 `status: "bench"`, 투입 관련 필드는 `null`.
+
+**Response**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "employee_id": 1,
+      "employee_name": "김민준",
+      "department": "개발팀",
+      "project_name": "A금융 차세대",
+      "role": "PL",
+      "rate_pct": 100,
+      "start_date": "2025-03-01",
+      "end_date": "2026-09-30",
+      "status": "deployed"
+    },
+    {
+      "employee_id": 2,
+      "employee_name": "이서연",
+      "department": "디자인",
+      "project_name": null,
+      "role": null,
+      "rate_pct": null,
+      "start_date": null,
+      "end_date": null,
+      "status": "bench"
+    }
+  ]
+}
+```
+
+---
+
 ## 헬스체크
 
 ### GET `/api/health`
