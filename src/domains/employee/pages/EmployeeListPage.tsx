@@ -34,6 +34,18 @@ type TEmployeeListResponse = {
 const EMPLOYEES_ENDPOINT = '/api/employees' as const;
 const PAGE_LIMIT = 10; // 페이지당 표시할 항목 수
 
+type TDepartment = {
+	id: number;
+	name: string;
+};
+
+type TDepartmentListResponse = {
+	success: boolean;
+	data: TDepartment[];
+};
+
+const DEPARTMENTS_ENDPOINT = '/api/departments';
+
 export default function EmployeeListPage(): React.ReactNode {
 	/** 페이지네이션 상태 */
 	const [currentPage, setCurrentPage] = useState<number>(1);
@@ -108,6 +120,11 @@ export default function EmployeeListPage(): React.ReactNode {
 			}
 		};
 	}, []);
+	const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+
+	const { data: deptResponse } = useApi<TDepartmentListResponse>(DEPARTMENTS_ENDPOINT);
+
+	const departments = deptResponse?.data ?? [];
 
 	return (
 		<div className="p-5">
@@ -135,20 +152,32 @@ export default function EmployeeListPage(): React.ReactNode {
 						placeholder="이름 검색..."
 					/>
 				</div>
-				<Select defaultValue="all">
+				<Select
+					value={selectedDepartment}
+					onValueChange={(value) => {
+						setSelectedDepartment(value);
+						setCurrentPage(1);
+						searchTimeoutRef.current = setTimeout(() => {
+							refetch();
+						}, 800);
+					}}
+				>
 					<SelectTrigger
 						size="lg"
 						className="bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
 					>
-						<SelectValue />
+						<SelectValue placeholder="부서 선택" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">부서 전체</SelectItem>
-						<SelectItem value="dev">개발팀</SelectItem>
-						<SelectItem value="design">디자인</SelectItem>
-						<SelectItem value="marketing">마케팅</SelectItem>
-						<SelectItem value="hr">HR</SelectItem>
-						<SelectItem value="sales">영업</SelectItem>
+						{departments.map((dept) => (
+							<SelectItem
+								key={dept.id}
+								value={dept.name}
+							>
+								{dept.name}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 				<Select defaultValue="all">
