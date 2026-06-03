@@ -241,7 +241,7 @@ export default function EmployeeListPage(): React.ReactNode {
 						size="lg"
 						className="bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
 					>
-						<SelectValue />
+						<SelectValue placeholder="투입상태 선택" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">투입상태 전체</SelectItem>
