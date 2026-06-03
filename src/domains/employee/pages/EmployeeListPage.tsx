@@ -46,6 +46,25 @@ type TDepartmentListResponse = {
 
 const DEPARTMENTS_ENDPOINT = '/api/departments';
 
+type TCommonCode = {
+	id: number;
+	group_code: string;
+	code: string;
+	code_name: string;
+	sort_order: number;
+	use_yn: boolean;
+	extra1: string | null;
+	extra2: string | null;
+	extra3: string | null;
+};
+
+type TCommonCodesResponse = {
+	success: boolean;
+	data: {
+		EMPLOYMENT_STATUS: TCommonCode[];
+	};
+};
+
 export default function EmployeeListPage(): React.ReactNode {
 	/** 페이지네이션 상태 */
 	const [currentPage, setCurrentPage] = useState<number>(1);
@@ -123,6 +142,21 @@ export default function EmployeeListPage(): React.ReactNode {
 	const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
 
 	const { data: deptResponse } = useApi<TDepartmentListResponse>(DEPARTMENTS_ENDPOINT);
+	const [selectedStatus, setSelectedStatus] = useState<string>('all');
+	const [employmentStatusCodes, setEmploymentStatusCodes] = useState<TCommonCode[]>([]);
+
+	const { data: commonCodesResponse } = useApi<TCommonCodesResponse>('/api/common-codes', {
+		params: {
+			groups: 'EMPLOYMENT_STATUS',
+			include_disabled: 'true',
+		},
+	});
+
+	useEffect(() => {
+		if (commonCodesResponse?.data?.EMPLOYMENT_STATUS) {
+			setEmploymentStatusCodes(commonCodesResponse.data.EMPLOYMENT_STATUS);
+		}
+	}, [commonCodesResponse]);
 
 	const departments = deptResponse?.data ?? [];
 
@@ -180,18 +214,26 @@ export default function EmployeeListPage(): React.ReactNode {
 						))}
 					</SelectContent>
 				</Select>
-				<Select defaultValue="all">
+				<Select
+					value={selectedStatus}
+					onValueChange={(value) => setSelectedStatus(value)}
+				>
 					<SelectTrigger
 						size="lg"
 						className="bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
 					>
-						<SelectValue />
+						<SelectValue placeholder="재직상태 선택" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">재직상태 전체</SelectItem>
-						<SelectItem value="active">재직</SelectItem>
-						<SelectItem value="leave">휴직</SelectItem>
-						<SelectItem value="resign">퇴직</SelectItem>
+						{employmentStatusCodes.map((code) => (
+							<SelectItem
+								key={code.code}
+								value={code.code}
+							>
+								{code.code_name}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 				<Select defaultValue="all">
