@@ -74,6 +74,8 @@ export default function EmployeeListPage(): React.ReactNode {
 	/** 검색 타이머 ID — Debounce 구현용 */
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+	const [selectedStatus, setSelectedStatus] = useState<string>('all');
+	const [selectedDeployment, setSelectedDeployment] = useState<string>('all');
 
 	/** GET 조회 - 직원 목록 (페이지네이션 + 검색 파라미터 포함) */
 	const {
@@ -88,6 +90,8 @@ export default function EmployeeListPage(): React.ReactNode {
 			limit: PAGE_LIMIT,
 			search: searchQuery || undefined,
 			department: selectedDepartment === 'all' ? undefined : selectedDepartment,
+			status: selectedStatus === 'all' ? undefined : selectedStatus,
+			deployment_status: selectedDeployment === 'all' ? undefined : selectedDeployment,
 		},
 	});
 
@@ -143,7 +147,7 @@ export default function EmployeeListPage(): React.ReactNode {
 
 	const { data: departmentsResponse } = useApi<TDepartmentListResponse>(DEPARTMENTS_ENDPOINT);
 	const departments = departmentsResponse?.data ?? [];
-	const [selectedStatus, setSelectedStatus] = useState<string>('all');
+
 	const [employmentStatusCodes, setEmploymentStatusCodes] = useState<TCommonCode[]>([]);
 
 	const { data: commonCodesResponse } = useApi<TCommonCodesResponse>('/api/common-codes', {
@@ -165,8 +169,6 @@ export default function EmployeeListPage(): React.ReactNode {
 	});
 
 	const deploymentStatuses = deploymentResponse?.data?.DEPLOYMENT_STATUS ?? [];
-
-	const [selectedDeployment, setSelectedDeployment] = useState<string>('all');
 
 	return (
 		<div className="p-5">
@@ -211,7 +213,7 @@ export default function EmployeeListPage(): React.ReactNode {
 						<SelectValue placeholder="부서 선택" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value=" ">부서 전체</SelectItem>
+						<SelectItem value="all">부서 전체</SelectItem>
 						{departments.map((dept) => (
 							<SelectItem
 								key={dept.id}
