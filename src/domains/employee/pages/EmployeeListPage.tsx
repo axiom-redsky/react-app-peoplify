@@ -274,6 +274,9 @@ export default function EmployeeListPage(): React.ReactNode {
 					onClick={() => {
 						setSearchQuery('');
 						setCurrentPage(1);
+						setSelectedDepartment('all');
+						setSelectedStatus('all');
+						setSelectedDeployment('all');
 						refetch();
 					}}
 					className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-lg text-muted-foreground hover:bg-muted transition-colors"
