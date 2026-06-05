@@ -10,7 +10,7 @@ import {
 	Skeleton,
 } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
-//import StatusBadge from '@/shared/components/ui/StatusBadge';
+import StatusEmployBadge from '@/shared/components/ui/StatusEmployBadge';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -375,7 +375,9 @@ export default function EmployeeListPage(): React.ReactNode {
 											<td className="py-3 px-4 text-muted-foreground">{emp.position}</td>
 											<td className="py-3 px-4 text-muted-foreground">{emp.email}</td>
 											<td className="py-3 px-4 text-muted-foreground">{emp.hire_date.split('T')[0]}</td>
-											<td className="py-3 px-4">{/*<StatusBadge status={emp.employment_status} />*/}</td>
+											<td className="py-3 px-4">
+												<StatusEmployBadge status={emp.employment_status} />
+											</td>
 											<td className="py-3 px-4">
 												<Button
 													variant="link"
