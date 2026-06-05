@@ -178,6 +178,7 @@ KPI 4종 집계.
 | `status` | string | `active` \| `leave` \| `resigned` (공통코드 `EMPLOYMENT_STATUS`) |
 | `department` | string | 부서명 (`departments.name`) |
 | `department_id` | number | 부서 ID (`departments.id`) — `department`보다 우선 권장 |
+| `deployment_status` | string | `deployed`(투입중) \| `bench`(벤치) — 공통코드 `DEPLOYMENT_STATUS`. `assignments` 기반 파생값(현재 투입 여부)으로 필터 |
 | `search` | string | 이름 또는 이메일 검색 (부분일치) |
 | `page` | number | 페이지 번호 (기본값: 1) |
 | `limit` | number | 페이지당 건수 (기본값: 20) |

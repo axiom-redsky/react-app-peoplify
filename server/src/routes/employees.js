@@ -22,8 +22,26 @@ async function resolveDepartmentId(body) {
 // GET /api/employees  — 목록 (페이지네이션, 검색)
 router.get('/', async (req, res, next) => {
   try {
-    const { status, department, department_id, search, page = 1, limit = 20 } = req.query;
+    const { status, department, department_id, search, deployment_status, page = 1, limit = 20 } =
+      req.query;
     const offset = (Number(page) - 1) * Number(limit);
+
+    // 현재 투입 중(EXISTS)인지 판정하는 서브쿼리.
+    //   현재 투입 = start_date <= TODAY AND (end_date IS NULL OR end_date >= TODAY)
+    const currentAssignmentExists = (subquery) => {
+      subquery
+        .select(db.raw('1'))
+        .from('assignments')
+        .whereRaw('assignments.employee_id = employees.id')
+        .where('assignments.start_date', '<=', db.raw('CURRENT_DATE'))
+        .where(function () {
+          this.whereNull('assignments.end_date').orWhere(
+            'assignments.end_date',
+            '>=',
+            db.raw('CURRENT_DATE'),
+          );
+        });
+    };
 
     let query = db('employees')
       .leftJoin('departments', 'employees.department_id', 'departments.id')
@@ -31,6 +49,9 @@ router.get('/', async (req, res, next) => {
         if (status) qb.where('employees.employment_status', status);
         if (department_id) qb.where('employees.department_id', department_id);
         if (department) qb.where('departments.name', department);
+        // 투입상태(DEPLOYMENT_STATUS): assignments 기반 파생값
+        if (deployment_status === 'deployed') qb.whereExists(currentAssignmentExists);
+        if (deployment_status === 'bench') qb.whereNotExists(currentAssignmentExists);
         if (search) {
           qb.where(function () {
             this.where('employees.name', 'ilike', `%${search}%`).orWhere(
