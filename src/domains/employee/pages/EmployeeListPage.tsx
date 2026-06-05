@@ -1,5 +1,14 @@
 import { useApi } from '@axiom/hooks';
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
+import {
+	Button,
+	Input,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Skeleton,
+} from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 //import StatusBadge from '@/shared/components/ui/StatusBadge';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, UserPlus } from 'lucide-react';
@@ -289,11 +298,7 @@ export default function EmployeeListPage(): React.ReactNode {
 			{/* 테이블 */}
 			<div className="bg-card rounded-xl border overflow-hidden">
 				{/* 로딩 상태 */}
-				{isPending ? (
-					<div className="p-8 text-center text-muted-foreground">
-						<p>로딩 중…</p>
-					</div>
-				) : error ? (
+				{error ? (
 					<div className="p-8 text-center text-red-600">
 						<p>에러: {error.message}</p>
 						<button
@@ -319,7 +324,40 @@ export default function EmployeeListPage(): React.ReactNode {
 								</tr>
 							</thead>
 							<tbody>
-								{employees.length > 0 ? (
+								{isPending ? (
+									// Skeleton rows
+									Array.from({ length: 10 }).map((_, index) => (
+										<tr
+											key={index}
+											className="border-t"
+										>
+											<td className="py-3 px-4">
+												<div className="flex items-center gap-2">
+													<div className="w-8 h-8 rounded-full bg-muted animate-pulse"></div>
+													<div className="h-4 bg-muted animate-pulse rounded w-20"></div>
+												</div>
+											</td>
+											<td className="py-3 px-4">
+												<div className="h-4 bg-muted animate-pulse rounded w-16"></div>
+											</td>
+											<td className="py-3 px-4">
+												<div className="h-4 bg-muted animate-pulse rounded w-16"></div>
+											</td>
+											<td className="py-3 px-4">
+												<div className="h-4 bg-muted animate-pulse rounded w-24"></div>
+											</td>
+											<td className="py-3 px-4">
+												<div className="h-4 bg-muted animate-pulse rounded w-16"></div>
+											</td>
+											<td className="py-3 px-4">
+												<div className="h-4 bg-muted animate-pulse rounded w-12"></div>
+											</td>
+											<td className="py-3 px-4">
+												<div className="h-4 bg-muted animate-pulse rounded w-16"></div>
+											</td>
+										</tr>
+									))
+								) : employees.length > 0 ? (
 									employees.map((emp: TEmployee) => (
 										<tr
 											key={emp.id}
