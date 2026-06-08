@@ -1,6 +1,15 @@
 import type React from 'react';
-import { useState } from 'react';
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
+import { useState, useRef, useEffect } from 'react';
+import {
+	Button,
+	Input,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Calendar,
+} from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Plus, X } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
@@ -43,6 +52,15 @@ export default function EmployeeFormPage(): React.ReactNode {
 		method: 'POST',
 		type: 'mutation',
 	});
+	const [pickerOpen, setPickerOpen] = useState(false);
+	const pickerRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const h = (e: MouseEvent): void => {
+			if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setPickerOpen(false);
+		};
+		document.addEventListener('mousedown', h);
+		return () => document.removeEventListener('mousedown', h);
+	}, []);
 
 	// 스킬 추가 핸들러
 	const handleAddSkill = (): void => {
@@ -148,12 +166,32 @@ export default function EmployeeFormPage(): React.ReactNode {
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">입사일 *</label>
-							<Input
-								type="date"
-								value={hireDate}
-								onChange={(e) => setHireDate(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
-							/>
+							<div
+								ref={pickerRef}
+								className="relative"
+							>
+								<Button
+									variant="outline"
+									onClick={() => setPickerOpen((v) => !v)}
+									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20 w-full justify-start text-left"
+								>
+									{hireDate || '날짜 선택'}
+								</Button>
+								{pickerOpen && (
+									<Calendar
+										mode="single"
+										selected={hireDate ? new Date(hireDate) : undefined}
+										onSelect={(date) => {
+											if (date) {
+												const formattedDate = date.toISOString().split('T')[0];
+												setHireDate(formattedDate);
+											}
+											setPickerOpen(false);
+										}}
+										className="absolute top-full left-0 z-10 mt-2 bg-popover text-popover-foreground border border-border rounded-md shadow-lg"
+									/>
+								)}
+							</div>
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">부서 *</label>
