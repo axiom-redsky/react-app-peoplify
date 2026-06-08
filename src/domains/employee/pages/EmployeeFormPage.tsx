@@ -14,9 +14,10 @@ import PageHeader from '@/shared/components/ui/PageHeader';
 import { Plus, X } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
 
-const depts = ['개발팀', '디자인', '마케팅', 'HR', '영업', '기획'];
 const grades = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
+
+// 부서 목록 API 호출
 
 type TCreateEmployee = {
 	name: string;
@@ -29,7 +30,13 @@ type TCreateEmployee = {
 	skills?: string[];
 };
 
+type TDepartmentResponse = {
+	data: { id: number; name: string }[];
+	success: boolean;
+};
+
 export default function EmployeeFormPage(): React.ReactNode {
+	const { data: departments } = useApi<TDepartmentResponse>('/api/departments');
 	// 입력 필드 상태 관리
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
@@ -209,12 +216,12 @@ export default function EmployeeFormPage(): React.ReactNode {
 									<SelectValue placeholder="부서 선택" />
 								</SelectTrigger>
 								<SelectContent>
-									{depts.map((d) => (
+									{departments?.data?.map((dept) => (
 										<SelectItem
-											key={d}
-											value={d}
+											key={dept.id}
+											value={dept.name}
 										>
-											{d}
+											{dept.name}
 										</SelectItem>
 									))}
 								</SelectContent>
