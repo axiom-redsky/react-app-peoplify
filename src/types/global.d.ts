@@ -1,12 +1,12 @@
 import type { IRouter } from '@/types/router';
-//import type { IUtils } from '@/types/common';
+import type { IUtils } from '@/types/common';
 //import type { IUI } from '@/types/components';
 import type { ApiLibConfig } from '@/types/api';
 
 declare global {
 	interface Window {
 		$router: IRouter;
-		//$util: IUtils;
+		$util: IUtils;
 		//$ui: IUI;
 		// Tanstack Query Client를 전역 변수로 설정(Devtools Extension 사용 시 필요) =======
 		__TANSTACK_QUERY_CLIENT__: import('@tanstack/query-core').QueryClient;
@@ -14,7 +14,7 @@ declare global {
 	}
 
 	const $router: IRouter;
-	//const $util: IUtils;
+	const $util: IUtils;
 	//const $ui: IUI;
 
 	// Tanstack Query Client를 전역 변수로 설정(Devtools Extension 사용 시 필요) =======
