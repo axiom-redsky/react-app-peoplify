@@ -134,7 +134,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
-								placeholder="name@company.com"
+								placeholder="name@niccompany.co.kr"
 							/>
 						</div>
 						<div>
