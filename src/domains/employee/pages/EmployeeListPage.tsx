@@ -23,7 +23,7 @@ type TEmployee = {
 	department: string;
 	position: string;
 	skills: string[];
-	employment_status: 'active' | 'leave' | 'resign';
+	employment_status: 'active' | 'leave' | 'resigned';
 	hire_date: string;
 	created_at: string;
 	updated_at: string;
