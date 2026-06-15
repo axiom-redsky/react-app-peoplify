@@ -68,14 +68,19 @@ export default function EmployeeEditPage(): React.ReactNode {
 	useEffect(() => {
 		const emp = response?.data;
 		if (!emp) return;
+		debugger;
 		setName(emp.name ?? '');
 		setEmail(emp.email ?? '');
 		setPhone(emp.phone ?? '');
-		setHireDate(emp.hire_date ?? '');
+		//setHireDate(emp.hire_date ?? '');
+		//2026.05.15 Input hire_date 기준으로 YYYY-MM-DD 형식으로 자르기
+		setHireDate(emp.hire_date ? emp.hire_date.slice(0, 10) : '');
 		setDepartment(emp.department ?? '');
 		setPosition(emp.position ?? '');
 		setEmploymentStatus(emp.employment_status ?? 'active');
-		setResignDate(emp.resign_date ?? '');
+		//setResignDate(emp.resign_date ?? '');
+		//2026.05.15 Input resign_date 기준으로 YYYY-MM-DD 형식으로 자르기 
+		setResignDate(emp.resign_date ? emp.resign_date.slice(0, 10) : '');
 		setSkills(emp.skills ?? []);
 	}, [response]);
 

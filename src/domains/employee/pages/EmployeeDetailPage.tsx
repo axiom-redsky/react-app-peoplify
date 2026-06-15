@@ -77,6 +77,33 @@ export default function EmployeeDetailPage(): React.ReactNode {
 
 	const [employee, setEmployee] = useState<TEmployeeDetail | any>({});
 
+	// POST API 호출
+	const {
+		mutate: deleteEmployee,
+	} = useApi<{ success: boolean; message: string }, void>(
+		`/api/employees/${id}`,
+		{
+			method: 'DELETE',
+			type: 'mutation',
+			mutationOptions: {
+				onSuccess: (res) => {
+					alert(res.message);
+					$router.push('/employee/employee-list');
+				},
+				onError: () => {
+					alert('삭제에 실패했습니다.');
+				},
+			},
+		}
+	);
+
+	const deleteEmployeeAct = () => {
+
+		 if (!confirm('정말 삭제하시겠습니까?')) return;
+
+		deleteEmployee();
+	}
+
 	useEffect(() => {
 		console.log('>>>>>>> response::', response);
 		setEmployee(response?.data ?? []);
@@ -147,7 +174,8 @@ export default function EmployeeDetailPage(): React.ReactNode {
 							variant="outline"
 							size="sm"
 							className="text-destructive hover:text-destructive"
-							onClick={() => $router.push(`/employees/${employee.id}/delete`)}
+							//onClick={() => $router.push(`/employees/${employee.id}/delete`)}
+							onClick={deleteEmployeeAct}
 						>
 							<Trash2 className="w-4 h-4 mr-1.5" />
 							삭제
