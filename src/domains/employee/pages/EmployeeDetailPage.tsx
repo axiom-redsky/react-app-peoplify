@@ -46,6 +46,7 @@ type TEmployeeDetail = {
 	hire_date: string;
 	skills: string[];
 	assignment_history: TAssignmentHistory[];
+	employmentStatus : string;
 };
 
 // API 응답 wrapper 타입
@@ -63,7 +64,7 @@ const tabs = ['기본정보', '투입 이력', '기술스택', '계약정보'];
 
 export default function EmployeeDetailPage(): React.ReactNode {
 	const { id } = useParams<{ id: string }>();
-
+	const [employmentStatus, setEmploymentStatus] = useState('active');
 	// API 조회
 	const {
 		data: response,
@@ -91,7 +92,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 					$router.push('/employee/employee-list');
 				},
 				onError: () => {
-					alert('삭제에 실패했습니다.');
+					alert('퇴직처리 실패했습니다.');
 				},
 			},
 		}
@@ -99,7 +100,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 
 	const deleteEmployeeAct = () => {
 
-		 if (!confirm('정말 삭제하시겠습니까?')) return;
+		 if (!confirm('퇴직 처리 하시겠습니까?')) return;
 
 		deleteEmployee();
 	};
@@ -107,7 +108,10 @@ export default function EmployeeDetailPage(): React.ReactNode {
 	useEffect(() => {
 		console.log('>>>>>>> response::', response);
 		setEmployee(response?.data ?? []);
+
 	}, [response]);
+
+	const isResigned = employee.employment_status === 'resigned';
 
 	// 로딩 중
 	if (isPending) {
@@ -170,16 +174,18 @@ export default function EmployeeDetailPage(): React.ReactNode {
 							<Edit className="w-4 h-4 mr-1.5" />
 							수정
 						</Button>
+						{/* 퇴사 상태가 아닐 경우에만 삭제 버튼 노출 */}
+						{!isResigned && (
 						<Button
 							variant="outline"
 							size="sm"
 							className="text-destructive hover:text-destructive"
-							//onClick={() => $router.push(`/employees/${employee.id}/delete`)}
 							onClick={deleteEmployeeAct}
 						>
 							<Trash2 className="w-4 h-4 mr-1.5" />
 							삭제
 						</Button>
+						)}
 					</div>
 				}
 			/>
@@ -301,7 +307,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 				>
 					목록으로
 				</Button>
-				<Button onClick={() => $router.push(`/employee/employee-edit/${employee.id}`)}>수정</Button>
+				{/*<Button onClick={() => $router.push(`/employee/employee-edit/${employee.id}`)}>수정</Button>*/}
 			</div>
 		</div>
 	);
