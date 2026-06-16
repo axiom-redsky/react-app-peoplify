@@ -1,7 +1,16 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router';
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
+import {
+	Button,
+	Input,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+	Calendar,
+} from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Plus, X } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
@@ -55,6 +64,17 @@ export default function EmployeeEditPage(): React.ReactNode {
 	const [skills, setSkills] = useState<string[]>([]);
 	const [newSkillInput, setNewSkillInput] = useState('');
 
+	/** DATE PICKER */
+	const [pickerOpen, setPickerOpen] = useState(false);
+	const pickerRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const h = (e: MouseEvent): void => {
+			if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setPickerOpen(false);
+		};
+		document.addEventListener('mousedown', h);
+		return () => document.removeEventListener('mousedown', h);
+	}, []);
+
 	// 기존 데이터 조회 (GET)
 	const {
 		data: response,
@@ -68,7 +88,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 	useEffect(() => {
 		const emp = response?.data;
 		if (!emp) return;
-		debugger;
+
 		setName(emp.name ?? '');
 		setEmail(emp.email ?? '');
 		setPhone(emp.phone ?? '');
@@ -79,7 +99,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 		setPosition(emp.position ?? '');
 		setEmploymentStatus(emp.employment_status ?? 'active');
 		//setResignDate(emp.resign_date ?? '');
-		//2026.05.15 Input resign_date 기준으로 YYYY-MM-DD 형식으로 자르기 
+		//2026.05.15 Input resign_date 기준으로 YYYY-MM-DD 형식으로 자르기
 		setResignDate(emp.resign_date ? emp.resign_date.slice(0, 10) : '');
 		setSkills(emp.skills ?? []);
 	}, [response]);
@@ -146,7 +166,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 				hire_date: hireDate,
 				employment_status: employmentStatus,
 				// 퇴사 상태가 아니면 퇴사일은 null로 정리
-				resign_date: isResigned ? resignDate : null,
+				resign_date: isResigned ? resignDate || null : null,
 				skills,
 			},
 			{
@@ -237,12 +257,43 @@ export default function EmployeeEditPage(): React.ReactNode {
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">입사일 *</label>
+							{/*
 							<Input
 								type="date"
 								value={hireDate}
 								onChange={(e) => setHireDate(e.target.value)}
 								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 							/>
+							*/}
+							<div
+								ref={pickerRef}
+								className="relative"
+							>
+								<Button
+									variant="outline"
+									onClick={() => setPickerOpen((v) => !v)}
+									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20 w-full justify-start text-left"
+								>
+									{hireDate || '날짜 선택'}
+								</Button>
+								{pickerOpen && (
+									<Calendar
+										mode="single"
+										selected={hireDate ? new Date(hireDate) : undefined}
+										onSelect={(date) => {
+											if (date) {
+												const year = date.getFullYear();
+												const month = String(date.getMonth() + 1).padStart(2, '0');
+												const day = String(date.getDate()).padStart(2, '0');
+												const formattedDate = `${year}-${month}-${day}`;
+												setHireDate(formattedDate);
+											}
+											setPickerOpen(false);
+										}}
+										className="absolute top-full left-0 z-10 mt-2 bg-popover text-popover-foreground border border-border rounded-md shadow-lg"
+									/>
+								)}
+							</div>
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">부서 *</label>
@@ -308,7 +359,14 @@ export default function EmployeeEditPage(): React.ReactNode {
 							<label className="block text-sm font-medium text-foreground mb-1">재직 상태 *</label>
 							<Select
 								value={employmentStatus}
-								onValueChange={setEmploymentStatus}
+								onValueChange={(value) => {
+									setEmploymentStatus(value);
+
+									if (value === 'resigned' && !resignDate) {
+										const today = new Date().toISOString().slice(0, 10);
+										setResignDate(today);
+									}
+								}}
 							>
 								<SelectTrigger
 									size="lg"
@@ -338,6 +396,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 									onChange={(e) => setResignDate(e.target.value)}
 									min={hireDate || undefined}
 									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
+								  readOnly={!isResigned}
 								/>
 							</div>
 						)}
