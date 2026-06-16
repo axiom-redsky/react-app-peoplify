@@ -1,5 +1,5 @@
-export const formatPhoneNumber = (value: string): string => {
-  const numbers = value.replace(/\D/g, '').slice(0, 11);
+export const formatPhoneNumber = (value?: string | null): string => {
+  const numbers = String(value ?? '').replace(/\D/g, '').slice(0, 11);
 
   if (numbers.length <= 3) return numbers;
 

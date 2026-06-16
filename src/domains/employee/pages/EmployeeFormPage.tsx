@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useState, useRef, useEffect } from 'react';
+import { formatPhoneNumber, validateRequired } from '@/shared/lib/shadcn/utils';
 import {
 	Button,
 	Input,
@@ -47,6 +48,8 @@ export default function EmployeeFormPage(): React.ReactNode {
 	const [skills, setSkills] = useState<string[]>(['Java', 'Spring Boot', 'React']);
 	const [newSkillInput, setNewSkillInput] = useState('');
 
+	const [errors, setErrors] = useState<Record<string, string>>({});
+
 	// POST API 호출
 	const {
 		mutate,
@@ -93,13 +96,37 @@ export default function EmployeeFormPage(): React.ReactNode {
 	// 폼 제출 핸들러
 	const handleSubmit = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
+		const values = {
+			name,
+			email,
+			phone,
+			hireDate,
+			department,
+			position,
+		};
 
+		const result = validateRequired(values, [
+			{ key: 'name', message: '이름을 입력해주세요.' },
+			{ key: 'email', message: '이메일을 입력해주세요.' },
+			{ key: 'phone', message: '연락처를 입력해주세요.' },
+			{ key: 'hireDate', message: '입사일을 선택해주세요.' },
+			{ key: 'department', message: '부서를 선택해주세요.' },
+			{ key: 'position', message: '직급을 선택해주세요.' },
+		]);
+
+		if (!result.isValid) {
+			setErrors(result.errors as Record<string, string>);
+			return;
+		}
+
+		setErrors({});
 		// 필수 필드 검증
+	/* TO-DO
 		if (!name || !email || !phone || !hireDate || !department || !position) {
 			alert('모든 필수 항목을 입력해주세요.');
 			return;
 		}
-
+	*/
 		// API 호출
 		mutate(
 			{
@@ -147,29 +174,67 @@ export default function EmployeeFormPage(): React.ReactNode {
 							<label className="block text-sm font-medium text-foreground mb-1">이름 *</label>
 							<Input
 								value={name}
-								onChange={(e) => setName(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
+								onChange={(e) => {
+									setName(e.target.value);
+									if (errors.name) {
+										setErrors((prev) => ({ ...prev, name: '' }));
+									}
+								}}
+								className={`h-9 bg-muted/60 shadow-sm ${
+									errors.name
+										? 'border-red-500 focus-visible:border-red-500'
+										: ' border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
+								}`}
 								placeholder="홍길동"
 							/>
+							{errors.name && (
+								<p className="mt-1 text-xs text-red-500">
+									{errors.name}
+								</p>
+							)}
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">이메일 *</label>
 							<Input
 								type="email"
 								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
+								onChange={(e) => {
+									setEmail(e.target.value);
+									if (errors.email) {
+										setErrors((prev) => ({ ...prev, email: '' }));
+									}
+								}}
+								className={`h-9 bg-muted/60 shadow-sm ${
+									errors.email
+										? 'border-red-500 focus-visible:border-red-500'
+										: 'border-slate-300 dark:border-slate-600 focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
+								}`}
 								placeholder="name@niccompany.co.kr"
 							/>
+							{errors.email && (
+								<p className="mt-1 text-xs text-red-500">{errors.email}</p>
+							)}
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">연락처 *</label>
 							<Input
 								value={phone}
-								onChange={(e) => setPhone(e.target.value)}
-								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
+								onChange={(e) => {
+									setPhone(formatPhoneNumber(e.target.value));
+									if (errors.phone) {
+										setErrors((prev) => ({ ...prev, phone: '' }));
+									}
+								}}
+								className={`h-9 bg-muted/60 shadow-sm ${
+									errors.phone
+										? 'border-red-500 focus-visible:border-red-500'
+										: 'border-slate-300 dark:border-slate-600 focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
+								}`}
 								placeholder="010-0000-0000"
 							/>
+							{errors.phone && (
+								<p className="mt-1 text-xs text-red-500">{errors.phone}</p>
+							)}
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">입사일 *</label>
@@ -180,22 +245,36 @@ export default function EmployeeFormPage(): React.ReactNode {
 								<Button
 									variant="outline"
 									onClick={() => setPickerOpen((v) => !v)}
-									className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20 w-full justify-start text-left"
+									className={`h-9 bg-muted/60 shadow-sm  w-full justify-start text-left ${
+										errors.hireDate
+											? 'border-red-500! focus-visible:border-red-500'
+											: 'border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
+									}`}
 								>
 									{hireDate || '날짜 선택'}
 								</Button>
+								{errors.hireDate && (
+									<p className="mt-1 text-xs text-red-500">{errors.hireDate}</p>
+								)}
 								{pickerOpen && (
 									<Calendar
 										mode="single"
 										selected={hireDate ? new Date(hireDate) : undefined}
+										
 										onSelect={(date) => {
 											if (date) {
 												const year = date.getFullYear();
 												const month = String(date.getMonth() + 1).padStart(2, '0');
 												const day = String(date.getDate()).padStart(2, '0');
 												const formattedDate = `${year}-${month}-${day}`;
+
 												setHireDate(formattedDate);
+
+												if (errors.hireDate) {
+													setErrors((prev) => ({ ...prev, hireDate: '' }));
+												}
 											}
+
 											setPickerOpen(false);
 										}}
 										className="absolute top-full left-0 z-10 mt-2 bg-popover text-popover-foreground border border-border rounded-md shadow-lg"
@@ -207,11 +286,21 @@ export default function EmployeeFormPage(): React.ReactNode {
 							<label className="block text-sm font-medium text-foreground mb-1">부서 *</label>
 							<Select
 								value={department}
-								onValueChange={setDepartment}
+								onValueChange={(value) => {
+									setDepartment(value);
+
+									if (errors.department) {
+										setErrors((prev) => ({ ...prev, department: '' }));
+									}
+								}}
 							>
 								<SelectTrigger
 									size="lg"
-									className="w-full bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
+									className={`w-full bg-muted/60 shadow-sm ${
+										errors.department
+											? 'border-red-500 focus:border-red-500'
+											: 'border-slate-300 dark:border-slate-600'
+									}`}
 								>
 									<SelectValue placeholder="부서 선택" />
 								</SelectTrigger>
@@ -226,16 +315,29 @@ export default function EmployeeFormPage(): React.ReactNode {
 									))}
 								</SelectContent>
 							</Select>
+							{errors.department && (
+								<p className="mt-1 text-xs text-red-500">{errors.department}</p>
+							)}
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">직급 *</label>
 							<Select
 								value={position}
-								onValueChange={setPosition}
+								onValueChange={(value) => {
+									setPosition(value);
+
+									if (errors.position) {
+										setErrors((prev) => ({ ...prev, position: '' }));
+									}
+								}}
 							>
 								<SelectTrigger
 									size="lg"
-									className="w-full bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm"
+									className={`w-full bg-muted/60 shadow-sm ${
+										errors.position
+											? 'border-red-500 focus:border-red-500'
+											: 'border-slate-300 dark:border-slate-600'
+									}`}
 								>
 									<SelectValue placeholder="직급 선택" />
 								</SelectTrigger>
@@ -250,6 +352,9 @@ export default function EmployeeFormPage(): React.ReactNode {
 									))}
 								</SelectContent>
 							</Select>
+							{errors.position && (
+								<p className="mt-1 text-xs text-red-500">{errors.position}</p>
+							)}
 						</div>
 					</div>
 				</div>
