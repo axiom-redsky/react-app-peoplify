@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router';
+import { formatPhoneNumber } from '@/shared/lib/shadcn/utils';
 import {
 	Button,
 	Input,
@@ -91,7 +92,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 
 		setName(emp.name ?? '');
 		setEmail(emp.email ?? '');
-		setPhone(emp.phone ?? '');
+		setPhone(formatPhoneNumber(emp.phone ?? ''));
 		//2026.05.15 Input hire_date 기준으로 YYYY-MM-DD 형식으로 자르기
 		setHireDate(emp.hire_date ? emp.hire_date.slice(0, 10) : '');
 		setDepartment(emp.department ?? '');
@@ -152,13 +153,12 @@ export default function EmployeeEditPage(): React.ReactNode {
 			alert('퇴사 상태인 경우 퇴사일을 입력해주세요.');
 			return;
 		}
-
 		// API 호출
 		mutate(
 			{
 				name,
 				email,
-				phone,
+				phone: phone.replace(/\D/g, ''),
 				department,
 				position,
 				hire_date: hireDate,
@@ -248,7 +248,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 							<label className="block text-sm font-medium text-foreground mb-1">연락처 *</label>
 							<Input
 								value={phone}
-								onChange={(e) => setPhone(e.target.value)}
+								onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
 								className="h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
 								placeholder="010-0000-0000"
 							/>

@@ -2,6 +2,7 @@ import { useParams } from 'react-router';
 import { useApi } from '@axiom/hooks';
 import { Button } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
+import { formatPhoneNumber } from '@/shared/lib/shadcn/utils';
 import StatusBadge, { type StatusType } from '@/shared/components/ui/StatusBadge';
 import { Mail, Phone, Calendar, Edit, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -211,7 +212,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 						</span>
 						<span className="flex items-center gap-1.5">
 							<Phone className="w-3.5 h-3.5" />
-							{employee.phone}
+							{formatPhoneNumber(employee.phone)}
 						</span>
 						<span className="flex items-center gap-1.5">
 							<Calendar className="w-3.5 h-3.5" />
