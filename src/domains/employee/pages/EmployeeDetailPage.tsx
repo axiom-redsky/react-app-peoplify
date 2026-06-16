@@ -2,7 +2,7 @@ import { useParams } from 'react-router';
 import { useApi } from '@axiom/hooks';
 import { Button } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
-//import StatusBadge from '@/shared/components/ui/StatusBadge';
+import StatusBadge, { type StatusType } from '@/shared/components/ui/StatusBadge';
 import { Mail, Phone, Calendar, Edit, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -23,7 +23,7 @@ const formatRate = (ratePct: number): string => {
 
 // API 응답 타입 정의
 type TAssignmentHistory = {
-	id: number;
+	assignment_id: number;
 	role: string;
 	rate_pct: number;
 	start_date: string;
@@ -31,6 +31,7 @@ type TAssignmentHistory = {
 	project_name: string;
 	client: string;
 	project_status: string;
+	project_id: number;
 	created_at: string;
 	updated_at: string;
 };
@@ -271,7 +272,10 @@ export default function EmployeeDetailPage(): React.ReactNode {
 									key={idx}
 									className="border-t hover:bg-muted/20 transition-colors"
 								>
-									<td className="py-2.5 px-4 font-medium text-foreground">{proj.project_name}</td>
+									<td 
+										className="py-2.5 px-4 font-medium text-foreground cursor-pointer hover:underline"
+										onClick={() => $router.push(`/project/${proj.project_id}`)}
+									>{proj.project_name}</td>
 									<td className="py-2.5 px-4 text-muted-foreground">{proj.client}</td>
 									<td className="py-2.5 px-4">
 										<span className="px-2 py-0.5 rounded text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium">
@@ -282,7 +286,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 										{formatDate(proj.start_date)} ~ {proj.end_date ? formatDate(proj.end_date) : '현재'}
 									</td>
 									<td className="py-2.5 px-4 font-medium">{formatRate(proj.rate_pct)}</td>
-									<td className="py-2.5 px-4">{/*<StatusBadge status={proj.project_status} />*/}</td>
+									<td className="py-2.5 px-4"><StatusBadge status={proj.project_status as StatusType} /></td>
 								</tr>
 							))
 						) : (

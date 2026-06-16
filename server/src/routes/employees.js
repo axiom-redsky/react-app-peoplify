@@ -111,7 +111,7 @@ router.get('/:id', async (req, res, next) => {
       .join('projects', 'assignments.project_id', 'projects.id')
       .where('assignments.employee_id', employee.id)
       .select(
-        'assignments.id',
+        'assignments.id as assignment_id',
         'assignments.role',
         'assignments.rate_pct',
         'assignments.start_date',
@@ -119,6 +119,7 @@ router.get('/:id', async (req, res, next) => {
         'projects.name as project_name',
         'projects.client',
         'projects.status as project_status',
+				'projects.id as project_id',
       )
       .orderBy('assignments.start_date', 'desc');
 
