@@ -102,7 +102,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 		 if (!confirm('정말 삭제하시겠습니까?')) return;
 
 		deleteEmployee();
-	}
+	};
 
 	useEffect(() => {
 		console.log('>>>>>>> response::', response);
@@ -297,7 +297,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 			<div className="flex justify-end gap-2 mt-4">
 				<Button
 					variant="outline"
-					onClick={() => $router.back()}
+					onClick={() => $router.push(`/employee/employee-list`)}
 				>
 					목록으로
 				</Button>

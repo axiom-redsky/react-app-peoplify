@@ -92,13 +92,11 @@ export default function EmployeeEditPage(): React.ReactNode {
 		setName(emp.name ?? '');
 		setEmail(emp.email ?? '');
 		setPhone(emp.phone ?? '');
-		//setHireDate(emp.hire_date ?? '');
 		//2026.05.15 Input hire_date 기준으로 YYYY-MM-DD 형식으로 자르기
 		setHireDate(emp.hire_date ? emp.hire_date.slice(0, 10) : '');
 		setDepartment(emp.department ?? '');
 		setPosition(emp.position ?? '');
 		setEmploymentStatus(emp.employment_status ?? 'active');
-		//setResignDate(emp.resign_date ?? '');
 		//2026.05.15 Input resign_date 기준으로 YYYY-MM-DD 형식으로 자르기
 		setResignDate(emp.resign_date ? emp.resign_date.slice(0, 10) : '');
 		setSkills(emp.skills ?? []);
@@ -257,7 +255,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 						</div>
 						<div>
 							<label className="block text-sm font-medium text-foreground mb-1">입사일 *</label>
-							{/*
+							{/* TO-DO
 							<Input
 								type="date"
 								value={hireDate}
@@ -483,7 +481,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 				<div className="flex justify-end gap-3">
 					<Button
 						variant="outline"
-						onClick={() => $router.back()}
+						onClick={() => $router.push(`/employee/employee-detail/${id}`)}
 					>
 						취소
 					</Button>
