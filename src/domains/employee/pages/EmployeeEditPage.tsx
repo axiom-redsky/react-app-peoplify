@@ -101,12 +101,10 @@ export default function EmployeeEditPage(): React.ReactNode {
 		setName(emp.name ?? '');
 		setEmail(emp.email ?? '');
 		setPhone(formatPhoneNumber(emp.phone ?? ''));
-		//2026.05.15 Input hire_date 기준으로 YYYY-MM-DD 형식으로 자르기
 		setHireDate(emp.hire_date ? emp.hire_date.slice(0, 10) : '');
 		setDepartment(emp.department ?? '');
 		setPosition(emp.position ?? '');
 		setEmploymentStatus(emp.employment_status ?? 'active');
-		//2026.05.15 Input resign_date 기준으로 YYYY-MM-DD 형식으로 자르기
 		setResignDate(emp.resign_date ? emp.resign_date.slice(0, 10) : '');
 		setSkills(emp.skills ?? []);
 	}, [response]);
@@ -357,7 +355,6 @@ export default function EmployeeEditPage(): React.ReactNode {
 													setErrors((prev) => ({ ...prev, hireDate: '' }));
 												}
 											}
-
 											setPickerOpen(false);
 										}}
 										className="absolute top-full left-0 z-10 mt-2 bg-popover text-popover-foreground border border-border rounded-md shadow-lg"
