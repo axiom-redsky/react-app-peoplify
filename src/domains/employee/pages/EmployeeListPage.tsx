@@ -8,11 +8,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 	Skeleton,
+	FormField,
 } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import StatusEmployBadge from '@/shared/components/ui/StatusEmployBadge';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 
 // 직원 타입 정의 — 실제 API response 구조에 맞춤
 type TEmployee = {
@@ -86,15 +88,20 @@ export default function EmployeeListPage(): React.ReactNode {
 	const [selectedStatus, setSelectedStatus] = useState<string>('all');
 	const [selectedDeployment, setSelectedDeployment] = useState<string>('all');
 
+	const [errors, setErrors] = useState<Record<string, string>>({});
+	const { openAlert } = useAppAlert();
+	
 	/** GET 조회 - 직원 목록 (페이지네이션 + 검색 파라미터 포함) */
 	const {
 		data: response,
 		isPending,
-		error,
+		error: loadError,
 		refetch,
 		isFetching,
 	} = useApi<TEmployeeListResponse>(EMPLOYEES_ENDPOINT, {
 		params: {
+			forceError: 'true',
+
 			page: currentPage,
 			limit: PAGE_LIMIT,
 			search: searchQuery || undefined,
@@ -124,6 +131,24 @@ export default function EmployeeListPage(): React.ReactNode {
 	};
 
 	const [employees, setEmployees] = useState<TEmployee[]>([]);
+	
+	useEffect(() => {
+		if (!loadError) return;
+
+		const error = loadError as any;
+
+		const message =
+			error?.response?.data?.message ||
+			error?.data?.message ||
+			error?.message ||
+			'직원 목록 조회 중 오류가 발생했습니다.';
+
+		openAlert({
+			title: '조회 실패',
+			message,
+			confirmText: '확인',
+		});
+	}, [loadError, openAlert]);
 
 	useEffect(() => {
 		console.log('>>>>>>> response::', response);
@@ -298,9 +323,9 @@ export default function EmployeeListPage(): React.ReactNode {
 			{/* 테이블 */}
 			<div className="bg-card rounded-xl border overflow-hidden">
 				{/* 로딩 상태 */}
-				{error ? (
+				{loadError ? (
 					<div className="p-8 text-center text-red-600">
-						<p>에러: {error.message}</p>
+						<p>에러: {loadError.message}</p>
 						<button
 							onClick={() => refetch()}
 							disabled={isFetching}

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { formatPhoneNumber, validateRequired } from '@/shared/lib/shadcn/utils';
+import { formatPhoneNumber, validateRequired, getFieldClassName } from '@/shared/lib/shadcn/utils';
 import {
 	Button,
 	Input,
@@ -10,10 +10,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 	Calendar,
+	FormField,
 } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { Plus, X } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
+import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 
 const grades = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
@@ -49,19 +51,18 @@ export default function EmployeeFormPage(): React.ReactNode {
 	const [newSkillInput, setNewSkillInput] = useState('');
 
 	const [errors, setErrors] = useState<Record<string, string>>({});
+	const { openAlert } = useAppAlert();
 
 	// POST API 호출
 	const {
 		mutate,
 		isPending: isSubmitting,
-		//data: createResult,
-		error: createError,
-		//reset: resetMutation,
 		invalidateQueries,
 	} = useApi<TCreateEmployee, TCreateEmployee>('/api/employees', {
 		method: 'POST',
 		type: 'mutation',
 	});
+
 	const [pickerOpen, setPickerOpen] = useState(false);
 	const pickerRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
@@ -104,7 +105,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 			department,
 			position,
 		};
-
+		/** 필수체크 할경우 해당 부분에 추가 */
 		const result = validateRequired(values, [
 			{ key: 'name', message: '이름을 입력해주세요.' },
 			{ key: 'email', message: '이메일을 입력해주세요.' },
@@ -120,13 +121,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 		}
 
 		setErrors({});
-		// 필수 필드 검증
-	/* TO-DO
-		if (!name || !email || !phone || !hireDate || !department || !position) {
-			alert('모든 필수 항목을 입력해주세요.');
-			return;
-		}
-	*/
+
 		// API 호출
 		mutate(
 			{
@@ -146,8 +141,14 @@ export default function EmployeeFormPage(): React.ReactNode {
 					// 성공 후 직원 목록 페이지로 이동
 					$router.push('/employee/employee-list');
 				},
-				onError: (error) => {
-					console.error('직원 등록 실패:', error.message);
+				onError: (error: any) => {
+					const message = error?.response?.data?.message || error?.message || '직원 등록 중 오류가 발생했습니다.';
+
+					openAlert({
+						title: '등록 실패',
+						message,
+						confirmText: '확인',
+					});
 				},
 			},
 		);
@@ -170,97 +171,109 @@ export default function EmployeeFormPage(): React.ReactNode {
 						기본 정보
 					</h2>
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-						<div>
-							<label className="block text-sm font-medium text-foreground mb-1">이름 *</label>
+						<FormField
+							name="name"
+							label="이름"
+							required
+							error={errors.name}
+						>
 							<Input
+								id="name"
+								name="name"
 								value={name}
 								onChange={(e) => {
 									setName(e.target.value);
+
 									if (errors.name) {
 										setErrors((prev) => ({ ...prev, name: '' }));
 									}
 								}}
-								className={`h-9 bg-muted/60 shadow-sm ${
-									errors.name
-										? 'border-red-500 focus-visible:border-red-500'
-										: ' border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
-								}`}
+								className={getFieldClassName(
+									errors.name,
+									'focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+								)}
 								placeholder="홍길동"
 							/>
-							{errors.name && (
-								<p className="mt-1 text-xs text-red-500">
-									{errors.name}
-								</p>
-							)}
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-foreground mb-1">이메일 *</label>
+						</FormField>
+						<FormField
+							name="email"
+							label="이메일"
+							required
+							error={errors.email}
+						>
 							<Input
+								id="email"
+								name="email"
 								type="email"
 								value={email}
 								onChange={(e) => {
 									setEmail(e.target.value);
+
 									if (errors.email) {
 										setErrors((prev) => ({ ...prev, email: '' }));
 									}
 								}}
-								className={`h-9 bg-muted/60 shadow-sm ${
-									errors.email
-										? 'border-red-500 focus-visible:border-red-500'
-										: 'border-slate-300 dark:border-slate-600 focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
-								}`}
+								className={getFieldClassName(
+									errors.email,
+									'focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+								)}
 								placeholder="name@niccompany.co.kr"
 							/>
-							{errors.email && (
-								<p className="mt-1 text-xs text-red-500">{errors.email}</p>
-							)}
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-foreground mb-1">연락처 *</label>
+						</FormField>
+
+						<FormField
+							name="phone"
+							label="연락처"
+							required
+							error={errors.phone}
+						>
 							<Input
+								id="phone"
+								name="phone"
 								value={phone}
 								onChange={(e) => {
 									setPhone(formatPhoneNumber(e.target.value));
+
 									if (errors.phone) {
 										setErrors((prev) => ({ ...prev, phone: '' }));
 									}
 								}}
-								className={`h-9 bg-muted/60 shadow-sm ${
-									errors.phone
-										? 'border-red-500 focus-visible:border-red-500'
-										: 'border-slate-300 dark:border-slate-600 focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
-								}`}
+								className={getFieldClassName(
+									errors.phone,
+									'focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+								)}
 								placeholder="010-0000-0000"
 							/>
-							{errors.phone && (
-								<p className="mt-1 text-xs text-red-500">{errors.phone}</p>
-							)}
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-foreground mb-1">입사일 *</label>
+						</FormField>
+
+						<FormField
+							name="hireDate"
+							label="입사일"
+							required
+							error={errors.hireDate}
+						>
 							<div
 								ref={pickerRef}
 								className="relative"
 							>
 								<Button
+									id="hireDate"
+									name="hireDate"
+									type="button"
 									variant="outline"
 									onClick={() => setPickerOpen((v) => !v)}
-									className={`h-9 bg-muted/60 shadow-sm  w-full justify-start text-left ${
-										errors.hireDate
-											? 'border-red-500! focus-visible:border-red-500'
-											: 'border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20'
-									}`}
+									className={getFieldClassName(
+										errors.hireDate,
+										'w-full justify-start text-left focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+									)}
 								>
 									{hireDate || '날짜 선택'}
 								</Button>
-								{errors.hireDate && (
-									<p className="mt-1 text-xs text-red-500">{errors.hireDate}</p>
-								)}
+
 								{pickerOpen && (
 									<Calendar
 										mode="single"
 										selected={hireDate ? new Date(hireDate) : undefined}
-										
 										onSelect={(date) => {
 											if (date) {
 												const year = date.getFullYear();
@@ -281,9 +294,14 @@ export default function EmployeeFormPage(): React.ReactNode {
 									/>
 								)}
 							</div>
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-foreground mb-1">부서 *</label>
+						</FormField>
+
+						<FormField
+							name="department"
+							label="부서"
+							required
+							error={errors.department}
+						>
 							<Select
 								value={department}
 								onValueChange={(value) => {
@@ -295,16 +313,22 @@ export default function EmployeeFormPage(): React.ReactNode {
 								}}
 							>
 								<SelectTrigger
+									id="department"
+									name="department"
 									size="lg"
-									className={`w-full bg-muted/60 shadow-sm ${
-										errors.department
-											? 'border-red-500 focus:border-red-500'
-											: 'border-slate-300 dark:border-slate-600'
-									}`}
+									className={getFieldClassName(
+										errors.department,
+										'w-full focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+									)}
 								>
 									<SelectValue placeholder="부서 선택" />
 								</SelectTrigger>
-								<SelectContent>
+
+								<SelectContent
+									position="popper"
+									sideOffset={4}
+									className="z-[9999]"
+								>
 									{departments?.data?.map((dept) => (
 										<SelectItem
 											key={dept.id}
@@ -315,12 +339,14 @@ export default function EmployeeFormPage(): React.ReactNode {
 									))}
 								</SelectContent>
 							</Select>
-							{errors.department && (
-								<p className="mt-1 text-xs text-red-500">{errors.department}</p>
-							)}
-						</div>
-						<div>
-							<label className="block text-sm font-medium text-foreground mb-1">직급 *</label>
+						</FormField>
+
+						<FormField
+							name="position"
+							label="직급"
+							required
+							error={errors.position}
+						>
 							<Select
 								value={position}
 								onValueChange={(value) => {
@@ -332,16 +358,22 @@ export default function EmployeeFormPage(): React.ReactNode {
 								}}
 							>
 								<SelectTrigger
+									id="position"
+									name="position"
 									size="lg"
-									className={`w-full bg-muted/60 shadow-sm ${
-										errors.position
-											? 'border-red-500 focus:border-red-500'
-											: 'border-slate-300 dark:border-slate-600'
-									}`}
+									className={getFieldClassName(
+										errors.position,
+										'w-full focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+									)}
 								>
 									<SelectValue placeholder="직급 선택" />
 								</SelectTrigger>
-								<SelectContent>
+
+								<SelectContent
+									position="popper"
+									sideOffset={4}
+									className="z-[9999]"
+								>
 									{grades.map((g) => (
 										<SelectItem
 											key={g}
@@ -352,10 +384,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 									))}
 								</SelectContent>
 							</Select>
-							{errors.position && (
-								<p className="mt-1 text-xs text-red-500">{errors.position}</p>
-							)}
-						</div>
+						</FormField>
 					</div>
 				</div>
 
@@ -428,13 +457,6 @@ export default function EmployeeFormPage(): React.ReactNode {
 						</div>
 					</div>
 				</div>
-
-				{/* 에러 메시지 */}
-				{createError && (
-					<div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-						<p className="text-sm text-red-600 dark:text-red-400">{createError.message}</p>
-					</div>
-				)}
 
 				{/* 액션 버튼 */}
 				<div className="flex justify-end gap-3">
