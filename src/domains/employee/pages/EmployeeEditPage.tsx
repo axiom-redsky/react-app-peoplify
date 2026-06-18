@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router';
-import { formatPhoneNumber, validateRequired, getFieldClassName } from '@/shared/lib/shadcn/utils';
+import { formatPhoneNumber, validateRequired, getFieldClassName } from '@/shared/lib/shadcn/js/common';
 import {
 	Button,
 	Input,
@@ -54,6 +54,13 @@ type TEmployeeResponse = {
 type TDepartmentResponse = {
 	data: { id: number; name: string }[];
 	success: boolean;
+};
+
+const getCurrentQueryString = () => {
+	const hash = window.location.hash;
+	const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+
+	return queryString ? `?${queryString}` : '';
 };
 
 export default function EmployeeEditPage(): React.ReactNode {
@@ -620,7 +627,11 @@ export default function EmployeeEditPage(): React.ReactNode {
 				<div className="flex justify-end gap-3">
 					<Button
 						variant="outline"
-						onClick={() => $router.push(`/employee/employee-detail/${id}`)}
+						onClick={() => {
+	const queryString = getCurrentQueryString();
+
+	$router.push(`/employee/employee-detail/${id}${queryString}`);
+}}
 					>
 						취소
 					</Button>

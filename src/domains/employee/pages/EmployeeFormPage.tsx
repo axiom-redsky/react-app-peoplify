@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { formatPhoneNumber, validateRequired, getFieldClassName } from '@/shared/lib/shadcn/utils';
+import { formatPhoneNumber, validateRequired, getFieldClassName } from '@/shared/lib/shadcn/js/common';
 import {
 	Button,
 	Input,

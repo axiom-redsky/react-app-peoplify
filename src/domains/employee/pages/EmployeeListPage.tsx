@@ -1,15 +1,5 @@
 import { useApi } from '@axiom/hooks';
-import {
-	Button,
-	Input,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	Skeleton,
-	FormField,
-} from '@axiom/components/ui';
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import StatusEmployBadge from '@/shared/components/ui/StatusEmployBadge';
 import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, UserPlus } from 'lucide-react';
@@ -77,20 +67,55 @@ type TCommonCodesResponse = {
 	};
 };
 
+/**
+ * URL query string 에서 검색조건 초기값 복원
+ */
+const getHashSearchParams = () => {
+	const queryString = window.location.hash.includes('?')
+		? window.location.hash.split('?')[1]
+		: '';
+
+	return new URLSearchParams(queryString);
+};
+
+const getInitialSearch = () => {
+	const params = getHashSearchParams();
+
+	return params.get('search') || '';
+};
+
+const getInitialValue = (key: string, defaultValue = 'all') => {
+	const params = getHashSearchParams();
+
+	return params.get(key) || defaultValue;
+};
+
+const getInitialPage = () => {
+	const params = getHashSearchParams();
+	const page = Number(params.get('page'));
+
+	return Number.isNaN(page) || page < 1 ? 1 : page;
+};
+
 export default function EmployeeListPage(): React.ReactNode {
 	/** 페이지네이션 상태 */
-	const [currentPage, setCurrentPage] = useState<number>(1);
+	const [currentPage, setCurrentPage] = useState<number>(getInitialPage);
+
 	/** 검색어 상태 */
-	const [searchQuery, setSearchQuery] = useState<string>('');
+	const [searchQuery, setSearchQuery] = useState<string>(getInitialSearch);
+
 	/** 검색 타이머 ID — Debounce 구현용 */
 	const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-	const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
-	const [selectedStatus, setSelectedStatus] = useState<string>('all');
-	const [selectedDeployment, setSelectedDeployment] = useState<string>('all');
 
-	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [selectedDepartment, setSelectedDepartment] = useState<string>(() => getInitialValue('department'));
+	const [selectedStatus, setSelectedStatus] = useState<string>(() => getInitialValue('status'));
+	const [selectedDeployment, setSelectedDeployment] = useState<string>(() => getInitialValue('deployment_status'));
+
+	const [employees, setEmployees] = useState<TEmployee[]>([]);
+	const [employmentStatusCodes, setEmploymentStatusCodes] = useState<TCommonCode[]>([]);
+
 	const { openAlert } = useAppAlert();
-	
+
 	/** GET 조회 - 직원 목록 (페이지네이션 + 검색 파라미터 포함) */
 	const {
 		data: response,
@@ -100,8 +125,6 @@ export default function EmployeeListPage(): React.ReactNode {
 		isFetching,
 	} = useApi<TEmployeeListResponse>(EMPLOYEES_ENDPOINT, {
 		params: {
-			forceError: 'true',
-
 			page: currentPage,
 			limit: PAGE_LIMIT,
 			search: searchQuery || undefined,
@@ -111,27 +134,50 @@ export default function EmployeeListPage(): React.ReactNode {
 		},
 	});
 
-	// 검색어 변경 핸들러 (Debounce 적용)
-	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		setSearchQuery(value);
+	const { data: departmentsResponse } = useApi<TDepartmentListResponse>(DEPARTMENTS_ENDPOINT);
+	const departments = departmentsResponse?.data ?? [];
 
-		// 검색어 변경 시 페이지 1 로 리셋
-		setCurrentPage(1);
+	const { data: commonCodesResponse } = useApi<TCommonCodesResponse>('/api/common-codes', {
+		params: {
+			groups: 'EMPLOYMENT_STATUS',
+			include_disabled: 'true',
+		},
+	});
 
-		// 이전 타이머가 있으면 취소
-		if (searchTimeoutRef.current) {
-			clearTimeout(searchTimeoutRef.current);
-		}
+	const { data: deploymentResponse } = useApi<TCommonCodesResponse>('/api/common-codes', {
+		params: {
+			groups: 'DEPLOYMENT_STATUS',
+		},
+	});
 
-		// 800ms 후 API 재요청
-		searchTimeoutRef.current = setTimeout(() => {
-			refetch();
-		}, 800);
-	};
+	const deploymentStatuses = deploymentResponse?.data?.DEPLOYMENT_STATUS ?? [];
 
-	const [employees, setEmployees] = useState<TEmployee[]>([]);
-	
+	// 총 페이지 수 계산
+	const totalPages = Math.ceil((response?.meta.total ?? 0) / PAGE_LIMIT);
+
+	/**
+	 * 검색조건 변경 시 URL query string 동기화
+	 * 상세 화면 이동 후 목록 복귀 시 검색조건 유지 목적
+	 */
+	/*
+	useEffect(() => {
+		const params = new URLSearchParams();
+
+		if (searchQuery) params.set('search', searchQuery);
+		if (selectedDepartment !== 'all') params.set('department', selectedDepartment);
+		if (selectedStatus !== 'all') params.set('status', selectedStatus);
+		if (selectedDeployment !== 'all') params.set('deployment_status', selectedDeployment);
+		if (currentPage > 1) params.set('page', String(currentPage));
+
+		const queryString = params.toString();
+		const nextUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+
+		window.history.replaceState(null, '', nextUrl);
+	}, [searchQuery, selectedDepartment, selectedStatus, selectedDeployment, currentPage]);
+*/
+	/**
+	 * 목록 조회 에러 처리
+	 */
 	useEffect(() => {
 		if (!loadError) return;
 
@@ -150,13 +196,75 @@ export default function EmployeeListPage(): React.ReactNode {
 		});
 	}, [loadError, openAlert]);
 
+	/**
+	 * 직원 목록 response 반영
+	 */
 	useEffect(() => {
-		console.log('>>>>>>> response::', response);
 		setEmployees(response?.data ?? []);
 	}, [response]);
 
-	// 총 페이지 수 계산
-	const totalPages = Math.ceil((response?.meta.total ?? 0) / PAGE_LIMIT);
+	/**
+	 * 재직상태 공통코드 반영
+	 */
+	useEffect(() => {
+		if (commonCodesResponse?.data?.EMPLOYMENT_STATUS) {
+			setEmploymentStatusCodes(commonCodesResponse.data.EMPLOYMENT_STATUS);
+		}
+	}, [commonCodesResponse]);
+
+	/**
+	 * 컴포넌트 언마운트 시 검색 타이머 정리
+	 */
+	useEffect(() => {
+		return () => {
+			if (searchTimeoutRef.current) {
+				clearTimeout(searchTimeoutRef.current);
+			}
+		};
+	}, []);
+
+	// 검색어 변경 핸들러 (Debounce 적용)
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+
+		setSearchQuery(value);
+		setCurrentPage(1);
+
+		if (searchTimeoutRef.current) {
+			clearTimeout(searchTimeoutRef.current);
+		}
+
+		searchTimeoutRef.current = setTimeout(() => {
+			refetch();
+		}, 800);
+	};
+
+	const handleDepartmentChange = (value: string) => {
+		setSelectedDepartment(value);
+		setCurrentPage(1);
+	};
+
+	const handleStatusChange = (value: string) => {
+		setSelectedStatus(value);
+		setCurrentPage(1);
+	};
+
+	const handleDeploymentChange = (value: string) => {
+		setSelectedDeployment(value);
+		setCurrentPage(1);
+	};
+
+	const handleReset = () => {
+		setSearchQuery('');
+		setCurrentPage(1);
+		setSelectedDepartment('all');
+		setSelectedStatus('all');
+		setSelectedDeployment('all');
+
+		window.history.replaceState(null, '', window.location.pathname);
+
+		//refetch();
+	};
 
 	// 페이지 변경 핸들러
 	const handlePageChange = (page: number) => {
@@ -170,39 +278,36 @@ export default function EmployeeListPage(): React.ReactNode {
 		$router.push('/employee/employee-form');
 	};
 
-	// 컴포넌트 언마운트 시 타이머 정리
-	useEffect(() => {
-		return () => {
-			if (searchTimeoutRef.current) {
-				clearTimeout(searchTimeoutRef.current);
-			}
-		};
-	}, []);
+	// 직원 상세 화면이동
+const handleMoveDetail = (employeeId: number) => {
+	const params = new URLSearchParams();
 
-	const { data: departmentsResponse } = useApi<TDepartmentListResponse>(DEPARTMENTS_ENDPOINT);
-	const departments = departmentsResponse?.data ?? [];
+	if (searchQuery.trim()) {
+		params.set('search', searchQuery.trim());
+	}
 
-	const [employmentStatusCodes, setEmploymentStatusCodes] = useState<TCommonCode[]>([]);
+	if (selectedDepartment !== 'all') {
+		params.set('department', selectedDepartment);
+	}
 
-	const { data: commonCodesResponse } = useApi<TCommonCodesResponse>('/api/common-codes', {
-		params: {
-			groups: 'EMPLOYMENT_STATUS',
-			include_disabled: 'true',
-		},
-	});
+	if (selectedStatus !== 'all') {
+		params.set('status', selectedStatus);
+	}
 
-	useEffect(() => {
-		if (commonCodesResponse?.data?.EMPLOYMENT_STATUS) {
-			setEmploymentStatusCodes(commonCodesResponse.data.EMPLOYMENT_STATUS);
-		}
-	}, [commonCodesResponse]);
-	const { data: deploymentResponse } = useApi<TCommonCodesResponse>('/api/common-codes', {
-		params: {
-			groups: 'DEPLOYMENT_STATUS',
-		},
-	});
+	if (selectedDeployment !== 'all') {
+		params.set('deployment_status', selectedDeployment);
+	}
 
-	const deploymentStatuses = deploymentResponse?.data?.DEPLOYMENT_STATUS ?? [];
+	if (currentPage > 1) {
+		params.set('page', String(currentPage));
+	}
+
+	const queryString = params.toString();
+
+	$router.push(
+		`/employee/employee-detail/${employeeId}${queryString ? `?${queryString}` : ''}`
+	);
+};
 
 	return (
 		<div className="p-5">
@@ -230,15 +335,10 @@ export default function EmployeeListPage(): React.ReactNode {
 						placeholder="이름 검색..."
 					/>
 				</div>
+
 				<Select
 					value={selectedDepartment}
-					onValueChange={(value) => {
-						setSelectedDepartment(value);
-						setCurrentPage(1);
-						searchTimeoutRef.current = setTimeout(() => {
-							refetch();
-						}, 800);
-					}}
+					onValueChange={handleDepartmentChange}
 				>
 					<SelectTrigger
 						size="lg"
@@ -258,9 +358,10 @@ export default function EmployeeListPage(): React.ReactNode {
 						))}
 					</SelectContent>
 				</Select>
+
 				<Select
 					value={selectedStatus}
-					onValueChange={(value) => setSelectedStatus(value)}
+					onValueChange={handleStatusChange}
 				>
 					<SelectTrigger
 						size="lg"
@@ -280,9 +381,10 @@ export default function EmployeeListPage(): React.ReactNode {
 						))}
 					</SelectContent>
 				</Select>
+
 				<Select
 					value={selectedDeployment}
-					onValueChange={setSelectedDeployment}
+					onValueChange={handleDeploymentChange}
 				>
 					<SelectTrigger
 						size="lg"
@@ -302,17 +404,11 @@ export default function EmployeeListPage(): React.ReactNode {
 						))}
 					</SelectContent>
 				</Select>
+
 				<Button
 					variant="outline"
 					size="lg"
-					onClick={() => {
-						setSearchQuery('');
-						setCurrentPage(1);
-						setSelectedDepartment('all');
-						setSelectedStatus('all');
-						setSelectedDeployment('all');
-						refetch();
-					}}
+					onClick={handleReset}
 					className="flex items-center gap-1.5 px-3 py-2 text-sm border rounded-lg text-muted-foreground hover:bg-muted transition-colors"
 				>
 					<SlidersHorizontal className="w-4 h-4" />
@@ -322,7 +418,6 @@ export default function EmployeeListPage(): React.ReactNode {
 
 			{/* 테이블 */}
 			<div className="bg-card rounded-xl border overflow-hidden">
-				{/* 로딩 상태 */}
 				{loadError ? (
 					<div className="p-8 text-center text-red-600">
 						<p>에러: {loadError.message}</p>
@@ -348,9 +443,9 @@ export default function EmployeeListPage(): React.ReactNode {
 									<th className="text-left py-3 px-4 font-medium text-muted-foreground">액션</th>
 								</tr>
 							</thead>
+
 							<tbody>
 								{isPending ? (
-									// Skeleton rows
 									Array.from({ length: 10 }).map((_, index) => (
 										<tr
 											key={index}
@@ -407,7 +502,7 @@ export default function EmployeeListPage(): React.ReactNode {
 												<Button
 													variant="link"
 													className="text-primary hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 px-0"
-													onClick={() => $router.push(`/employee/employee-detail/${emp.id}`)}
+													onClick={() => handleMoveDetail(emp.id)}
 												>
 													상세보기
 												</Button>
@@ -432,6 +527,7 @@ export default function EmployeeListPage(): React.ReactNode {
 							<div className="text-sm text-muted-foreground">
 								총 {response?.meta.total ?? 0}개 중 {currentPage}페이지
 							</div>
+
 							<div className="flex items-center gap-2">
 								<Button
 									variant="outline"
@@ -441,6 +537,7 @@ export default function EmployeeListPage(): React.ReactNode {
 								>
 									<ChevronLeft className="w-4 h-4" />
 								</Button>
+
 								<div className="flex items-center gap-1">
 									{Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
 										<Button
@@ -454,10 +551,11 @@ export default function EmployeeListPage(): React.ReactNode {
 										</Button>
 									))}
 								</div>
+
 								<Button
 									variant="outline"
 									size="sm"
-									disabled={currentPage === totalPages}
+									disabled={currentPage === totalPages || totalPages === 0}
 									onClick={() => handlePageChange(currentPage + 1)}
 								>
 									<ChevronRight className="w-4 h-4" />
