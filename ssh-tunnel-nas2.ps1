@@ -6,7 +6,7 @@ $null = chcp 65001
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::InputEncoding  = [System.Text.Encoding]::UTF8
 
-$NAS_HOST    = "211.208.101.192"  # 집 공유기 외부 IP (확인: https://myip.com)
+$NAS_HOST    = "116.37.226.91"  # 집 공유기 외부 IP (확인: https://myip.com)
 $NAS_USER    = "dbtunnel"
 $SSH_PORT    = 4169
 $LOCAL_PORT  = 5433
