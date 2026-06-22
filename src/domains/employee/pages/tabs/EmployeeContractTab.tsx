@@ -1,20 +1,20 @@
 
 import { formatDate, formatAmount } from '@/shared/lib/shadcn/js/common';
 
-type ContractInfo = {
-	contract_id: number;
+export type TAssignmentContractInfo = {
+	assignment_id: number;
 	project_id: number;
 	project_name: string;
 	client: string;
 	role: string;
-	start_date: string;
-	end_date: string | null;
+	contract_start_date: string | null;
+	contract_end_date: string | null;
 	total_amount: number | null;
 	performance_rating: string | null;
 };
 
 type Props = {
-	contracts: ContractInfo[];
+	contracts: TAssignmentContractInfo[];
 };
 
 const performanceRatingMap: Record<string, string> = {
@@ -67,7 +67,7 @@ export default function EmployeeContractTab({ contracts }: Props) {
 					{contracts.length > 0 ? (
 						contracts.map((contract) => (
 							<tr
-								key={contract.contract_id}
+								key={contract.assignment_id}
 								className="border-t hover:bg-muted/20 transition-colors"
 							>
 								<td className="py-2.5 px-4 font-medium text-foreground">
@@ -85,10 +85,10 @@ export default function EmployeeContractTab({ contracts }: Props) {
 								</td>
 
 								<td className="py-2.5 px-4 text-muted-foreground">
-									{formatDate(contract.start_date)} ~{' '}
-									{contract.end_date ? formatDate(contract.end_date) : '현재'}
+									{formatDate(contract.contract_start_date)} ~{' '}
+									{contract.contract_end_date ? formatDate(contract.contract_end_date) : '현재'}
 								</td>
-
+		
 								<td className="py-2.5 px-4 font-medium">
 									{formatAmount(contract.total_amount)}
 								</td>

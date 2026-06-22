@@ -6,12 +6,18 @@ const ProjectListPage = loadable(() => import('@/domains/project/pages/ProjectLi
 const ProjectAssignPage = loadable(() => import('@/domains/project/pages/ProjectAssignPage'));
 const ProjectDetailPage = loadable(() => import('@/domains/project/pages/ProjectDetailPage'));
 const ProjectStatusPage = loadable(() => import('@/domains/project/pages/ProjectStatusPage'));
+const ProjectRegisterPage = loadable(() => import('@/domains/project/pages/ProjectRegisterPage'));
 
 const routes: TAppRoute[] = [
 	{
 		path: 'project-list',
 		element: <ProjectListPage />,
 		name: '프로젝트 목록',
+	},
+	{
+		path: 'new',
+		element: <ProjectRegisterPage />,
+		name: '프로젝트 등록',
 	},
 	{
 		path: ':id',

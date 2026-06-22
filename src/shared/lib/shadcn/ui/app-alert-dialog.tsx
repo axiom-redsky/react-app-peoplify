@@ -7,6 +7,7 @@ type AppAlertDialogProps = {
   message: string;
   confirmText: string;
   onOpenChange: (open: boolean) => void;
+	onConfirm?: () => void;
 };
 
 export function AppAlertDialog({
@@ -15,6 +16,7 @@ export function AppAlertDialog({
   message,
   confirmText,
   onOpenChange,
+	 onConfirm,
 }: AppAlertDialogProps) {
   if (!open) return null;
 
@@ -62,7 +64,7 @@ export function AppAlertDialog({
         <div className="mt-7 flex justify-end">
           <button
             type="button"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {onConfirm?.();onOpenChange(false)}}
             className="h-9 min-w-[72px] rounded-md bg-[#6c5ce7] px-5 text-sm font-semibold text-white hover:bg-[#7c6df0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6c5ce7]/40"
           >
             {confirmText}

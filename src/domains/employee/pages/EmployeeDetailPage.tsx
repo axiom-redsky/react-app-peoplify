@@ -25,6 +25,18 @@ export type TAssignmentHistory = {
 	updated_at: string;
 };
 
+export type TAssignmentContractInfo = {
+	assignment_id: number;
+	project_id: number;
+	project_name: string;
+	client: string;
+	role: string;
+	contract_start_date: string | null;
+	contract_end_date: string | null;
+	total_amount: number | null;
+	performance_rating: string | null;
+};
+
 export type TEmployeeDetail = {
 	id: number;
 	name: string;
@@ -34,10 +46,10 @@ export type TEmployeeDetail = {
 	position: string;
 	employment_status: string;
 	hire_date: string;
+	resign_date?: string | null;
 	skills: string[];
 	assignment_history: TAssignmentHistory[];
-	employmentStatus: string;
-	resign_date?: string | null;
+	contracts?: TAssignmentContractInfo[];
 };
 
 // API 응답 wrapper 타입
@@ -56,7 +68,7 @@ const tabs = [
 	{ key: 'basic', label: '기본정보' },
 	{ key: 'assignment', label: '투입 이력' },
 	{ key: 'skills', label: '기술스택' },
-	{ key: 'contract', label: '계약정보' },
+	{ key: 'contracts', label: '계약정보' },
 ] as const;
 
 type TabKey = (typeof tabs)[number]['key'];
@@ -307,9 +319,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 
 			{activeTab === 'skills' && <EmployeeSkillsTab skills={employee.skills ?? []} />}
 
-			{activeTab === 'contract' && (
-				<EmployeeContractTab contracts={employee.assignment_history ?? []} />	
-			)}
+			{activeTab === 'contracts' && <EmployeeContractTab contracts={employee.contracts ?? []} />}
 			{/* 하단 버튼 */}
 			<div className="flex justify-end gap-2 mt-4">
 				<Button

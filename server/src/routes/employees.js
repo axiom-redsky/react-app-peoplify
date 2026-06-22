@@ -22,7 +22,6 @@ async function resolveDepartmentId(body) {
 // GET /api/employees  — 목록 (페이지네이션, 검색)
 router.get('/', async (req, res, next) => {
 	try {
-
 		const { status, department, department_id, search, deployment_status, page = 1, limit = 20 } = req.query;
 		const offset = (Number(page) - 1) * Number(limit);
 
@@ -78,7 +77,6 @@ router.get('/', async (req, res, next) => {
 			meta: { total: Number(count), page: Number(page), limit: Number(limit) },
 		});
 	} catch (error) {
-
 		console.error(error);
 
 		return res.status(500).json({
@@ -118,9 +116,31 @@ router.get('/:id', async (req, res, next) => {
 			)
 			.orderBy('assignments.start_date', 'desc');
 
-		res.json({ success: true, data: { ...employee, skills, assignment_history: assignmentHistory } });
-		} catch (error) {
-
+		const contractHistory = await db('assignments')
+			.join('projects', 'assignments.project_id', 'projects.id')
+			.where('assignments.employee_id', employee.id)
+			.select(
+				'assignments.id as assignment_id',
+				'assignments.project_id',
+				'projects.name as project_name',
+				'projects.client',
+				'assignments.role',
+				'assignments.contract_start_date',
+				'assignments.contract_end_date',
+				'assignments.total_amount',
+				'assignments.performance_rating',
+			)
+			.orderBy('assignments.contract_start_date', 'desc');
+		res.json({
+			success: true,
+			data: {
+				...employee,
+				skills,
+				assignment_history: assignmentHistory,
+				contracts: contractHistory,
+			},
+		});
+	} catch (error) {
 		console.error(error);
 
 		return res.status(500).json({

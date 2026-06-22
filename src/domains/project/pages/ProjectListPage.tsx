@@ -184,7 +184,9 @@ export default function ProjectListPage(): React.ReactNode {
 			<PageHeader
 				title="프로젝트 관리"
 				actions={
-					<Button size="lg">
+					<Button size="lg"
+					onClick={() => $router.push(`/project/new`)}
+					>
 						<Plus className="w-4 h-4 mr-1.5" />
 						프로젝트 등록
 					</Button>

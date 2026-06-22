@@ -2,8 +2,9 @@ import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, Select
 import PageHeader from '@/shared/components/ui/PageHeader';
 import { SlidersHorizontal, CheckSquare } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
-import { useEffect, useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router';
+import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 
 // API 응답 타입 정의
 interface BenchMember {
@@ -40,6 +41,7 @@ export default function ProjectAssignPage(): React.ReactNode {
 		dept: 'all',
 	});
 
+	const { openAlert } = useAppAlert();
 	// 선택된 인력 ID 목록
 	const [selectedIds, setSelectedIds] = useState<number[]>([]);
 	const [benchMembers, setBenchMembers] = useState<any>([]);
@@ -50,7 +52,11 @@ export default function ProjectAssignPage(): React.ReactNode {
 	const { data: benchResp, isLoading, error } = useApi<TBenchMemberListResponse>('/api/dashboard/bench-members');
 
 	// 프로젝트 배정 API
-	const { mutate: assignMembers, isPending: isAssigning } = useApi<{
+	const {
+		mutate: assignMembers,
+		isPending: isAssigning,
+		invalidateQueries,
+	} = useApi<{
 		employee_id: string;
 		project_id: string;
 		role: string;
@@ -83,25 +89,62 @@ export default function ProjectAssignPage(): React.ReactNode {
 		setFilters((prev) => ({ ...prev, [key]: value }));
 	};
 
+	const isLockedRef = useRef(false);
 	// 배정 확정 핸들러
 	const handleAssignConfirm = () => {
 		if (selectedIds.length === 0) {
 			alert('인력을 선택해주세요.');
 			return;
 		}
+		if (isLockedRef.current || selectedIds.length === 0) return;
+
+		isLockedRef.current = true;
+
 		// 실제 구현에서는 역할, 투입률, 날짜 등을 폼에서 가져와야 함
-		assignMembers({
-			project_id: id, // 현재 프로젝트 ID
-			employee_id: selectedIds,
-			role: position, // 예시
-			rate_pct: 100,
-			start_date: '2026-06-01',
-			end_date: '2026-12-31',
-		});
+		assignMembers(
+			{
+				project_id: id, // 현재 프로젝트 ID
+				employee_id: selectedIds,
+				role: position, // 예시
+				rate_pct: 100,
+				start_date: '2026-06-01',
+				end_date: '2026-12-31',
+			},
+			{
+				onSuccess: async () => {
+					// 목록 캐시 무효화
+					await invalidateQueries('/api/project');
+					// 성공 후 프로젝트 상세 페이지로 이동
+					const message = '인력 배정이 완료되었습니다.';
+
+					openAlert({
+						title: '등록 성공',
+						message,
+						confirmText: '확인',
+						onConfirm: () => {
+							$router.push(`/project/${id}`);
+						},
+					});
+				},
+				onError: (error: any) => {
+					const message = error?.response?.data?.message || error?.message || '인력 배정 중 오류가 발생했습니다.';
+
+					openAlert({
+						title: '인력 배정 실패',
+						message,
+						confirmText: '확인',
+					});
+				},
+			},
+		);
 	};
 
 	// 선택된 인력 이름 추출
 	const selectedMembers = benchMembers?.filter((m: any) => selectedIds.includes(m.id));
+
+	const handleCancel = (): void => {
+		$router.back();
+	};
 
 	return (
 		<div className="p-5">
@@ -182,6 +225,14 @@ export default function ProjectAssignPage(): React.ReactNode {
 							<SlidersHorizontal className="w-4 h-4" />
 							초기화
 						</button>
+						<div className="flex gap-2 ml-auto">
+							<Button
+								variant="outline"
+								onClick={handleCancel}
+							>
+								프로젝트 상세
+							</Button>
+						</div>
 					</div>
 
 					{/* 로딩/에러 상태 처리 */}

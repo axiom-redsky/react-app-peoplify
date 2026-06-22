@@ -8,7 +8,7 @@ router.get('/', async (req, res, next) => {
   try {
     const { status } = req.query;
 
-    let query = db('projects').orderBy('start_date', 'desc');
+    let query = db('projects').orderBy('created_at', 'desc').orderBy('start_date', 'desc');
     if (status) query = query.where('status', status);
 
     const projects = await query;

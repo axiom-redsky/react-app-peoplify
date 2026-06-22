@@ -13,6 +13,7 @@ type AppAlertOptions = {
   title: string;
   message: string;
   confirmText?: string;
+	 onConfirm?: () => void;  
 };
 
 type AppAlertState = {
@@ -20,6 +21,7 @@ type AppAlertState = {
   title: string;
   message: string;
   confirmText: string;
+	 onConfirm?: () => void;  
 };
 
 type AppAlertContextValue = {
@@ -43,6 +45,7 @@ export function AppAlertProvider({ children }: { children: ReactNode }) {
       title: options.title,
       message: options.message,
       confirmText: options.confirmText ?? '확인',
+			onConfirm: options.onConfirm, 
     });
   }, []);
 
@@ -76,6 +79,10 @@ export function AppAlertProvider({ children }: { children: ReactNode }) {
         title={alert.title}
         message={alert.message}
         confirmText={alert.confirmText}
+				onConfirm={() => {
+    alert.onConfirm?.();   // 👈 핵심
+    closeAlert();
+  }}
       />
     </AppAlertContext.Provider>
   );
