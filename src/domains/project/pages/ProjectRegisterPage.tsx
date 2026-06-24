@@ -116,7 +116,6 @@ export default function ProjectRegisterPage(): React.ReactNode {
 	const [techStackText, setTechStackText] = useState<string>('');
 	const [errors, setErrors] = useState<TProjectRegisterErrors>({});
 	
-
 	const setField = <K extends keyof TProjectRegisterRequest>(key: K, value: TProjectRegisterRequest[K]): void => {
 		setForm((prev) => ({
 			...prev,
@@ -194,8 +193,8 @@ export default function ProjectRegisterPage(): React.ReactNode {
 			{
 				name: form.name,
 				client: form.client,
-				start_date: form.start_date,
-				end_date: form.end_date,
+				startDate: form.start_date,
+				endDate: form.end_date,
 				status: form.status,
 			},
 			[
@@ -216,7 +215,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		}
 
 		if (form.start_date && form.end_date && form.start_date > form.end_date) {
-			nextErrors.end_date = '종료일은 시작일보다 빠를 수 없습니다.';
+			nextErrors.endDate = '종료일은 시작일보다 빠를 수 없습니다.';
 		}
 
 		setErrors(nextErrors);
@@ -243,13 +242,13 @@ export default function ProjectRegisterPage(): React.ReactNode {
 			},
 			{
 				onSuccess: async () => {
-					debugger;
+					
 					await invalidateQueries('/api/projects');
 
 					$router.push('/project/project-list');
 				},
 				onError: (error: any) => {
-					debugger;
+					
 					const message = error?.response?.data?.message || error?.message || '프로젝트 등록 중 오류가 발생했습니다.';
 
 					openAlert({
@@ -562,7 +561,9 @@ export default function ProjectRegisterPage(): React.ReactNode {
 						<div>
 							<p className="text-xs text-muted-foreground mb-0.5">프로젝트 기간</p>
 							<p className="font-semibold text-foreground">
-								{form.start_date || '-'} ~ {form.end_date || '-'}
+								{form.start_date && form.end_date
+								? `${form.start_date} ~ ${form.end_date}`
+								: form.start_date || form.end_date || '-'}
 							</p>
 						</div>
 

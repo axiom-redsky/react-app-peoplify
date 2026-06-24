@@ -6,9 +6,10 @@ import { useParams } from 'react-router';
 import { useApi } from '@axiom/hooks';
 import dayjs from 'dayjs';
 import { useState, useEffect } from 'react';
+import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 
 type TProjectAssignment = {
-	id: number;
+	id: number; // assignments.id
 	role: string;
 	rate_pct: number;
 	start_date: string;
@@ -53,42 +54,59 @@ type TProjectDetailResponse = {
 	data: TProjectDetail;
 };
 
+type TMember = {
+	assignmentId: number; // 삭제 API에 넘길 assignments.id
+	employeeId: number;
+	name: string;
+	role: string;
+	rate: string;
+	start: string;
+	end: string | null;
+};
+
 const tabs = ['개요', '투입 인력', '일정', '계약'];
 
 export default function ProjectDetailPage(): React.ReactNode {
 	const { id } = useParams<{ id: string }>();
 	const PROJECTS_ENDPOINT = `/api/projects/${id}` as const;
 
+	const { openAlert } = useAppAlert();
+
 	const { data, isPending, error } = useApi<TProjectDetailResponse>(PROJECTS_ENDPOINT);
+
+	// 삭제 대상 assignment id
+	const [deleteAssignmentId, setDeleteAssignmentId] = useState<number>();
 
 	// 상태 관리
 	const [project, setProject] = useState<TProjectDetailData | undefined>(undefined);
 	const [assignments, setAssignments] = useState<TProjectAssignment[]>([]);
 	const [client, setClient] = useState<string>('');
-	const [members, setMembers] = useState<{ name: string; role: string; rate: string; start: string; end: string }[]>(
-		[],
-	);
+	const [members, setMembers] = useState<TMember[]>([]);
 
-	// 데이터 추출 및 members 변환
+	// 프로젝트 상세 데이터 세팅
 	useEffect(() => {
 		if (data?.data) {
+			debugger;
 			setProject(data.data);
 			setAssignments(data.data.assignments ?? []);
 			setClient(data.data.client);
 		}
 	}, [data]);
 
-	// members 변환 (assignments가 undefined일 경우 빈 배열로 처리)
+	// members 변환
 	useEffect(() => {
 		const transformedMembers = Array.isArray(assignments)
 			? assignments.map((a) => ({
+					assignmentId: a.id,
+					employeeId: a.employee_id,
 					name: a.employee_name,
 					role: a.position,
 					rate: `${a.rate_pct}%`,
 					start: a.start_date,
-					end: a.end_date ?? '미정',
+					end: a.end_date,
 				}))
 			: [];
+
 		setMembers(transformedMembers);
 	}, [assignments]);
 
@@ -96,15 +114,66 @@ export default function ProjectDetailPage(): React.ReactNode {
 	const techStack = project?.tech_stack ?? [];
 
 	// 날짜 포맷팅
-	const formatDate = (dateStr: string) => {
-		const date = new Date(dateStr);
-		console.log('날짜 dayjs 확인::', dateStr, dayjs(dateStr).format('YYYY-MM-DD'));
-		return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+	const formatDate = (dateStr?: string | null) => {
+		if (!dateStr) return '-';
+
+		return dayjs(dateStr).format('YYYY.MM.DD');
 	};
 
 	// 인력 배정 버튼 클릭
 	const handleAssignEmployeeProj = () => {
 		$router.push(`/project/${id}/assign`);
+	};
+
+	// 프로젝트 인력 철수 API
+	const {
+		mutate: removeAssignment,
+		isPending: isRemoving,
+		invalidateQueries,
+	} = useApi<Record<string, never>>(`/api/assignments/${deleteAssignmentId}`, {
+		method: 'DELETE',
+		type: 'mutation',
+	});
+
+	// deleteAssignmentId가 세팅되면 기존 useApi 구조로 DELETE 호출
+	useEffect(() => {
+		if (deleteAssignmentId === undefined) return;
+
+		removeAssignment(
+			{},
+			{
+				onSuccess: async () => {
+					await invalidateQueries(PROJECTS_ENDPOINT);
+
+					openAlert({
+						title: '성공',
+						message: '철수 처리가 완료되었습니다.',
+						confirmText: '확인',
+						onConfirm: () => {
+							setMembers((prev) => prev.filter((member) => member.assignmentId !== deleteAssignmentId));
+							setDeleteAssignmentId(undefined);
+						},
+					});
+				},
+				onError: (error: any) => {
+					const message = error?.response?.data?.message || error?.message || '철수 처리 중 오류가 발생했습니다.';
+
+					openAlert({
+						title: '철수 처리 실패',
+						message,
+						confirmText: '확인',
+					});
+
+					setDeleteAssignmentId(undefined);
+				},
+			},
+		);
+	}, [deleteAssignmentId]);
+
+	const handleRemoveMember = (assignmentId: number) => {
+		if (isRemoving) return;
+
+		setDeleteAssignmentId(assignmentId);
 	};
 
 	return (
@@ -116,7 +185,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 					<div className="flex gap-2">
 						<Button
 							variant="outline"
-							onClick={() => $router.back()}
+							onClick={() => $router.push(`/project/project-list`)}
 						>
 							목록으로
 						</Button>
@@ -174,6 +243,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 								<p className="text-sm text-foreground">{project.description}</p>
 							</div>
 						</div>
+
 						{/* 진척도 바 */}
 						<div>
 							<div className="flex justify-between text-sm mb-1">
@@ -216,6 +286,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 				<div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
 					<h3 className="font-semibold text-foreground text-sm">투입 인력 ({members.length}명)</h3>
 				</div>
+
 				<table className="w-full text-sm">
 					<thead className="bg-muted/50">
 						<tr>
@@ -224,13 +295,14 @@ export default function ProjectDetailPage(): React.ReactNode {
 							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">투입률</th>
 							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">투입일</th>
 							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">철수예정</th>
+							<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">제외</th>
 						</tr>
 					</thead>
 					<tbody>
 						{members.length > 0 ? (
 							members.map((m) => (
 								<tr
-									key={m.name}
+									key={m.assignmentId}
 									className="border-t hover:bg-muted/20 transition-colors"
 								>
 									<td className="py-2.5 px-4">
@@ -241,20 +313,35 @@ export default function ProjectDetailPage(): React.ReactNode {
 											<span className="font-medium text-foreground">{m.name}</span>
 										</div>
 									</td>
+
 									<td className="py-2.5 px-4">
 										<span className="px-2 py-0.5 rounded text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium">
 											{m.role}
 										</span>
 									</td>
+
 									<td className="py-2.5 px-4 font-medium text-muted-foreground">{m.rate}</td>
-									<td className="py-2.5 px-4 text-muted-foreground">{dayjs(m.start).format('YYYY.MM.DD')}</td>
-									<td className="py-2.5 px-4 text-muted-foreground">{dayjs(m.end).format('YYYY.MM.DD')}</td>
+
+									<td className="py-2.5 px-4 text-muted-foreground">{formatDate(m.start)}</td>
+
+									<td className="py-2.5 px-4 text-muted-foreground">{m.end ? formatDate(m.end) : '미정'}</td>
+
+									<td className="py-2.5 px-4 font-medium text-muted-foreground">
+										<button
+											type="button"
+											disabled={isRemoving}
+											onClick={() => handleRemoveMember(m.assignmentId)}
+											className="text-red-500 hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+										>
+											{isRemoving && deleteAssignmentId === m.assignmentId ? '처리 중' : '삭제'}
+										</button>
+									</td>
 								</tr>
 							))
 						) : (
 							<tr>
 								<td
-									colSpan={5}
+									colSpan={6}
 									className="py-8 text-center text-muted-foreground"
 								>
 									아직 투입 인력이 없습니다

@@ -33,8 +33,12 @@ router.get('/', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const project = await db('projects').where({ id: req.params.id }).first();
+
     if (!project) {
-      return res.status(404).json({ success: false, message: '프로젝트를 찾을 수 없습니다.' });
+      return res.status(404).json({
+        success: false,
+        message: '프로젝트를 찾을 수 없습니다.',
+      });
     }
 
     const techStack = await db('project_tech_stack')
@@ -45,6 +49,10 @@ router.get('/:id', async (req, res, next) => {
       .join('employees', 'assignments.employee_id', 'employees.id')
       .leftJoin('departments', 'employees.department_id', 'departments.id')
       .where('assignments.project_id', project.id)
+      .where(function () {
+        this.whereNull('assignments.end_date')
+          .orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
+      })
       .select(
         'assignments.id',
         'assignments.role',
@@ -60,7 +68,11 @@ router.get('/:id', async (req, res, next) => {
 
     res.json({
       success: true,
-      data: { ...project, tech_stack: techStack, assignments },
+      data: {
+        ...project,
+        tech_stack: techStack,
+        assignments,
+      },
     });
   } catch (err) {
     next(err);

@@ -93,7 +93,7 @@ router.get('/bench-members', async (req, res, next) => {
       .select('employee_id')
       .where('start_date', '<=', db.raw('CURRENT_DATE'))
       .where(function () {
-        this.whereNull('end_date').orWhere('end_date', '>=', db.raw('CURRENT_DATE'));
+        this.whereNull('end_date').orWhere('end_date', '>', db.raw('CURRENT_DATE'));
       });
 
     const benchEmployees = await db('employees')
