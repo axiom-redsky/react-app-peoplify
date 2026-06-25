@@ -7,7 +7,7 @@ export type ProjectStatusType =
 	| 'hold';
 
 interface ProjectStatusBadgeProps {
-	status: ProjectStatusType;
+	status?: string | null;
 	className?: string;
 }
 
@@ -34,11 +34,38 @@ const projectStatusConfig: Record<ProjectStatusType, { label: string; className:
 	},
 };
 
+const normalizeProjectStatus = (status?: string | null): ProjectStatusType | null => {
+	if (!status) return null;
+
+	if (status === 'planned') return 'planned';
+	if (status === 'active') return 'active';
+	if (status === 'complete') return 'complete';
+	if (status === 'hold') return 'hold';
+
+	// 혹시 기존 DB/API 값이 다른 명칭으로 들어오는 경우 방어
+	if (status === 'in_progress') return 'active';
+	if (status === 'completed') return 'complete';
+
+	if (status === '예정') return 'planned';
+	if (status === '진행중') return 'active';
+	if (status === '완료') return 'complete';
+	if (status === '보류') return 'hold';
+
+	return null;
+};
+
 export default function ProjectStatusBadge({
 	status,
 	className,
 }: ProjectStatusBadgeProps): React.ReactNode {
-	const config = projectStatusConfig[status];
+	const normalizedStatus = normalizeProjectStatus(status);
+	const config = normalizedStatus
+		? projectStatusConfig[normalizedStatus]
+		: {
+				label: status || '상태없음',
+				className:
+					'bg-zinc-500/15 text-zinc-600 ring-zinc-500/20 dark:text-zinc-400',
+			};
 
 	return (
 		<span

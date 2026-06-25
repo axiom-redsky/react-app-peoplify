@@ -4,6 +4,7 @@ import StatusBadge, { type StatusType } from '@/shared/components/ui/StatusBadge
 import { Edit, UserPlus } from 'lucide-react';
 import { useParams } from 'react-router';
 import { useApi } from '@axiom/hooks';
+import { Trash2 } from 'lucide-react';
 import dayjs from 'dayjs';
 import { useState, useEffect } from 'react';
 import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
@@ -86,7 +87,6 @@ export default function ProjectDetailPage(): React.ReactNode {
 	// 프로젝트 상세 데이터 세팅
 	useEffect(() => {
 		if (data?.data) {
-			debugger;
 			setProject(data.data);
 			setAssignments(data.data.assignments ?? []);
 			setClient(data.data.client);
@@ -123,6 +123,45 @@ export default function ProjectDetailPage(): React.ReactNode {
 	// 인력 배정 버튼 클릭
 	const handleAssignEmployeeProj = () => {
 		$router.push(`/project/${id}/assign`);
+	};
+
+	// 프로젝트 삭제 API
+	const {
+		mutate: removeProject,
+	} = useApi<Record<string, never>>(`/api/projects/${id}`, {
+		method: 'DELETE',
+		type: 'mutation',
+	});
+
+	// 인력 배정 버튼 클릭
+	const handleDeleteEmployeeProj = () => {
+		removeProject(
+			{},
+			{
+				onSuccess: async () => {
+
+					openAlert({
+						title: '삭제',
+						message: '삭제가 완료되었습니다.',
+						confirmText: '확인',
+						onConfirm: () => {
+							$router.push(`/project/project-list`);
+						},
+					});
+				},
+				onError: (error: any) => {
+					const message = error?.response?.data?.message || error?.message || '철수 처리 중 오류가 발생했습니다.';
+
+					openAlert({
+						title: '삭제 처리 실패',
+						message,
+						confirmText: '확인',
+					});
+
+					setDeleteAssignmentId(undefined);
+				},
+			},
+		);
 	};
 
 	// 프로젝트 인력 철수 API
@@ -185,6 +224,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 					<div className="flex gap-2">
 						<Button
 							variant="outline"
+							size="lg"
 							onClick={() => $router.push(`/project/project-list`)}
 						>
 							목록으로
@@ -192,6 +232,7 @@ export default function ProjectDetailPage(): React.ReactNode {
 						<Button
 							variant="outline"
 							size="lg"
+							onClick={() => $router.push(`/project/${id}/project-edit`)}
 						>
 							<Edit className="w-4 h-4 mr-1.5" />
 							수정
@@ -203,6 +244,17 @@ export default function ProjectDetailPage(): React.ReactNode {
 							<UserPlus className="w-4 h-4 mr-1.5" />
 							인력 배정
 						</Button>
+
+						<Button
+							variant="outline"
+							size="lg"
+							className="text-destructive hover:text-destructive"
+							onClick={handleDeleteEmployeeProj}
+						>
+							<Trash2 className="w-4 h-4 mr-1.5" />
+							삭제
+						</Button>
+
 					</div>
 				}
 			/>
@@ -356,14 +408,25 @@ export default function ProjectDetailPage(): React.ReactNode {
 			<div className="bg-card rounded-xl border p-4">
 				<h3 className="font-semibold text-foreground text-sm mb-3">기술 스택</h3>
 				<div className="flex flex-wrap gap-2">
-					{techStack.map((t) => (
-						<span
-							key={t}
-							className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium"
-						>
-							{t}
-						</span>
-					))}
+					{techStack.length > 0 ? (
+						techStack.map((t) => (
+							<span
+								key={t}
+								className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium"
+							>
+								{t}
+							</span>
+						))
+					) : (
+						<tr>
+							<td
+								colSpan={6}
+								className="py-8 text-center text-muted-foreground"
+							>
+								기술 정보가 없습니다.
+							</td>
+						</tr>
+					)}
 				</div>
 			</div>
 		</div>

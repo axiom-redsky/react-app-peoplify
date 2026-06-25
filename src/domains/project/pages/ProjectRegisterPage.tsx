@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from 'react';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import ProjectStatus from '@/shared/components/ui/ProjectStatusBadge';
 import { useApi } from '@axiom/hooks';
-import { formatPhoneNumber, formatDateValue, formatRate } from '@/shared/lib/shadcn/js/common';
 import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 import { validateRequired, getFieldClassName } from '@/shared/lib/shadcn/js/common';
 import {
@@ -51,19 +50,17 @@ type TProjectRegisterResponse = {
 type TProjectRegisterErrors = Partial<Record<keyof TProjectRegisterRequest, string>>;
 type ProjectStatusType = 'planned' | 'active' | 'complete' | 'hold';
 
-const PROJECTS_ENDPOINT = '/api/projects' as const;
-
 const statusOptions = [
 	{ label: '예정', value: 'planned' },
 	{ label: '진행중', value: 'active' },
 	{ label: '완료', value: 'complete' },
 	{ label: '보류', value: 'hold' },
 ];
+const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
 
 const fieldFocusClassName = 'focus-visible:border-brand-500 focus-visible:ring-brand-500/20';
 
 export default function ProjectRegisterPage(): React.ReactNode {
-	
 	// POST API 호출
 	const {
 		mutate,
@@ -86,7 +83,8 @@ export default function ProjectRegisterPage(): React.ReactNode {
 	});
 	const [start_date, setStart_date] = useState('');
 	const [end_date, setEnd_date] = useState('');
-
+	const [skills, setSkills] = useState<string[]>(['Java', 'Spring Boot', 'React']);
+	const [newSkillInput, setNewSkillInput] = useState('');
 	type TOpenDatePicker = 'start_date' | 'end_date' | false;
 	const [openDatePicker, setOpenDatePicker] = useState<TOpenDatePicker>(false);
 	const startPickerRef = useRef<HTMLDivElement>(null);
@@ -115,7 +113,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 
 	const [techStackText, setTechStackText] = useState<string>('');
 	const [errors, setErrors] = useState<TProjectRegisterErrors>({});
-	
+
 	const setField = <K extends keyof TProjectRegisterRequest>(key: K, value: TProjectRegisterRequest[K]): void => {
 		setForm((prev) => ({
 			...prev,
@@ -193,8 +191,8 @@ export default function ProjectRegisterPage(): React.ReactNode {
 			{
 				name: form.name,
 				client: form.client,
-				startDate: form.start_date,
-				endDate: form.end_date,
+				start_date: form.start_date,
+				end_date: form.end_date,
 				status: form.status,
 			},
 			[
@@ -215,7 +213,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		}
 
 		if (form.start_date && form.end_date && form.start_date > form.end_date) {
-			nextErrors.endDate = '종료일은 시작일보다 빠를 수 없습니다.';
+			nextErrors.end_date = '종료일은 시작일보다 빠를 수 없습니다.';
 		}
 
 		setErrors(nextErrors);
@@ -238,17 +236,15 @@ export default function ProjectRegisterPage(): React.ReactNode {
 				status: form.status,
 				progress_pct: form.progress_pct,
 				description: form.description.trim(),
-				tech_stack: form.tech_stack,
+				tech_stack: skills,
 			},
 			{
 				onSuccess: async () => {
-					
 					await invalidateQueries('/api/projects');
 
 					$router.push('/project/project-list');
 				},
 				onError: (error: any) => {
-					
 					const message = error?.response?.data?.message || error?.message || '프로젝트 등록 중 오류가 발생했습니다.';
 
 					openAlert({
@@ -259,6 +255,27 @@ export default function ProjectRegisterPage(): React.ReactNode {
 				},
 			},
 		);
+	};
+
+	// 스킬 제거 핸들러
+	const handleRemoveSkill = (skill: string): void => {
+		setSkills(skills.filter((s) => s !== skill));
+	};
+
+	// 추천 스킬 추가
+	const handleAddSuggestedSkill = (skill: string): void => {
+		if (!skills.includes(skill)) {
+			setSkills([...skills, skill]);
+		}
+	};
+
+		// 스킬 추가 핸들러
+	const handleAddSkill = (): void => {
+		const trimmed = newSkillInput.trim();
+		if (trimmed && !skills.includes(trimmed)) {
+			setSkills([...skills, trimmed]);
+			setNewSkillInput('');
+		}
 	};
 
 	const handleCancel = (): void => {
@@ -542,6 +559,75 @@ export default function ProjectRegisterPage(): React.ReactNode {
 							<span>100%</span>
 						</div>
 					</div>
+					{/* 기술스택 섹션 */}
+					<div className="bg-card rounded-xl border p-5 mb-4">
+						<h2 className="font-semibold text-foreground mb-4 text-sm flex items-center gap-2">
+							<span className="w-5 h-5 rounded-full bg-brand-600 text-white text-xs flex items-center justify-center">
+								2
+							</span>
+							기술스택
+							<span className="text-xs font-normal text-brand-600">★ 신규</span>
+						</h2>
+
+						{/* 선택된 스킬 태그 */}
+						<div className="flex flex-wrap gap-2 mb-3 min-h-10 p-2 border border-dashed rounded-lg bg-muted/20">
+							{skills.map((skill) => (
+								<span
+									key={skill}
+									className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-sm font-medium"
+								>
+									{skill}
+									<Button
+										variant="ghost"
+										size="icon-xs"
+										className="rounded-full hover:bg-brand-200/50 dark:hover:bg-brand-800/50 hover:text-brand-900 dark:hover:text-brand-100"
+										onClick={() => handleRemoveSkill(skill)}
+									>
+										<X />
+									</Button>
+								</span>
+							))}
+						</div>
+
+						{/* 스킬 추가 입력 */}
+						<div className="flex gap-2 mb-3">
+							<Input
+								value={newSkillInput}
+								onChange={(e) => setNewSkillInput(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										handleAddSkill();
+									}
+								}}
+								className="flex-1 h-9 bg-muted/60 border-slate-300 dark:border-slate-600 shadow-sm focus-visible:border-brand-500 focus-visible:ring-brand-500/20"
+								placeholder="기술스택 직접 입력..."
+							/>
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={handleAddSkill}
+							>
+								<Plus className="w-4 h-4" />
+							</Button>
+						</div>
+
+						{/* 추천 스킬 */}
+						<div>
+							<p className="text-xs text-muted-foreground mb-2">자주 사용되는 기술스택:</p>
+							<div className="flex flex-wrap gap-1.5">
+								{skillSuggestions.map((skill) => (
+									<button
+										key={skill}
+										className="px-2.5 py-1 text-xs border rounded-full hover:border-brand-400 hover:text-brand-600 dark:hover:border-brand-500 dark:hover:text-brand-400 transition-colors text-muted-foreground border-slate-300 dark:border-slate-600"
+										onClick={() => handleAddSuggestedSkill(skill)}
+									>
+										+ {skill}
+									</button>
+								))}
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<div className="bg-card rounded-xl border p-4 mb-4">
@@ -562,14 +648,14 @@ export default function ProjectRegisterPage(): React.ReactNode {
 							<p className="text-xs text-muted-foreground mb-0.5">프로젝트 기간</p>
 							<p className="font-semibold text-foreground">
 								{form.start_date && form.end_date
-								? `${form.start_date} ~ ${form.end_date}`
-								: form.start_date || form.end_date || '-'}
+									? `${form.start_date} ~ ${form.end_date}`
+									: form.start_date || form.end_date || '-'}
 							</p>
 						</div>
 
 						<div>
 							<p className="text-xs text-muted-foreground mb-0.5">상태</p>
-							<ProjectStatus status={form.status as StatusType} />
+							<ProjectStatus status={form.status as ProjectStatusType} />
 						</div>
 
 						<div>

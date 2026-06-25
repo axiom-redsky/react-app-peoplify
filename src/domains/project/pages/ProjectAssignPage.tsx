@@ -210,9 +210,12 @@ export default function ProjectAssignPage(): React.ReactNode {
 		const requiredResult = validateRequired(
 			{
 				startDate: startDate,
-				end_date: endDate,
+				endDate: endDate,
 			},
-			[{ key: 'startDate', message: '투입 시작일을 선택해주세요.' }],
+			[
+				{ key: 'startDate', message: '투입 시작일을 선택해주세요.' },
+				{ key: 'endDate', message: '종료일을 선택해주세요.' },
+			],
 		);
 
 		const nextErrors: TAssignRegisterErrors = {
@@ -222,6 +225,17 @@ export default function ProjectAssignPage(): React.ReactNode {
 		if (endDate !== '') {
 			if (startDate > endDate) {
 				nextErrors.endDate = '종료일은 시작일보다 빠를 수 없습니다.';
+			}
+
+			const today = new Date();
+			const todayStr = [
+				today.getFullYear(),
+				String(today.getMonth() + 1).padStart(2, '0'),
+				String(today.getDate()).padStart(2, '0'),
+			].join('-');
+
+			if (endDate && endDate <= todayStr) {
+				nextErrors.endDate = '오늘 날짜 포함 하여 과거일은 선택할 수 없습니다.';
 			}
 		}
 		setErrors(nextErrors);
@@ -242,7 +256,6 @@ export default function ProjectAssignPage(): React.ReactNode {
 	};
 
 	const handleAssignConfirm = () => {
-		debugger;
 		if (selectedIds.length === 0) {
 			openAlert({
 				title: '인력 선택 필요',
@@ -600,6 +613,7 @@ export default function ProjectAssignPage(): React.ReactNode {
 								name="endDate"
 								label="종료 예정일"
 								error={errors.endDate}
+								required
 							>
 								<div
 									className="relative"
