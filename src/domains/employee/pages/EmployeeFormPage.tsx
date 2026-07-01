@@ -20,8 +20,22 @@ import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider
 const grades = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
 
-// 부서 목록 API 호출
+// 공통코드 API 조회
+type TCommonCode = {
+  id: number;
+  group_code: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  sort_order: number;
+};
 
+type TCommonCodeResponse = {
+  success: boolean;
+  data: TCommonCode[];
+};
+
+// 부서 목록 API 호출
 type TCreateEmployee = {
 	name: string;
 	email: string;
@@ -52,6 +66,14 @@ export default function EmployeeFormPage(): React.ReactNode {
 
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const { openAlert } = useAppAlert();
+
+	// GET 공통코드 API 호출
+	const {
+		jabRoleCode,
+	} = useApi<TCommonCode>('/api/common-codes/POSITION', {
+		method: 'GET',
+		type: 'mutation',
+	});
 
 	// POST API 호출
 	const {
