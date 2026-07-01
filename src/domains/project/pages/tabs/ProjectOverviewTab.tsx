@@ -49,7 +49,7 @@ const ROLE_GROUPS = [
 		key: 'QA',
 		label: 'QA/테스터',
 		description: '검증 및 테스트',
-		keywords: ['qa', '테스터', '테스트', '검증', 'tester'],
+		keywords: ['qa', 'QA팀', '테스터', '테스트', '검증', 'tester'],
 	},
 ] as const;
 

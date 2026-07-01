@@ -147,36 +147,53 @@ export default function ProjectDetailPage(): React.ReactNode {
 		type: 'mutation',
 	});
 
-	// 인력 배정 버튼 클릭
+	// 프로젝트 삭제 버튼 클릭
 	const handleDeleteEmployeeProj = () => {
-		removeProject(
-			{},
-			{
-				onSuccess: async () => {
-					openAlert({
-						title: '삭제',
-						message: '삭제가 완료되었습니다.',
-						confirmText: '확인',
-						onConfirm: () => {
-							$router.push(`/project/project-list`);
+		
+		const assignmentCount = assignments?.length ?? 0;
+
+		  // 1. 투입 인원이 있으면 삭제 불가
+		if (assignmentCount > 0) {
+			openAlert({
+				title: '삭제 불가',
+				message: `현재 프로젝트에 투입된 인원이 ${assignmentCount}명 있습니다. 투입 인원을 먼저 제외한 뒤 삭제해주세요.`,
+				confirmText: '확인',
+			});
+			return;
+		}
+		openAlert({
+			title: '프로젝트 삭제',
+			message: '정말 이 프로젝트를 삭제하시겠습니까? 삭제된 프로젝트는 복구할 수 없습니다.',
+			confirmText: '삭제',
+			onConfirm: () => {
+					removeProject(
+					{},
+					{
+						onSuccess: async () => {
+							openAlert({
+								title: '삭제',
+								message: '삭제가 완료되었습니다.',
+								confirmText: '확인',
+								onConfirm: () => {
+									$router.push(`/project/project-list`);
+								},
+							});
 						},
-					});
-				},
-				onError: (error: any) => {
-					const message = error?.response?.data?.message || error?.message || '철수 처리 중 오류가 발생했습니다.';
+						onError: (error: any) => {
+							const message = error?.response?.data?.message || error?.message || '철수 처리 중 오류가 발생했습니다.';
 
-					openAlert({
-						title: '삭제 처리 실패',
-						message,
-						confirmText: '확인',
-					});
-
-					setDeleteAssignmentId(undefined);
-				},
-			},
-		);
+							openAlert({
+								title: '삭제 처리 실패',
+								message,
+								confirmText: '확인',
+							});
+							setDeleteAssignmentId(undefined);
+						},
+					},
+				);
+			}
+		});
 	};
-
 	// 프로젝트 인력 철수 API
 	const {
 		mutate: removeAssignment,
@@ -187,7 +204,6 @@ export default function ProjectDetailPage(): React.ReactNode {
 		type: 'mutation',
 	});
 
-	// deleteAssignmentId가 세팅되면 기존 useApi 구조로 DELETE 호출
 	// deleteAssignmentId가 세팅되면 기존 useApi 구조로 DELETE 호출
 	useEffect(() => {
 		if (deleteAssignmentId === undefined) return;

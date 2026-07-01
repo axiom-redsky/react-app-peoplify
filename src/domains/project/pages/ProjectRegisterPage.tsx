@@ -269,7 +269,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		}
 	};
 
-		// 스킬 추가 핸들러
+	// 스킬 추가 핸들러
 	const handleAddSkill = (): void => {
 		const trimmed = newSkillInput.trim();
 		if (trimmed && !skills.includes(trimmed)) {
@@ -290,6 +290,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 				actions={
 					<div className="flex gap-2">
 						<Button
+							type="button"
 							variant="outline"
 							onClick={handleCancel}
 							disabled={isSubmitting}
@@ -299,6 +300,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 						</Button>
 
 						<Button
+							type="button"
 							size="lg"
 							onClick={handleSubmit}
 							disabled={isSubmitting}
@@ -578,6 +580,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 								>
 									{skill}
 									<Button
+										type="button"
 										variant="ghost"
 										size="icon-xs"
 										className="rounded-full hover:bg-brand-200/50 dark:hover:bg-brand-800/50 hover:text-brand-900 dark:hover:text-brand-100"
@@ -604,6 +607,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 								placeholder="기술스택 직접 입력..."
 							/>
 							<Button
+								type="button"
 								size="sm"
 								variant="outline"
 								onClick={handleAddSkill}
@@ -618,6 +622,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 							<div className="flex flex-wrap gap-1.5">
 								{skillSuggestions.map((skill) => (
 									<button
+										type="button"
 										key={skill}
 										className="px-2.5 py-1 text-xs border rounded-full hover:border-brand-400 hover:text-brand-600 dark:hover:border-brand-500 dark:hover:text-brand-400 transition-colors text-muted-foreground border-slate-300 dark:border-slate-600"
 										onClick={() => handleAddSuggestedSkill(skill)}

@@ -407,6 +407,7 @@ export default function ProjectEditPage(): React.ReactNode {
 				actions={
 					<div className="flex gap-2">
 						<Button
+							type="button"
 							variant="outline"
 							size="lg"
 							onClick={handleCancel}
@@ -417,6 +418,7 @@ export default function ProjectEditPage(): React.ReactNode {
 						</Button>
 
 						<Button
+							type="button"
 							size="lg"
 							onClick={handleSubmit}
 							disabled={isSubmitting}
