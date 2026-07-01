@@ -25,14 +25,17 @@ type TCommonCode = {
   id: number;
   group_code: string;
   code: string;
-  name: string;
-  description?: string | null;
+  code_name: string;
   sort_order: number;
+  use_yn: boolean;
+  extra1?: string | null;
+  extra2?: string | null;
+  extra3?: string | null;
 };
 
 type TCommonCodeResponse = {
   success: boolean;
-  data: TCommonCode[];
+  data: Record<string, TCommonCode[]>;
 };
 
 // 부서 목록 API 호출
@@ -64,16 +67,25 @@ export default function EmployeeFormPage(): React.ReactNode {
 	const [skills, setSkills] = useState<string[]>(['Java', 'Spring Boot', 'React']);
 	const [newSkillInput, setNewSkillInput] = useState('');
 
+	
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const { openAlert } = useAppAlert();
 
 	// GET 공통코드 API 호출
-	const {
-		jabRoleCode,
-	} = useApi<TCommonCode>('/api/common-codes/POSITION', {
-		method: 'GET',
-		type: 'mutation',
-	});
+	const { data: commonCodeResponse } = useApi<TCommonCodeResponse>(
+  // 단일 코드 조회
+	 '/api/common-codes?groupCode=PROJECT_STATUS',
+	// 여러개의 코드 조회
+	//'/api/common-codes?groups=JOB_ROLE,POSITION',
+	
+  {
+    method: 'GET',
+  },
+
+);
+
+const positionOptions = commonCodeResponse?.data?.POSITION ?? [];
+const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
 
 	// POST API 호출
 	const {
@@ -94,7 +106,7 @@ export default function EmployeeFormPage(): React.ReactNode {
 		document.addEventListener('mousedown', h);
 		return () => document.removeEventListener('mousedown', h);
 	}, []);
-
+	
 	// 스킬 추가 핸들러
 	const handleAddSkill = (): void => {
 		const trimmed = newSkillInput.trim();
@@ -396,12 +408,12 @@ export default function EmployeeFormPage(): React.ReactNode {
 									sideOffset={4}
 									className="z-[9999]"
 								>
-									{grades.map((g) => (
+									{positionOptions.map((item) => (
 										<SelectItem
-											key={g}
-											value={g}
+											key={item.code}
+											value={item.code}
 										>
-											{g}
+											{item.code_name}
 										</SelectItem>
 									))}
 								</SelectContent>
