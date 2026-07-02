@@ -40,14 +40,55 @@ router.get('/:id', async (req, res, next) => {
 			});
 		}
 
-		const techStack = await db('project_tech_stack').where({ project_id: project.id }).pluck('tech');
+		const techStack = await db('project_tech_stack')
+			.where({ project_id: project.id })
+			.pluck('tech');
+
+		// 직무 옵션: JOB_ROLE
+		const jobRoleOptions = await db('common_code')
+			.where('group_code', 'JOB_ROLE')
+			.select(
+				'code',
+				'code_name',
+				'parent_code',
+				'sort_order',
+			)
+			.orderBy('sort_order', 'asc');
+
+		// 직무구분 옵션: JOB_ROLE_CATEGORY
+		const jobRoleCategoryOptions = await db('common_code')
+			.where('group_code', 'JOB_ROLE_CATEGORY')
+			.select(
+				'code',
+				'code_name',
+				'parent_code',
+				'sort_order',
+			)
+			.orderBy('sort_order', 'asc');
 
 		const assignments = await db('assignments')
 			.join('employees', 'assignments.employee_id', 'employees.id')
 			.leftJoin('departments', 'employees.department_id', 'departments.id')
+
+			// 직원 직무 코드: employees.job_role_code -> common_code(JOB_ROLE)
+			.leftJoin({ jobRole: 'common_code' }, function () {
+				this.on('employees.job_role_code', '=', 'jobRole.code')
+					.andOn('jobRole.group_code', '=', db.raw('?', ['JOB_ROLE']));
+			})
+
+			// 직무구분 코드: jobRole.parent_code -> common_code(JOB_ROLE_CATEGORY)
+			.leftJoin({ jobRoleCategory: 'common_code' }, function () {
+				this.on('jobRole.parent_code', '=', 'jobRoleCategory.code')
+					.andOn('jobRoleCategory.group_code', '=', db.raw('?', ['JOB_ROLE_CATEGORY']));
+			})
+
 			.where('assignments.project_id', project.id)
 			.where(function () {
-				this.whereNull('assignments.end_date').orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
+				this.whereNull('assignments.end_date').orWhere(
+					'assignments.end_date',
+					'>',
+					db.raw('CURRENT_DATE'),
+				);
 			})
 			.select(
 				'assignments.id',
@@ -55,10 +96,19 @@ router.get('/:id', async (req, res, next) => {
 				'assignments.rate_pct',
 				'assignments.start_date',
 				'assignments.end_date',
+
 				'employees.id as employee_id',
 				'employees.name as employee_name',
 				'departments.name as department',
 				'employees.position',
+
+				// 직원 직무 정보
+				'employees.job_role_code as job_role_code',
+				'jobRole.code_name as job_role_name',
+
+				// 직원 직무구분 정보
+				'jobRole.parent_code as job_role_category_code',
+				'jobRoleCategory.code_name as job_role_category_name',
 			)
 			.orderBy('assignments.start_date', 'desc');
 
@@ -68,6 +118,10 @@ router.get('/:id', async (req, res, next) => {
 				...project,
 				tech_stack: techStack,
 				assignments,
+
+				// 추가: 화면 카드 기본 목록용
+				jobRoleOptions,
+				jobRoleCategoryOptions,
 			},
 		});
 	} catch (err) {

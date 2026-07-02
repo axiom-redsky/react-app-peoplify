@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { formatPhoneNumber, validateRequired, getFieldClassName } from '@/shared/lib/shadcn/js/common';
 import {
 	Button,
@@ -17,25 +17,25 @@ import { Plus, X } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
 import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 
-const grades = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
 
 // 공통코드 API 조회
 type TCommonCode = {
-  id: number;
-  group_code: string;
-  code: string;
-  code_name: string;
-  sort_order: number;
-  use_yn: boolean;
-  extra1?: string | null;
-  extra2?: string | null;
-  extra3?: string | null;
+	id: number;
+	group_code: string;
+	code: string;
+	code_name: string;
+	sort_order: number;
+	use_yn: boolean;
+	extra1?: string | null;
+	extra2?: string | null;
+	extra3?: string | null;
+	parent_code?: string | null;
 };
 
 type TCommonCodeResponse = {
-  success: boolean;
-  data: Record<string, TCommonCode[]>;
+	success: boolean;
+	data: Record<string, TCommonCode[]>;
 };
 
 // 부서 목록 API 호출
@@ -48,6 +48,7 @@ type TCreateEmployee = {
 	hire_date: string;
 	employment_status?: string;
 	skills?: string[];
+	job_role_code: string;
 };
 
 type TDepartmentResponse = {
@@ -67,25 +68,30 @@ export default function EmployeeFormPage(): React.ReactNode {
 	const [skills, setSkills] = useState<string[]>(['Java', 'Spring Boot', 'React']);
 	const [newSkillInput, setNewSkillInput] = useState('');
 
-	
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const { openAlert } = useAppAlert();
 
 	// GET 공통코드 API 호출
 	const { data: commonCodeResponse } = useApi<TCommonCodeResponse>(
-  // 단일 코드 조회
-	 '/api/common-codes?groupCode=PROJECT_STATUS',
-	// 여러개의 코드 조회
-	//'/api/common-codes?groups=JOB_ROLE,POSITION',
-	
-  {
-    method: 'GET',
-  },
+		// 단일 코드 조회
+		'/api/common-codes?groupCode=JOB_ROLE',
+		// 여러개의 코드 조회
+		//'/api/common-codes?groups=JOB_ROLE,POSITION',
 
-);
+		{
+			method: 'GET',
+		},
+	);
 
-const positionOptions = commonCodeResponse?.data?.POSITION ?? [];
-const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
+	const positionOptions = commonCodeResponse?.data?.POSITION ?? [];
+	const jobRoleCategoryOptions = commonCodeResponse?.data?.JOB_ROLE_CATEGORY ?? [];
+	const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
+	const [jobRoleCode, setJobRoleCode] = useState('');
+	const [jobRoleCategory, setJobRoleCategory] = useState('');
+
+	const filteredJobRoleOptions = useMemo(() => {
+		return jobRoleOptions.filter((item) => item.parent_code === jobRoleCategory);
+	}, [jobRoleOptions, jobRoleCategory]);
 
 	// POST API 호출
 	const {
@@ -106,7 +112,7 @@ const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
 		document.addEventListener('mousedown', h);
 		return () => document.removeEventListener('mousedown', h);
 	}, []);
-	
+
 	// 스킬 추가 핸들러
 	const handleAddSkill = (): void => {
 		const trimmed = newSkillInput.trim();
@@ -138,6 +144,8 @@ const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
 			hireDate,
 			department,
 			position,
+			jobRoleCategory,
+			jobRoleCode,
 		};
 		/** 필수체크 할경우 해당 부분에 추가 */
 		const result = validateRequired(values, [
@@ -147,6 +155,8 @@ const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
 			{ key: 'hireDate', message: '입사일을 선택해주세요.' },
 			{ key: 'department', message: '부서를 선택해주세요.' },
 			{ key: 'position', message: '직급을 선택해주세요.' },
+			{ key: 'jobRoleCategory', message: '직무구분을 선택해주세요.' },
+			{ key: 'jobRoleCode', message: '직무를 선택해주세요.' },
 		]);
 
 		if (!result.isValid) {
@@ -167,6 +177,7 @@ const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
 				hire_date: hireDate,
 				employment_status: 'active',
 				skills,
+				job_role_code : jobRoleCode,
 			},
 			{
 				onSuccess: async () => {
@@ -409,6 +420,107 @@ const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
 									className="z-[9999]"
 								>
 									{positionOptions.map((item) => (
+										<SelectItem
+											key={item.code}
+											value={item.code}
+										>
+											{item.code_name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FormField>
+						{/* 직무구분 */}
+						{/* 직무구분 */}
+						<FormField
+							name="jobRoleCategory"
+							label="직무구분"
+							required
+							error={errors.jobRoleCategory}
+						>
+							<Select
+								value={jobRoleCategory}
+								onValueChange={(value) => {
+									setJobRoleCategory(value);
+									setJobRoleCode('');
+
+									if (errors.jobRoleCategory || errors.jobRoleCode) {
+										setErrors((prev) => ({
+											...prev,
+											jobRoleCategory: '',
+											job_role_code: '',
+										}));
+									}
+								}}
+							>
+								<SelectTrigger
+									id="jobRoleCategory"
+									name="jobRoleCategory"
+									size="lg"
+									className={getFieldClassName(
+										errors.jobRoleCategory,
+										'w-full focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+									)}
+								>
+									<SelectValue placeholder="직무구분 선택" />
+								</SelectTrigger>
+
+								<SelectContent
+									position="popper"
+									sideOffset={4}
+									className="z-[9999]"
+								>
+									{jobRoleCategoryOptions.map((item) => (
+										<SelectItem
+											key={item.code}
+											value={item.code}
+										>
+											{item.code_name}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FormField>
+
+						{/* 직무 */}
+						<FormField
+							name="jobRoleCode"
+							label="직무"
+							required
+							error={errors.jobRoleCode}
+						>
+							<Select
+								value={jobRoleCode}
+								disabled={!jobRoleCategory}
+								onValueChange={(value) => {
+									setJobRoleCode(value);
+
+									if (errors.jobRoleCode) {
+										setErrors((prev) => ({
+											...prev,
+											jobRoleCode: '',
+										}));
+									}
+								}}
+							>
+								<SelectTrigger
+									id="jobRoleCode"
+									name="jobRoleCode"
+									size="lg"
+									className={getFieldClassName(
+										errors.jobRoleCode,
+										'w-full focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+									)}
+								>
+									<SelectValue placeholder={jobRoleCategory ? '직무 선택' : '직무구분 먼저 선택'} />
+								</SelectTrigger>
+
+								<SelectContent
+									position="popper"
+									sideOffset={4}
+									className="z-[9999]"
+								>
+									{filteredJobRoleOptions.map((item) => (
 										<SelectItem
 											key={item.code}
 											value={item.code}

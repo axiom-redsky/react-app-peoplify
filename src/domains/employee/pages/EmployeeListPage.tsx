@@ -62,8 +62,9 @@ type TCommonCode = {
 type TCommonCodesResponse = {
 	success: boolean;
 	data: {
-		EMPLOYMENT_STATUS: TCommonCode[];
-		DEPLOYMENT_STATUS: TCommonCode[];
+		EMPLOYMENT_STATUS?: TCommonCode[];
+		DEPLOYMENT_STATUS?: TCommonCode[];
+		POSITION?: TCommonCode[];
 	};
 };
 
@@ -71,9 +72,7 @@ type TCommonCodesResponse = {
  * URL query string 에서 검색조건 초기값 복원
  */
 const getHashSearchParams = () => {
-	const queryString = window.location.hash.includes('?')
-		? window.location.hash.split('?')[1]
-		: '';
+	const queryString = window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '';
 
 	return new URLSearchParams(queryString);
 };
@@ -139,7 +138,7 @@ export default function EmployeeListPage(): React.ReactNode {
 
 	const { data: commonCodesResponse } = useApi<TCommonCodesResponse>('/api/common-codes', {
 		params: {
-			groups: 'EMPLOYMENT_STATUS',
+			groups: 'EMPLOYMENT_STATUS,POSITION',
 			include_disabled: 'true',
 		},
 	});
@@ -151,10 +150,16 @@ export default function EmployeeListPage(): React.ReactNode {
 	});
 
 	const deploymentStatuses = deploymentResponse?.data?.DEPLOYMENT_STATUS ?? [];
-
+	const positionOptions = commonCodesResponse?.data?.POSITION ?? [];
 	// 총 페이지 수 계산
 	const totalPages = Math.ceil((response?.meta.total ?? 0) / PAGE_LIMIT);
+	const getCodeName = (options: TCommonCode[], code?: string | null) => {
+		if (!code) return '-';
 
+		const found = options.find((item) => item.code === code);
+
+		return found?.code_name ?? code;
+	};
 	/**
 	 * 검색조건 변경 시 URL query string 동기화
 	 * 상세 화면 이동 후 목록 복귀 시 검색조건 유지 목적
@@ -279,35 +284,33 @@ export default function EmployeeListPage(): React.ReactNode {
 	};
 
 	// 직원 상세 화면이동
-const handleMoveDetail = (employeeId: number) => {
-	const params = new URLSearchParams();
+	const handleMoveDetail = (employeeId: number) => {
+		const params = new URLSearchParams();
 
-	if (searchQuery.trim()) {
-		params.set('search', searchQuery.trim());
-	}
+		if (searchQuery.trim()) {
+			params.set('search', searchQuery.trim());
+		}
 
-	if (selectedDepartment !== 'all') {
-		params.set('department', selectedDepartment);
-	}
+		if (selectedDepartment !== 'all') {
+			params.set('department', selectedDepartment);
+		}
 
-	if (selectedStatus !== 'all') {
-		params.set('status', selectedStatus);
-	}
+		if (selectedStatus !== 'all') {
+			params.set('status', selectedStatus);
+		}
 
-	if (selectedDeployment !== 'all') {
-		params.set('deployment_status', selectedDeployment);
-	}
+		if (selectedDeployment !== 'all') {
+			params.set('deployment_status', selectedDeployment);
+		}
 
-	if (currentPage > 1) {
-		params.set('page', String(currentPage));
-	}
+		if (currentPage > 1) {
+			params.set('page', String(currentPage));
+		}
 
-	const queryString = params.toString();
+		const queryString = params.toString();
 
-	$router.push(
-		`/employee/employee-detail/${employeeId}${queryString ? `?${queryString}` : ''}`
-	);
-};
+		$router.push(`/employee/employee-detail/${employeeId}${queryString ? `?${queryString}` : ''}`);
+	};
 
 	return (
 		<div className="p-5">
@@ -492,7 +495,7 @@ const handleMoveDetail = (employeeId: number) => {
 												</div>
 											</td>
 											<td className="py-3 px-4 text-muted-foreground">{emp.department}</td>
-											<td className="py-3 px-4 text-muted-foreground">{emp.position}</td>
+											<td className="py-3 px-4 text-muted-foreground">{getCodeName(positionOptions, emp.position)}</td>
 											<td className="py-3 px-4 text-muted-foreground">{emp.email}</td>
 											<td className="py-3 px-4 text-muted-foreground">{emp.hire_date.split('T')[0]}</td>
 											<td className="py-3 px-4">

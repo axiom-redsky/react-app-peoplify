@@ -2,7 +2,7 @@ type TMember = {
   assignmentId: number; // 삭제 API에 넘길 assignments.id
   employeeId: number;
   name: string;
-  role: string;
+  jobRole: string;
   rate: string;
   start: string;
   end: string | null;
@@ -37,7 +37,7 @@ export default function ProjectAssignInfoPageTab({
         <thead className="bg-muted/50">
           <tr>
             <th className="text-left py-2.5 px-4 font-medium text-muted-foreground">이름</th>
-            <th className="text-left py-2.5 px-4 font-medium text-muted-foreground">역할</th>
+            <th className="text-left py-2.5 px-4 font-medium text-muted-foreground">직무</th>
             <th className="text-left py-2.5 px-4 font-medium text-muted-foreground">투입률</th>
             <th className="text-left py-2.5 px-4 font-medium text-muted-foreground">투입일</th>
             <th className="text-left py-2.5 px-4 font-medium text-muted-foreground">철수예정</th>
@@ -63,7 +63,7 @@ export default function ProjectAssignInfoPageTab({
 
                 <td className="py-2.5 px-4">
                   <span className="px-2 py-0.5 rounded text-xs bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 font-medium">
-                    {m.role}
+                    {m.jobRole}
                   </span>
                 </td>
 

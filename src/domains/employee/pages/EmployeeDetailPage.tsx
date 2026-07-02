@@ -10,6 +10,25 @@ import EmployeeSkillsTab from './tabs/EmployeeSkillsTab';
 import EmployeeBasicInfoTab from './tabs/EmployeeBasicInfoTab';
 import EmployeeContractTab from './tabs/EmployeeContractTab';
 
+// 공통코드 API 조회
+type TCommonCode = {
+	id: number;
+	group_code: string;
+	code: string;
+	code_name: string;
+	sort_order: number;
+	use_yn: boolean;
+	extra1?: string | null;
+	extra2?: string | null;
+	extra3?: string | null;
+	parent_code?: string | null;
+};
+
+type TCommonCodeResponse = {
+	success: boolean;
+	data: Record<string, TCommonCode[]>;
+};
+
 // API 응답 타입 정의
 export type TAssignmentHistory = {
 	assignment_id: number;
@@ -50,6 +69,7 @@ export type TEmployeeDetail = {
 	skills: string[];
 	assignment_history: TAssignmentHistory[];
 	contracts?: TAssignmentContractInfo[];
+	job_role_code: string;
 };
 
 // API 응답 wrapper 타입
@@ -63,7 +83,6 @@ type TEmployeeDetailResponse = {
 	};
 };
 
-//const tabs = ['기본정보', '투입 이력', '기술스택', '계약정보'];
 const tabs = [
 	{ key: 'basic', label: '기본정보' },
 	{ key: 'assignment', label: '투입 이력' },
@@ -75,6 +94,22 @@ type TabKey = (typeof tabs)[number]['key'];
 
 export default function EmployeeDetailPage(): React.ReactNode {
 	const { id } = useParams<{ id: string }>();
+
+	// GET 공통코드 API 호출
+	const { data: commonCodeResponse } = useApi<TCommonCodeResponse>(
+		// 단일 코드 조회
+		'/api/common-codes?groupCode=JOB_ROLE',
+		// 여러개의 코드 조회
+		//'/api/common-codes?groups=JOB_ROLE,POSITION',
+
+		{
+			method: 'GET',
+		},
+	);
+
+	const positionOptions = commonCodeResponse?.data?.POSITION ?? [];
+	const jobRoleCategoryOptions = commonCodeResponse?.data?.JOB_ROLE_CATEGORY ?? [];
+	const jobRoleOptions = commonCodeResponse?.data?.JOB_ROLE ?? [];
 
 	/** 직원 상세 정보 상태 관리 */
 	const [employee, setEmployee] = useState<TEmployeeDetail | null>(null);
@@ -310,8 +345,14 @@ export default function EmployeeDetailPage(): React.ReactNode {
 			</div>
 
 			{/* 탭 내용 */}
-
-			{activeTab === 'basic' && <EmployeeBasicInfoTab employee={employee} />}
+			{activeTab === 'basic' && (
+				<EmployeeBasicInfoTab
+					employee={employee}
+					positionOptions={positionOptions}
+					jobRoleOptions={jobRoleOptions}
+					jobRoleCategoryOptions={jobRoleCategoryOptions}
+				/>
+			)}
 
 			{activeTab === 'assignment' && (
 				<EmployeeAssignmentHistoryTab assignmentHistory={employee.assignment_history ?? []} />

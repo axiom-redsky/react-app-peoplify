@@ -17,7 +17,22 @@ import PageHeader from '@/shared/components/ui/PageHeader';
 import { Plus, X } from 'lucide-react';
 import { useApi } from '@axiom/hooks';
 import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
+//  공통코드 API 응답값 셋팅
+type CommonCode = {
+	id?: number;
+	group_code?: string;
+	code: string;
+	code_name?: string;
+	name?: string;
+	parent_code?: string | null;
+	sort_order?: number;
+	use_yn?: boolean;
+};
 
+type TCommonCodeResponse = {
+	success: boolean;
+	data: CommonCode[];
+};
 const grades = ['사원', '대리', '과장', '차장', '부장', '이사'];
 const statuses = [
 	{ value: 'active', label: '재직' },
@@ -37,6 +52,7 @@ type TUpdateEmployee = {
 	employment_status: string;
 	resign_date?: string | null;
 	skills?: string[];
+	job_role_code: string;
 };
 
 // 조회 응답 타입
@@ -77,6 +93,15 @@ export default function EmployeeEditPage(): React.ReactNode {
 	const [resignDate, setResignDate] = useState('');
 	const [skills, setSkills] = useState<string[]>([]);
 	const [newSkillInput, setNewSkillInput] = useState('');
+	const [jobRoleCode, setJobRoleCode] = useState('');
+	const [jobRoleCategory, setJobRoleCategory] = useState('');
+	const getCodeLabel = (item: CommonCode) => item.code_name ?? item.name ?? item.code;
+	const { data: positionCodes } = useApi<TCommonCodeResponse>('/api/common-codes/POSITION');
+	const { data: jobRoleCodes } = useApi<TCommonCodeResponse>('/api/common-codes/JOB_ROLE');
+	const { data: jobRoleCategoryCodes } = useApi<TCommonCodeResponse>('/api/common-codes/JOB_ROLE_CATEGORY');
+	const positionOptions = positionCodes?.data ?? [];
+	const jobRoleOptions = jobRoleCodes?.data ?? [];
+	const jobRoleCategoryOptions = jobRoleCategoryCodes?.data ?? [];
 
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const { openAlert } = useAppAlert();
@@ -133,7 +158,19 @@ export default function EmployeeEditPage(): React.ReactNode {
 		setEmploymentStatus(emp.employment_status ?? 'active');
 		setResignDate(emp.resign_date ? emp.resign_date.slice(0, 10) : '');
 		setSkills(emp.skills ?? []);
+		setJobRoleCode(emp.job_role_code ?? '');
 	}, [response]);
+
+	useEffect(() => {
+		const empJobRoleCode = response?.data?.job_role_code;
+
+		if (!empJobRoleCode) return;
+		if (!jobRoleOptions.length) return;
+
+		const currentJobRole = jobRoleOptions.find((item) => item.code === empJobRoleCode);
+
+		setJobRoleCategory(currentJobRole?.parent_code ?? '');
+	}, [response?.data?.job_role_code, jobRoleOptions]);
 
 	// PUT API 호출
 	const {
@@ -169,6 +206,8 @@ export default function EmployeeEditPage(): React.ReactNode {
 	// 퇴사 상태 여부
 	const isResigned = employmentStatus === 'resigned';
 
+	const filteredJobRoleOptions = jobRoleOptions.filter((item) => item.parent_code === jobRoleCategory);
+
 	// 폼 제출 핸들러
 	const handleSubmit = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
@@ -179,6 +218,8 @@ export default function EmployeeEditPage(): React.ReactNode {
 			hireDate,
 			department,
 			position,
+			jobRoleCategory,
+			jobRoleCode,
 		};
 
 		const result = validateRequired(values, [
@@ -188,6 +229,8 @@ export default function EmployeeEditPage(): React.ReactNode {
 			{ key: 'hireDate', message: '입사일을 선택해주세요.' },
 			{ key: 'department', message: '부서를 선택해주세요.' },
 			{ key: 'position', message: '직급을 선택해주세요.' },
+			{ key: 'jobRoleCategory', message: '직무구분을 선택해주세요.' },
+			{ key: 'jobRoleCode', message: '직무를 선택해주세요.' },
 		]);
 
 		if (!result.isValid) {
@@ -215,6 +258,7 @@ export default function EmployeeEditPage(): React.ReactNode {
 				// 퇴사 상태가 아니면 퇴사일은 null로 정리
 				resign_date: isResigned ? resignDate || null : null,
 				skills,
+				job_role_code: jobRoleCode,
 			},
 			{
 				onSuccess: async () => {
@@ -483,12 +527,107 @@ export default function EmployeeEditPage(): React.ReactNode {
 									sideOffset={4}
 									className="z-[9999]"
 								>
-									{grades.map((g) => (
+									{positionOptions.map((item) => (
 										<SelectItem
-											key={g}
-											value={g}
+											key={item.code}
+											value={item.code}
 										>
-											{g}
+											{getCodeLabel(item)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FormField>
+						<FormField
+							name="jobRoleCategory"
+							label="직무구분"
+							required
+							error={errors.jobRoleCategory}
+						>
+							<Select
+								value={jobRoleCategory}
+								onValueChange={(value) => {
+									setJobRoleCategory(value);
+									setJobRoleCode('');
+
+									if (errors.jobRoleCategory) {
+										setErrors((prev) => ({ ...prev, jobRoleCategory: '' }));
+									}
+
+									if (errors.jobRoleCode) {
+										setErrors((prev) => ({ ...prev, jobRoleCode: '' }));
+									}
+								}}
+							>
+								<SelectTrigger
+									id="jobRoleCategory"
+									name="jobRoleCategory"
+									size="lg"
+									className={getFieldClassName(
+										errors.jobRoleCategory,
+										'w-full focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+									)}
+								>
+									<SelectValue placeholder="직무구분 선택" />
+								</SelectTrigger>
+
+								<SelectContent
+									position="popper"
+									sideOffset={4}
+									className="z-[9999]"
+								>
+									{jobRoleCategoryOptions.map((item) => (
+										<SelectItem
+											key={item.code}
+											value={item.code}
+										>
+											{getCodeLabel(item)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</FormField>
+
+						<FormField
+							name="jobRoleCode"
+							label="직무"
+							required
+							error={errors.jobRoleCode}
+						>
+							<Select
+								value={jobRoleCode}
+								disabled={!jobRoleCategory}
+								onValueChange={(value) => {
+									setJobRoleCode(value);
+
+									if (errors.jobRoleCode) {
+										setErrors((prev) => ({ ...prev, jobRoleCode: '' }));
+									}
+								}}
+							>
+								<SelectTrigger
+									id="jobRoleCode"
+									name="jobRoleCode"
+									size="lg"
+									className={getFieldClassName(
+										errors.jobRoleCode,
+										'w-full focus-visible:border-brand-500 focus-visible:ring-brand-500/20',
+									)}
+								>
+									<SelectValue placeholder="직무 선택" />
+								</SelectTrigger>
+
+								<SelectContent
+									position="popper"
+									sideOffset={4}
+									className="z-[9999]"
+								>
+									{filteredJobRoleOptions.map((item) => (
+										<SelectItem
+											key={item.code}
+											value={item.code}
+										>
+											{getCodeLabel(item)}
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -628,10 +767,10 @@ export default function EmployeeEditPage(): React.ReactNode {
 					<Button
 						variant="outline"
 						onClick={() => {
-	const queryString = getCurrentQueryString();
+							const queryString = getCurrentQueryString();
 
-	$router.push(`/employee/employee-detail/${id}${queryString}`);
-}}
+							$router.push(`/employee/employee-detail/${id}${queryString}`);
+						}}
 					>
 						취소
 					</Button>

@@ -1,8 +1,18 @@
 import type { TEmployeeDetail } from '../EmployeeDetailPage';
 import { formatPhoneNumber, formatDate } from '@/shared/lib/shadcn/js/common';
 
+type CommonCode = {
+	code: string;
+	code_name?: string;
+	name?: string;
+	parent_code?: string | null;
+};
+
 type Props = {
 	employee: TEmployeeDetail;
+	positionOptions: CommonCode[];
+	jobRoleOptions: CommonCode[];
+	jobRoleCategoryOptions: CommonCode[];
 };
 
 const employmentStatusMap: Record<string, string> = {
@@ -23,7 +33,23 @@ const InfoField = ({ label, value }: { label: string; value?: string | number | 
 	);
 };
 
-export default function EmployeeBasicInfoTab({ employee }: Props) {
+const getCodeName = (options: CommonCode[], code?: string | null) => {
+	if (!code) return '-';
+
+	const found = options.find((item) => item.code === code);
+
+	return found?.code_name ?? found?.name ?? code;
+};
+
+export default function EmployeeBasicInfoTab({
+	employee,
+	positionOptions,
+	jobRoleOptions,
+	jobRoleCategoryOptions,
+}: Props) {
+	
+	const currentJobRole = jobRoleOptions.find((item) => item.code === employee.job_role_code);
+	const jobRoleCategoryCode = currentJobRole?.parent_code ?? null;
 	const isResigned = employee.employment_status === 'resigned';
 
 	return (
@@ -36,38 +62,51 @@ export default function EmployeeBasicInfoTab({ employee }: Props) {
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<InfoField
 						label="이름"
-						value={employee.name ? employee.name : '-'}
+						value={employee.name}
 					/>
+
 					<InfoField
 						label="이메일"
-						value={employee.email ? employee.email : '-'}
+						value={employee.email}
 					/>
+
 					<InfoField
 						label="연락처"
-						value={formatPhoneNumber(employee.phone ? employee.phone : '-')}
+						value={employee.phone ? formatPhoneNumber(employee.phone) : '-'}
 					/>
+
 					<InfoField
 						label="입사일"
 						value={employee.hire_date ? formatDate(employee.hire_date) : '-'}
 					/>
+
 					<InfoField
 						label="부서"
-						value={employee.department ? employee.department : '-'}
+						value={employee.department}
 					/>
+
 					<InfoField
 						label="직급"
-						value={employee.position ? employee.position : '-'}
+						value={getCodeName(positionOptions, employee.position)}
+					/>
+
+					<InfoField
+						label="직무구분"
+						value={getCodeName(jobRoleCategoryOptions, jobRoleCategoryCode)}
+					/>
+
+					<InfoField
+						label="직무"
+						value={getCodeName(jobRoleOptions, employee.job_role_code)}
 					/>
 				</div>
 			</section>
 
 			<section className="bg-card rounded-xl border p-5">
-				<div className="flex items-center gap-2 mb-5"></div>
-
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 					<InfoField
 						label="재직 상태"
-						value={employmentStatusMap[employee.employment_status] || employmentStatusMap[employee.employmentStatus]}
+						value={employmentStatusMap[employee.employment_status] ?? '-'}
 					/>
 
 					{isResigned && (

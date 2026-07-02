@@ -4,71 +4,67 @@ type Assignment = {
 	employee_id?: number | string;
 	employee_name?: string;
 	name?: string;
+
 	role?: string | null;
+
+	job_role_code?: string | null;
+	job_role_name?: string | null;
+	job_role_category_code?: string | null;
+	job_role_category_name?: string | null;
+
 	start_date?: string | null;
 	end_date?: string | null;
 	position?: string;
 };
 
-type ProjectOverviewTabProps = {
-	assignments?: Assignment[];
+type CommonCode = {
+	code: string;
+	code_name?: string;
+	name?: string;
+	parent_code?: string | null;
+	sort_order?: number;
 };
 
-const ROLE_GROUPS = [
-	{
-		key: 'PM',
-		label: 'PM',
-		description: '프로젝트 총괄',
-		keywords: ['pm', '프로젝트 관리자', '프로젝트관리자', 'project manager'],
-	},
-	{
-		key: 'PL',
-		label: 'PL',
-		description: '파트 리딩',
-		keywords: ['pl', '파트리더', '리더', 'lead', 'leader'],
-	},
-	{
-		key: 'DEVELOPER',
-		label: '개발자',
-		description: '개발 수행',
-		keywords: ['개발', '백엔드', '프론트엔드', '풀스택', 'backend', 'frontend', 'fullstack', 'developer'],
-	},
-	{
-		key: 'PUBLISH_DESIGN',
-		label: '퍼블리셔/디자인',
-		description: 'UI 구현 및 디자인',
-		keywords: ['퍼블리셔', '퍼블', '디자이너', '디자인', '디자인팀', 'ui', 'ux', 'publisher', 'designer'],
-	},
-	{
-		key: 'BUSINESS',
-		label: '사업관리',
-		description: '사업/운영 관리',
-		keywords: ['사업관리', 'pmo', '기획', '운영관리', 'business'],
-	},
-	{
-		key: 'QA',
-		label: 'QA/테스터',
-		description: '검증 및 테스트',
-		keywords: ['qa', 'QA팀', '테스터', '테스트', '검증', 'tester'],
-	},
-] as const;
+type ProjectOverviewTabProps = {
+	assignments?: Assignment[];
+	jobRoleOptions: CommonCode[];
+	jobRoleCategoryOptions: CommonCode[];
+};
+
+function getCodeName(item?: CommonCode | null) {
+	return item?.code_name || item?.name || item?.code || '';
+}
+
+function getDisplayCodeName(item?: CommonCode | null) {
+	return getCodeName(item) || '-';
+}
 
 function getEmployeeName(assignment: Assignment) {
 	return assignment.employee_name || assignment.name || '-';
 }
 
-function getRoleName(assignment: Assignment) {
-	return assignment.role?.trim() || '역할 미지정';
+function getAssignmentJobRoleCode(assignment: Assignment) {
+	return assignment.job_role_code || assignment.role || '';
 }
 
-function getRoleGroupKey(role?: string | null) {
-	const roleText = (role || '').toLowerCase();
+function getAssignmentJobRoleName(
+	assignment: Assignment,
+	jobRoleMap: Map<string, CommonCode>,
+) {
+	const jobRoleCode = getAssignmentJobRoleCode(assignment);
+	const jobRole = jobRoleMap.get(jobRoleCode);
 
-	const matchedGroup = ROLE_GROUPS.find((group) =>
-		group.keywords.some((keyword) => roleText.includes(keyword.toLowerCase())),
-	);
+	return assignment.job_role_name || getCodeName(jobRole) || assignment.role || '직무 미지정';
+}
 
-	return matchedGroup?.key || 'ETC';
+function getAssignmentCategoryCode(
+	assignment: Assignment,
+	jobRoleMap: Map<string, CommonCode>,
+) {
+	const jobRoleCode = getAssignmentJobRoleCode(assignment);
+	const jobRole = jobRoleMap.get(jobRoleCode);
+
+	return assignment.job_role_category_code || jobRole?.parent_code || '';
 }
 
 function getUniqueEmployeeCount(assignments: Assignment[]) {
@@ -90,10 +86,12 @@ function getUniqueEmployeeCount(assignments: Assignment[]) {
 }
 
 function getActiveRoleGroupCount(groupedAssignments: Record<string, Assignment[]>) {
-	return ROLE_GROUPS.filter((group) => groupedAssignments[group.key]?.length > 0).length;
+	return Object.entries(groupedAssignments).filter(
+		([categoryCode, members]) => categoryCode !== 'ETC' && members.length > 0,
+	).length;
 }
 
-function getCompositionStatus(groupedAssignments: Record<string, Assignment[]>, totalCount: number) {
+function getCompositionStatus(totalCount: number) {
 	if (totalCount === 0) {
 		return {
 			label: '미배정',
@@ -102,22 +100,29 @@ function getCompositionStatus(groupedAssignments: Record<string, Assignment[]>, 
 		};
 	}
 
-	const hasPm = groupedAssignments.PM?.length > 0;
-	const hasDeveloper = groupedAssignments.DEVELOPER?.length > 0;
-
-	if (!hasPm || !hasDeveloper) {
-		return {
-			label: '확인 필요',
-			message: 'PM 또는 개발자 역할 배정 여부를 확인하세요.',
-			className: 'border-amber-400/40 bg-amber-500/10 text-amber-200',
-		};
-	}
-
 	return {
-		label: '구성 완료',
-		message: '프로젝트 운영에 필요한 핵심 역할이 배정되어 있습니다.',
+		label: '구성 확인',
+		message: '프로젝트에 배정된 인력을 직무구분 기준으로 확인할 수 있습니다.',
 		className: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
 	};
+}
+
+function SummaryCard({
+	label,
+	value,
+	description,
+}: {
+	label: string;
+	value: string;
+	description: string;
+}) {
+	return (
+		<div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
+			<p className="text-xs font-medium text-slate-400">{label}</p>
+			<p className="mt-2 text-2xl font-bold text-slate-100">{value}</p>
+			<p className="mt-1 text-xs text-slate-500">{description}</p>
+		</div>
+	);
 }
 
 function RoleCard({
@@ -125,11 +130,13 @@ function RoleCard({
 	description,
 	count,
 	members,
+	jobRoleMap,
 }: {
 	label: string;
-	description: string;
+	description?: string;
 	count: number;
 	members: Assignment[];
+	jobRoleMap: Map<string, CommonCode>;
 }) {
 	const isAssigned = count > 0;
 
@@ -137,13 +144,17 @@ function RoleCard({
 		<div
 			className={[
 				'rounded-lg border p-4 transition',
-				isAssigned ? 'border-violet-400/40 bg-violet-500/10' : 'border-white/10 bg-white/[0.03] opacity-60',
+				isAssigned
+					? 'border-violet-400/40 bg-violet-500/10'
+					: 'border-white/10 bg-white/[0.03] opacity-60',
 			].join(' ')}
 		>
 			<div className="flex items-start justify-between gap-3">
 				<div>
 					<p className="text-sm font-semibold text-slate-100">{label}</p>
-					<p className="mt-1 text-xs text-slate-400">{description}</p>
+					<p className="mt-1 text-xs text-slate-400">
+						{description || '직무구분 기준'}
+					</p>
 				</div>
 
 				<div
@@ -165,11 +176,17 @@ function RoleCard({
 								className="rounded-md bg-slate-900/70 px-2 py-1 text-xs text-slate-200"
 							>
 								{getEmployeeName(member)}
+								<span className="text-slate-500">
+									{' · '}
+									{getAssignmentJobRoleName(member, jobRoleMap)}
+								</span>
 							</span>
 						))}
 
 						{members.length > 3 && (
-							<span className="rounded-md bg-slate-900/70 px-2 py-1 text-xs text-slate-400">+{members.length - 3}</span>
+							<span className="rounded-md bg-slate-900/70 px-2 py-1 text-xs text-slate-400">
+								+{members.length - 3}
+							</span>
 						)}
 					</div>
 				) : (
@@ -180,40 +197,69 @@ function RoleCard({
 	);
 }
 
-function SummaryCard({ label, value, description }: { label: string; value: string; description: string }) {
-	return (
-		<div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
-			<p className="text-xs font-medium text-slate-400">{label}</p>
-			<p className="mt-2 text-2xl font-bold text-slate-100">{value}</p>
-			<p className="mt-1 text-xs text-slate-500">{description}</p>
-		</div>
-	);
+function buildDisplayCategoryOptions(jobRoleCategoryOptions: CommonCode[]) {
+	const options = [...jobRoleCategoryOptions];
+
+	const hasEtc = options.some((item) => item.code === 'ETC');
+
+	if (!hasEtc) {
+		options.push({
+			code: 'ETC',
+			code_name: '기타',
+			name: '기타',
+			parent_code: null,
+			sort_order: 999,
+		});
+	}
+
+	return options.sort((a, b) => {
+		const aOrder = a.sort_order ?? 999;
+		const bOrder = b.sort_order ?? 999;
+
+		if (aOrder !== bOrder) return aOrder - bOrder;
+
+		return a.code.localeCompare(b.code);
+	});
 }
 
-export default function ProjectOverviewTab({ assignments = [] }: ProjectOverviewTabProps) {
-	const groupedAssignments: Record<string, Assignment[]> = {
-		PM: [],
-		PL: [],
-		DEVELOPER: [],
-		PUBLISH_DESIGN: [],
-		BUSINESS: [],
-		QA: [],
-		ETC: [],
-	};
+export default function ProjectOverviewTab({
+	assignments,
+	jobRoleOptions,
+	jobRoleCategoryOptions,
+}: ProjectOverviewTabProps) {
+	const jobRoleMap = new Map(jobRoleOptions.map((item) => [item.code, item]));
+
+	// 공통코드 JOB_ROLE_CATEGORY가 화면 카드의 기준 목록
+	const displayCategoryOptions = buildDisplayCategoryOptions(jobRoleCategoryOptions);
+
+	const groupedAssignments: Record<string, Assignment[]> = {};
+
+	displayCategoryOptions.forEach((category) => {
+		groupedAssignments[category.code] = [];
+	});
 
 	assignments.forEach((assignment) => {
-	const groupKey = getRoleGroupKey(
-		assignment.role?.trim() || assignment.position?.trim(),
-	);
+		const categoryCode = getAssignmentCategoryCode(assignment, jobRoleMap);
 
-	groupedAssignments[groupKey].push(assignment);
-});
+		if (!categoryCode || !groupedAssignments[categoryCode]) {
+			groupedAssignments.ETC.push(assignment);
+			return;
+		}
+
+		groupedAssignments[categoryCode].push(assignment);
+	});
 
 	const totalEmployeeCount = getUniqueEmployeeCount(assignments);
 	const activeRoleGroupCount = getActiveRoleGroupCount(groupedAssignments);
-	const compositionStatus = getCompositionStatus(groupedAssignments, totalEmployeeCount);
+	const compositionStatus = getCompositionStatus(totalEmployeeCount);
 
-	const roleNames = Array.from(new Set(assignments.map((assignment) => getRoleName(assignment)).filter(Boolean)));
+	const roleNames = Array.from(
+		new Set(
+			assignments
+				.map((assignment) => getAssignmentJobRoleName(assignment, jobRoleMap))
+				.filter((name) => name && name !== '직무 미지정'),
+		),
+	);
 
 	return (
 		<div className="space-y-4">
@@ -221,11 +267,16 @@ export default function ProjectOverviewTab({ assignments = [] }: ProjectOverview
 				<div className="flex items-start justify-between gap-4">
 					<div>
 						<h3 className="text-base font-semibold text-slate-100">투입 구성 요약</h3>
-						<p className="mt-1 text-sm text-slate-400">프로젝트에 배정된 인력을 역할 기준으로 요약합니다.</p>
+						<p className="mt-1 text-sm text-slate-400">
+							프로젝트에 배정된 인력을 공통코드 직무구분 기준으로 요약합니다.
+						</p>
 					</div>
 
 					<span
-						className={['rounded-full border px-3 py-1 text-xs font-semibold', compositionStatus.className].join(' ')}
+						className={[
+							'rounded-full border px-3 py-1 text-xs font-semibold',
+							compositionStatus.className,
+						].join(' ')}
 					>
 						{compositionStatus.label}
 					</span>
@@ -239,15 +290,15 @@ export default function ProjectOverviewTab({ assignments = [] }: ProjectOverview
 					/>
 
 					<SummaryCard
-						label="배정 역할군"
+						label="배정 직무구분"
 						value={`${activeRoleGroupCount}개`}
-						description="PM, 개발자 등 역할 그룹 기준"
+						description="공통코드 직무구분 기준"
 					/>
 
 					<SummaryCard
-						label="등록 역할"
+						label="등록 직무"
 						value={`${roleNames.length}개`}
-						description="실제 입력된 역할명 기준"
+						description="실제 배정된 직무 코드 기준"
 					/>
 				</div>
 
@@ -259,52 +310,29 @@ export default function ProjectOverviewTab({ assignments = [] }: ProjectOverview
 			<section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
 				<div className="flex items-center justify-between">
 					<div>
-						<h3 className="text-base font-semibold text-slate-100">역할별 투입 현황</h3>
-						<p className="mt-1 text-sm text-slate-400">역할군별 배정 인원과 주요 투입자를 확인합니다.</p>
+						<h3 className="text-base font-semibold text-slate-100">직무구분별 투입 현황</h3>
+						<p className="mt-1 text-sm text-slate-400">
+							공통코드에 등록된 직무구분별 배정 인원과 주요 투입자를 확인합니다.
+						</p>
 					</div>
 				</div>
 
 				<div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-					{ROLE_GROUPS.map((group) => {
-						const members = groupedAssignments[group.key] ?? [];
+					{displayCategoryOptions.map((category) => {
+						const members = groupedAssignments[category.code] ?? [];
 
 						return (
 							<RoleCard
-								key={group.key}
-								label={group.label}
-								description={group.description}
+								key={category.code}
+								label={getDisplayCodeName(category)}
+								description="직무구분"
 								count={members.length}
 								members={members}
+								jobRoleMap={jobRoleMap}
 							/>
 						);
 					})}
 				</div>
-
-				{groupedAssignments.ETC.length > 0 && (
-					<div className="mt-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
-						<div className="flex items-start justify-between gap-3">
-							<div>
-								<p className="text-sm font-semibold text-slate-100">기타 역할</p>
-								<p className="mt-1 text-xs text-slate-400">정의된 역할군에 포함되지 않은 역할입니다.</p>
-							</div>
-
-							<div className="rounded-md bg-slate-700 px-2 py-1 text-sm font-bold text-slate-200">
-								{groupedAssignments.ETC.length}명
-							</div>
-						</div>
-
-						<div className="mt-4 flex flex-wrap gap-1.5">
-							{groupedAssignments.ETC.map((member, index) => (
-								<span
-									key={`${getEmployeeName(member)}-${index}`}
-									className="rounded-md bg-slate-900/70 px-2 py-1 text-xs text-slate-200"
-								>
-									{getEmployeeName(member)} · {getRoleName(member)}
-								</span>
-							))}
-						</div>
-					</div>
-				)}
 			</section>
 		</div>
 	);

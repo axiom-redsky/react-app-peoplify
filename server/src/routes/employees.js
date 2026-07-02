@@ -162,7 +162,7 @@ router.post('/', async (req, res, next) => {
 		const department_id = await resolveDepartmentId(req.body);
 
 		const [employee] = await db('employees')
-			.insert({ name, email, phone, department_id, position, hire_date, employment_status })
+			.insert({ name, email, phone, department_id, position, hire_date, employment_status, job_role_code: req.body.job_role_code })
 			.returning('*');
 
 		if (skills.length > 0) {
