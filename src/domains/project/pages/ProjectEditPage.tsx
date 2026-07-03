@@ -21,6 +21,7 @@ import ProjectStatus from '@/shared/components/ui/ProjectStatusBadge';
 import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 import { getFieldClassName, validateRequired } from '@/shared/lib/shadcn/js/common';
 
+/** 프로젝트 수정 폼에서 관리하는 입력값 타입 */
 type TProjectForm = {
 	name: string;
 	client: string;
@@ -32,6 +33,7 @@ type TProjectForm = {
 	tech_stack: string[];
 };
 
+/** 프로젝트 상세 조회 API에서 내려오는 프로젝트 원본 데이터 타입 */
 type TProjectDetail = {
 	id: number;
 	name: string;
@@ -46,24 +48,30 @@ type TProjectDetail = {
 	updated_at?: string;
 };
 
+/** 프로젝트 상세 조회 API 응답 타입 */
 type TProjectDetailResponse = {
 	success: boolean;
 	data: TProjectDetail;
 	message?: string;
 };
 
+/** 프로젝트 수정 API 응답 타입 */
 type TProjectUpdateResponse = {
 	success: boolean;
 	data: TProjectDetail;
 	message?: string;
 };
 
+/** 폼 필드별 검증 오류 메시지를 저장하는 타입 */
 type TProjectFormErrors = Partial<Record<keyof TProjectForm, string>>;
 
+/** 현재 열려 있는 날짜 선택 영역 구분값 */
 type TOpenDatePicker = 'start_date' | 'end_date' | false;
 
+/** 프로젝트 상태값 타입 */
 type ProjectStatusType = 'planned' | 'active' | 'complete' | 'hold';
 
+/** 상태 select 박스에 표시할 옵션 목록 */
 const statusOptions = [
 	{ label: '예정', value: 'planned' },
 	{ label: '진행중', value: 'active' },
@@ -71,6 +79,7 @@ const statusOptions = [
 	{ label: '보류', value: 'hold' },
 ];
 
+/** 기술스택 빠른 선택 버튼으로 제공할 기본 추천 목록 */
 const techStackSuggestions = [
 	'Java',
 	'Spring Boot',
@@ -84,8 +93,10 @@ const techStackSuggestions = [
 	'Git',
 ];
 
+/** 입력 필드 focus 스타일 공통 클래스 */
 const fieldFocusClassName = 'focus-visible:border-brand-500 focus-visible:ring-brand-500/20';
 
+/** Date 객체를 YYYY-MM-DD 문자열로 변환 */
 const getFormattedDate = (date: Date): string => {
 	const year = date.getFullYear();
 	const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -94,6 +105,7 @@ const getFormattedDate = (date: Date): string => {
 	return `${year}-${month}-${day}`;
 };
 
+/** API 날짜값을 화면 입력용 YYYY-MM-DD 형식으로 정규화 */
 const formatDateValue = (value?: string | null): string => {
 	if (!value) return '';
 
@@ -110,12 +122,14 @@ const formatDateValue = (value?: string | null): string => {
 	return getFormattedDate(date);
 };
 
+/** YYYY-MM-DD 문자열을 Calendar 컴포넌트에서 사용할 Date 객체로 변환 */
 const toCalendarDate = (value?: string | null): Date | undefined => {
 	if (!value) return undefined;
 
 	return new Date(`${value.slice(0, 10)}T00:00:00`);
 };
 
+/** API/한글/이전 상태값을 화면에서 사용하는 표준 상태값으로 변환 */
 const normalizeProjectStatus = (status?: string | null): ProjectStatusType => {
 	if (status === 'planned') return 'planned';
 	if (status === 'active') return 'active';
@@ -133,15 +147,21 @@ const normalizeProjectStatus = (status?: string | null): ProjectStatusType => {
 	return 'planned';
 };
 
+/** 프로젝트 수정 화면 컴포넌트 */
 export default function ProjectEditPage(): React.ReactNode {
+	// URL 파라미터에서 수정할 프로젝트 ID 조회
 	const { id } = useParams<{ id: string }>();
 
+	// 프로젝트 상세 조회/수정에 공통으로 사용하는 API 엔드포인트
 	const PROJECT_DETAIL_ENDPOINT = `/api/projects/${id}` as const;
 
+	// 공통 알림 모달 호출 함수
 	const { openAlert } = useAppAlert();
 
+	// 프로젝트 상세 정보를 조회하는 API 훅
 	const { data, isPending: isLoading, error } = useApi<TProjectDetailResponse>(PROJECT_DETAIL_ENDPOINT);
 
+	// 프로젝트 수정 요청을 처리하는 mutation API 훅
 	const {
 		mutate: updateProject,
 		isPending: isSubmitting,
@@ -151,6 +171,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		type: 'mutation',
 	});
 
+	// 화면 입력값을 한 번에 관리하는 폼 상태
 	const [form, setForm] = useState<TProjectForm>({
 		name: '',
 		client: '',
@@ -162,13 +183,19 @@ export default function ProjectEditPage(): React.ReactNode {
 		tech_stack: [],
 	});
 
+	// 필드별 검증 오류 메시지 상태
 	const [errors, setErrors] = useState<TProjectFormErrors>({});
+	// 시작일/종료일 날짜 선택 팝업 열림 상태
 	const [openDatePicker, setOpenDatePicker] = useState<TOpenDatePicker>(false);
+	// 직접 입력 중인 기술스택 값
 	const [newTechStackInput, setNewTechStackInput] = useState('');
 
+	// 시작일 날짜 선택 영역 DOM 참조
 	const startPickerRef = useRef<HTMLDivElement>(null);
+	// 종료일 날짜 선택 영역 DOM 참조
 	const endPickerRef = useRef<HTMLDivElement>(null);
 
+	// 상세 조회가 완료되면 API 데이터를 수정 폼 상태로 세팅
 	useEffect(() => {
 		if (!data?.data) return;
 		const project = data.data;
@@ -185,6 +212,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		});
 	}, [data]);
 
+	// 날짜 선택 팝업 외부 클릭 시 팝업 닫기
 	useEffect(() => {
 		const handleClickOutside = (event: PointerEvent): void => {
 			const target = event.target as Node;
@@ -204,6 +232,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		};
 	}, []);
 
+	// 단일 폼 필드 값을 변경하고 해당 필드 오류를 초기화
 	const setField = <K extends keyof TProjectForm>(key: K, value: TProjectForm[K]): void => {
 		setForm((prev) => ({
 			...prev,
@@ -218,6 +247,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		}
 	};
 
+	// 검증 실패 시 첫 번째 오류 필드로 포커스 이동
 	const focusFirstError = (nextErrors: TProjectFormErrors): void => {
 		const firstErrorKey = Object.keys(nextErrors)[0];
 
@@ -233,6 +263,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		target?.focus();
 	};
 
+	// 필수값, 날짜 순서, 진척도 범위를 검증
 	const validateForm = (): boolean => {
 		const requiredResult = validateRequired(
 			{
@@ -269,6 +300,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		return Object.keys(nextErrors).length === 0;
 	};
 
+	// 진척도 input 변경 시 숫자만 허용하고 0~100 범위로 보정
 	const handleProgressChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
 		const value = event.target.value;
 
@@ -283,6 +315,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		setField('progress_pct', progress);
 	};
 
+	// 진척도 바 클릭 위치를 기준으로 진척도 값 계산
 	const handleProgressBarClick = (event: React.MouseEvent<HTMLDivElement>): void => {
 		const rect = event.currentTarget.getBoundingClientRect();
 		const clickX = event.clientX - rect.left;
@@ -291,6 +324,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		setField('progress_pct', Math.min(100, Math.max(0, progress)));
 	};
 
+	// 직접 입력한 기술스택을 중복 없이 추가
 	const handleAddTechStack = (): void => {
 		const tech = newTechStackInput.trim();
 
@@ -305,12 +339,14 @@ export default function ProjectEditPage(): React.ReactNode {
 		setNewTechStackInput('');
 	};
 
+	// 추천 기술스택 버튼 클릭 시 중복 없이 추가
 	const handleAddSuggestedTechStack = (tech: string): void => {
 		if (form.tech_stack.includes(tech)) return;
 
 		setField('tech_stack', [...form.tech_stack, tech]);
 	};
 
+	// 선택된 기술스택 제거
 	const handleRemoveTechStack = (tech: string): void => {
 		setField(
 			'tech_stack',
@@ -318,6 +354,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		);
 	};
 
+	// 폼 검증 후 프로젝트 수정 API 호출
 	const handleSubmit = (event?: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>): void => {
 		event?.preventDefault();
 
@@ -361,10 +398,12 @@ export default function ProjectEditPage(): React.ReactNode {
 		);
 	};
 
+	// 수정 취소 시 프로젝트 상세 화면으로 이동
 	const handleCancel = (): void => {
 		$router.push(`/project/${id}`);
 	};
 
+	// 상세 조회 중일 때 로딩 화면 표시
 	if (isLoading) {
 		return (
 			<div className="p-5">
@@ -380,6 +419,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		);
 	}
 
+	// 상세 조회 실패 시 오류 화면 표시
 	if (error) {
 		return (
 			<div className="p-5">
@@ -395,6 +435,7 @@ export default function ProjectEditPage(): React.ReactNode {
 		);
 	}
 
+	// 프로젝트 수정 폼 화면 렌더링
 	return (
 		<div className="p-5">
 			<PageHeader

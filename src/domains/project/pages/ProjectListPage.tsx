@@ -18,7 +18,8 @@ import type { StatusType } from '@/shared/components/ui/StatusBadge';
 
 import { Search, Plus, Calendar, Users } from 'lucide-react';
 
-// 프로젝트 타입 정의 (API 응답 구조에 맞춤)
+// 프로젝트 목록 API에서 내려오는 개별 프로젝트 데이터 타입
+// 화면에서 사용하는 프로젝트명, 고객사, 기간, 상태, 기술스택 정보를 정의한다.
 interface Project {
 	id: number;
 	name: string;
@@ -29,7 +30,8 @@ interface Project {
 	tech_stack: string[];
 }
 
-// 날짜 포맷팅 유틸리티
+// 날짜 문자열을 화면 표시 형식으로 변환한다.
+// 예: 2026-07-03 또는 ISO 날짜 문자열 → 2026.07.03
 const formatDate = (dateString: string): string => {
 	const date = new Date(dateString);
 	const year = date.getFullYear();
@@ -38,63 +40,71 @@ const formatDate = (dateString: string): string => {
 	return `${year}.${month}.${day}`;
 };
 
+// 프로젝트 목록 화면 컴포넌트
+// 프로젝트 목록 조회, 상태 탭 필터, 검색어 필터, 상세/등록 이동을 담당한다.
 export default function ProjectListPage(): React.ReactNode {
 	// 프로젝트 목록 API 호출
+	// /api/projects 응답의 data 배열을 프로젝트 목록으로 사용한다.
 	const { data: projects, isLoading, error } = useApi<{ data: Project[] }>('/api/projects');
 
-	// 상태 탭 선택 상태
+	// 현재 선택된 상태 탭 인덱스
+	// 0: 전체, 1: 진행 중, 2: 완료, 3: 예정
 	const [activeTab, setActiveTab] = useState(0);
 
-	// 검색어 상태
+	// 프로젝트명 또는 고객사 검색어 상태
 	const [searchQuery, setSearchQuery] = useState('');
 
-	// 탭 정의 (레이블만 고정, count 는 동적 계산)
+	// 화면 상단 상태 탭 정의
+	// count 값은 API 데이터 기준으로 getTabCount 함수에서 동적으로 계산한다.
 	const tabs = [{ label: '전체' }, { label: '진행 중' }, { label: '완료' }, { label: '예정' }];
 
-	// 탭별 카운트 계산 (API 데이터 기반)
+	// 선택한 탭에 해당하는 프로젝트 수를 계산한다.
+	// API 응답이 없을 때는 0을 반환한다.
 	const getTabCount = (tabIndex: number): number => {
 		if (!projects?.data) return 0;
 
 		switch (tabIndex) {
 			case 0: // 전체
 				return projects.data.length;
-			case 1: // 진행 중 (active)
+			case 1: // 진행 중(active)
 				return projects.data.filter((p) => p.status === 'active').length;
-			case 2: // 완료 (complete)
+			case 2: // 완료(complete)
 				return projects.data.filter((p) => p.status === 'complete').length;
-			case 3: // 예정 (planned)
+			case 3: // 예정(planned)
 				return projects.data.filter((p) => p.status === 'planned').length;
 			default:
 				return 0;
 		}
 	};
 
-	// 프로젝트 상세보기 버튼 클릭
+	// 프로젝트 상세 버튼 클릭 시 상세 화면으로 이동한다.
+	// id는 프로젝트 ID이며 라우터 경로 /project/:id 에 사용된다.
 	const handleDetailProject = (id: any) => {
 		$router.push(`/project/${id}`);
 	};
 
-	// 탭 클릭 핸들러
+	// 상태 탭 클릭 시 현재 선택 탭을 변경한다.
 	const handleTabClick = (index: number) => {
 		setActiveTab(index);
 	};
 
-	// 검색어 변경 핸들러
+	// 검색 입력값 변경 시 검색어 상태를 갱신한다.
 	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.value;
 		setSearchQuery(value);
 	};
 
-	// 필터링 로직: 상태 탭 + 검색어
+	// 프로젝트 목록 필터링 결과
+	// 현재 선택된 상태 탭과 검색어를 동시에 반영한다.
 	const filteredProjects = projects?.data?.filter((proj: Project) => {
-		// 상태 필터링
+		// 상태 탭 기준 필터링
 		const statusMatch =
 			activeTab === 0 || // 전체
 			(activeTab === 1 && proj.status === 'active') || // 진행 중
 			(activeTab === 2 && proj.status === 'complete') || // 완료
 			(activeTab === 3 && proj.status === 'planned'); // 예정
 
-		// 검색어 필터링
+		// 프로젝트명 또는 고객사 기준 검색어 필터링
 		const searchMatch =
 			searchQuery === '' ||
 			proj.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -103,7 +113,8 @@ export default function ProjectListPage(): React.ReactNode {
 		return statusMatch && searchMatch;
 	});
 
-	// 로딩 상태
+	// 프로젝트 목록 로딩 중 표시 화면
+	// 실제 테이블 구조와 유사한 Skeleton UI를 보여준다.
 	if (isLoading) {
 		return (
 			<div className="p-5 space-y-4">
@@ -161,7 +172,7 @@ export default function ProjectListPage(): React.ReactNode {
 		);
 	}
 
-	// 에러 상태
+	// 프로젝트 목록 API 호출 실패 시 표시 화면
 	if (error) {
 		return (
 			<div className="p-5">
@@ -184,8 +195,9 @@ export default function ProjectListPage(): React.ReactNode {
 			<PageHeader
 				title="프로젝트 관리"
 				actions={
-					<Button size="lg"
-					onClick={() => $router.push(`/project/new`)}
+					<Button
+						size="lg"
+						onClick={() => $router.push(`/project/new`)}
 					>
 						<Plus className="w-4 h-4 mr-1.5" />
 						프로젝트 등록
@@ -193,7 +205,7 @@ export default function ProjectListPage(): React.ReactNode {
 				}
 			/>
 
-			{/* 상태 탭 */}
+			{/* 상태 탭 영역: 전체/진행 중/완료/예정 프로젝트를 필터링한다. */}
 			<div className="flex gap-1 mb-4 border-b">
 				{tabs.map((tab, idx) => (
 					<button
@@ -213,7 +225,7 @@ export default function ProjectListPage(): React.ReactNode {
 				))}
 			</div>
 
-			{/* 검색/필터 */}
+			{/* 검색/필터 영역: 프로젝트명·고객사 검색과 추가 필터 UI를 제공한다. */}
 			<div className="flex flex-wrap gap-2 mb-4">
 				<div className="relative flex-1 min-w-48">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -252,11 +264,15 @@ export default function ProjectListPage(): React.ReactNode {
 				</Select>
 			</div>
 
-			{/* 카드형 목록 */}
+			{/* 카드형 프로젝트 목록 영역 */}
 			<div className="grid grid-cols-1 gap-3">
 				{filteredProjects?.map((proj) => {
+					// 프로젝트 기간 표시 문자열
 					const period = `${formatDate(proj.start_date)} ~ ${formatDate(proj.end_date)}`;
+
+					// 프로젝트 기술스택 목록
 					const tech = proj.tech_stack;
+
 					return (
 						<div
 							key={proj.id}

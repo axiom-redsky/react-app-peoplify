@@ -1,3 +1,4 @@
+// React 타입과 화면 구성에 필요한 UI 컴포넌트를 import한다.
 import type React from 'react';
 import {
 	Button,
@@ -18,27 +19,44 @@ import { useParams } from 'react-router';
 import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 import { validateRequired, getFieldClassName } from '@/shared/lib/shadcn/js/common';
 
+/**
+ * 벤치 인력 목록에서 사용하는 직원 정보 타입.
+ * /api/dashboard/bench-members 응답의 개별 인력 데이터를 화면 표시와 선택 처리에 사용한다.
+ */
 interface BenchMember {
-	id: number;
-	name: string;
-	department: string;
-	position: string;
-	hire_date: string;
-	skills: string[];
+	id: number; // 직원 ID
+	name: string; // 직원명
+	department: string; // 소속 부서명
+	position: string; // 직급/직책 정보
+	hire_date: string; // 입사일
+	skills: string[]; // 보유 기술스택 목록
+	job_role_code?: string | null; // 직무 코드
+	job_role_name?: string | null; // 직무명
+	job_role_category_code?: string | null; // 직무구분 코드
+	job_role_category_name?: string | null; // 직무구분명
 }
 
+/**
+ * 가용 인력 목록 상단 필터의 선택 상태 타입.
+ * 현재 화면에서는 각 필터 값만 보관하고, 실제 필터링 로직은 추후 확장 가능하다.
+ */
 interface FilterState {
-	techStack: string;
-	rate: string;
-	experience: string;
-	dept: string;
+	techStack: string; // 기술스택 필터 값
+	rate: string; // 투입률 필터 값
+	experience: string; // 경력 필터 값
+	dept: string; // 부서 필터 값
 }
 
+/** 벤치 인력 목록 API 응답 타입. */
 type TBenchMemberListResponse = {
 	success: boolean;
 	data: BenchMember[];
 };
 
+/**
+ * 프로젝트 상세 API에서 내려오는 투입 인력 정보 타입.
+ * assignments 배열의 개별 row를 표현한다.
+ */
 type TProjectAssignment = {
 	id: number;
 	role: string;
@@ -49,8 +67,13 @@ type TProjectAssignment = {
 	employee_name: string;
 	department: string;
 	position: string;
+	job_role_code?: string | null;
+	job_role_name?: string | null;
+	job_role_category_code?: string | null;
+	job_role_category_name?: string | null;
 };
 
+/** 프로젝트 상세 전체 응답 데이터 타입. */
 type TProjectDetail = {
 	assignments: TProjectAssignment[];
 	client: string;
@@ -66,6 +89,7 @@ type TProjectDetail = {
 	updated_at: string;
 };
 
+/** 화면 상태로 보관하는 프로젝트 기본 정보 타입. */
 type TProjectDetailData = {
 	id: number;
 	name: string;
@@ -78,41 +102,66 @@ type TProjectDetailData = {
 	tech_stack: string[];
 };
 
+/** 프로젝트 상세 API 응답 타입. */
 type TProjectDetailResponse = {
 	success: boolean;
 	data: TProjectDetail;
 };
 
+/**
+ * 인력 배정 등록 API 요청 타입.
+ * 선택된 직원 ID 배열과 투입 기간, 역할, 투입률을 서버에 전달한다.
+ */
 type TAssignMemberRequest = {
-	project_id: string;
-	employee_id: number[];
-	role: string;
-	rate_pct: number;
-	start_date: string;
-	end_date: string | null;
+	project_id: string; // 배정 대상 프로젝트 ID
+	employee_id: number[]; // 배정 대상 직원 ID 목록
+	role: string; // 프로젝트 내 역할
+	rate_pct: number; // 투입률
+	start_date: string; // 투입 시작일
+	end_date: string | null; // 종료 예정일
+	job_role_name: string;
+	job_role_category_name: string;
 };
 
+/** 배정 설정 영역의 필수 입력값 검증 대상 타입. */
 type TAssignRegisterRequest = {
-	startDate: string;
-	endDate: string;
+	startDate: string; // 투입 시작일
+	endDate: string; // 종료 예정일
 };
+// 배정 설정 폼의 필드별 에러 메시지 타입.
 type TAssignRegisterErrors = Partial<Record<keyof TAssignRegisterRequest, string>>;
+// 현재 열려 있는 날짜 선택기를 구분하기 위한 타입.
 type TOpenDatePicker = 'startDate' | 'endDate' | null;
+// 역할 Select에 표시할 고정 역할 목록.
 const roles = ['PM', 'PL', '개발', 'QA', '디자인', 'BA'];
 
+/**
+ * 프로젝트 인력 배정 화면 컴포넌트.
+ * 프로젝트 상세 정보와 벤치 인력 목록을 조회하고, 선택한 인력을 프로젝트에 배정한다.
+ */
 export default function ProjectAssignPage(): React.ReactNode {
+	// URL 파라미터에서 프로젝트 ID를 가져온다.
 	const { id } = useParams<{ id: string }>();
+	// 공통 알림 팝업을 호출하기 위한 훅.
 	const { openAlert } = useAppAlert();
 
+	// 프로젝트 상세 조회 및 캐시 무효화에 사용하는 API 엔드포인트.
 	const PROJECTS_ENDPOINT = `/api/projects/${id}` as const;
 
+	// 시작일/종료일 날짜 선택기 중 현재 열려 있는 항목을 관리한다.
 	const [openDatePicker, setOpenDatePicker] = useState<TOpenDatePicker>(null);
+	// 시작일 날짜 선택기 DOM 참조.
 	const startPickerRef = useRef<HTMLDivElement>(null);
+	// 종료일 날짜 선택기 DOM 참조.
 	const endPickerRef = useRef<HTMLDivElement>(null);
+	// 화면 헤더와 breadcrumb에 표시할 프로젝트 기본 정보.
 	const [project, setProject] = useState<TProjectDetailData | undefined>(undefined);
+	// 프로젝트에 이미 배정된 인력 목록.
 	const [assignments, setAssignments] = useState<TProjectAssignment[]>([]);
+	// 프로젝트 고객사명 상태.
 	const [client, setClient] = useState<string>('');
 
+	// 가용 인력 목록 상단 필터 상태.
 	const [filters, setFilters] = useState<FilterState>({
 		techStack: 'all',
 		rate: 'all',
@@ -120,19 +169,28 @@ export default function ProjectAssignPage(): React.ReactNode {
 		dept: 'all',
 	});
 
+	// 배정 대상으로 선택한 직원 ID 목록.
 	const [selectedIds, setSelectedIds] = useState<number[]>([]);
+	// 현재 프로젝트에 투입 가능한 벤치 인력 목록.
 	const [benchMembers, setBenchMembers] = useState<BenchMember[]>([]);
 
+	// 배정 설정에서 선택한 역할 값.
 	const [position, setPosition] = useState('');
+	// 투입 시작일 값.
 	const [startDate, setStartDate] = useState('');
+	// 종료 예정일 값.
 	const [endDate, setEndDate] = useState('');
 
+	// 배정 확정 버튼 중복 클릭을 방지하기 위한 잠금 플래그.
 	const isLockedRef = useRef(false);
 
+	// 프로젝트 상세 정보를 조회한다.
 	const { data, isPending } = useApi<TProjectDetailResponse>(PROJECTS_ENDPOINT);
 
+	// 배정 가능한 벤치 인력 목록을 조회한다.
 	const { data: benchResp, isLoading, error } = useApi<TBenchMemberListResponse>('/api/dashboard/bench-members');
 
+	// FormField 검증 유틸과 연동하기 위한 폼 상태.
 	const [form, setForm] = useState({
 		name: '',
 		client: '',
@@ -144,7 +202,11 @@ export default function ProjectAssignPage(): React.ReactNode {
 		tech_stack: [],
 	});
 
+	// 투입 시작일/종료 예정일 입력 검증 에러 상태.
 	const [errors, setErrors] = useState<TAssignRegisterErrors>({});
+	/**
+	 * 폼 필드 값을 변경하고, 해당 필드에 남아 있는 에러 메시지를 초기화한다.
+	 */
 	const setField = <K extends keyof TAssignRegisterRequest>(key: K, value: TAssignRegisterRequest[K]): void => {
 		setForm((prev) => ({
 			...prev,
@@ -159,6 +221,7 @@ export default function ProjectAssignPage(): React.ReactNode {
 		}
 	};
 
+	// 인력 배정 등록 API mutation과 관련 캐시 무효화 함수를 준비한다.
 	const {
 		mutate: assignMembers,
 		isPending: isAssigning,
@@ -168,6 +231,7 @@ export default function ProjectAssignPage(): React.ReactNode {
 		type: 'mutation',
 	});
 
+	// 프로젝트 상세 API 응답을 화면 상태로 반영한다.
 	useEffect(() => {
 		if (data?.data) {
 			setProject(data.data);
@@ -176,16 +240,21 @@ export default function ProjectAssignPage(): React.ReactNode {
 		}
 	}, [data]);
 
+	// 벤치 인력 API 응답을 목록 상태로 반영한다.
 	useEffect(() => {
 		if (benchResp?.data) {
 			setBenchMembers(benchResp.data);
 		}
 	}, [benchResp]);
 
+	// 필터 값 변경 감지용 effect. 현재는 실제 필터링 API 연동 전이라 별도 처리하지 않는다.
 	useEffect(() => {
 		// params 변경 시 useApi가 자동 재요청되는 구조라면 비워둬도 됨
 	}, [filters]);
 
+	/**
+	 * 검증 실패 시 첫 번째 에러 필드로 포커스를 이동한다.
+	 */
 	const focusFirstError = (nextErrors: TAssignRegisterErrors): void => {
 		const firstErrorKey = Object.keys(nextErrors)[0];
 
@@ -200,12 +269,19 @@ export default function ProjectAssignPage(): React.ReactNode {
 		target?.focus();
 	};
 
+	/**
+	 * 벤치 인력 row 선택/해제를 토글한다.
+	 */
 	const toggleMemberSelection = (employeeId: number) => {
 		setSelectedIds((prev) =>
 			prev.includes(employeeId) ? prev.filter((id) => id !== employeeId) : [...prev, employeeId],
 		);
 	};
 
+	/**
+	 * 배정 설정 입력값을 검증한다.
+	 * 시작일/종료일 필수 여부와 종료일의 유효 범위를 확인한다.
+	 */
 	const validateForm = (): boolean => {
 		const requiredResult = validateRequired(
 			{
@@ -244,6 +320,9 @@ export default function ProjectAssignPage(): React.ReactNode {
 		return Object.keys(nextErrors).length === 0;
 	};
 
+	/**
+	 * 상단 필터 Select 값 변경을 처리한다.
+	 */
 	const handleFilterChange = (key: keyof FilterState, value: string) => {
 		setFilters((prev) => ({
 			...prev,
@@ -251,10 +330,17 @@ export default function ProjectAssignPage(): React.ReactNode {
 		}));
 	};
 
+	/**
+	 * 프로젝트 상세 화면으로 돌아간다.
+	 */
 	const handleCancel = (): void => {
 		$router.back();
 	};
 
+	/**
+	 * 배정 확정 버튼 클릭 시 실행한다.
+	 * 선택 인력 확인, 폼 검증, 중복 요청 방지 후 배정 등록 API를 호출한다.
+	 */
 	const handleAssignConfirm = () => {
 		if (selectedIds.length === 0) {
 			openAlert({
@@ -308,6 +394,7 @@ export default function ProjectAssignPage(): React.ReactNode {
 		);
 	};
 
+	// 선택된 직원 ID에 해당하는 벤치 인력 정보 목록.
 	const selectedMembers = benchMembers.filter((member) => selectedIds.includes(member.id));
 
 	return (
@@ -431,6 +518,8 @@ export default function ProjectAssignPage(): React.ReactNode {
 										<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">선택</th>
 										<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">이름</th>
 										<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">부서</th>
+										<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">직무구분</th>
+										<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">직무</th>
 										<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">기술스택</th>
 										<th className="text-left py-2.5 px-4 font-medium text-muted-foreground">현 투입률</th>
 									</tr>
@@ -476,6 +565,8 @@ export default function ProjectAssignPage(): React.ReactNode {
 												</td>
 
 												<td className="py-2.5 px-4 text-muted-foreground">{member.department}</td>
+												<td className="py-2.5 px-4 text-muted-foreground">{member.job_role_category_name || '-'}</td>
+												<td className="py-2.5 px-4 text-muted-foreground">{member.job_role_name || '-'}</td>
 
 												<td className="py-2.5 px-4 text-muted-foreground text-xs">
 													{Array.isArray(member.skills) ? member.skills.join(', ') : '-'}

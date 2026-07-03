@@ -47,23 +47,13 @@ router.get('/:id', async (req, res, next) => {
 		// 직무 옵션: JOB_ROLE
 		const jobRoleOptions = await db('common_code')
 			.where('group_code', 'JOB_ROLE')
-			.select(
-				'code',
-				'code_name',
-				'parent_code',
-				'sort_order',
-			)
+			.select('code', 'code_name', 'parent_code', 'sort_order')
 			.orderBy('sort_order', 'asc');
 
 		// 직무구분 옵션: JOB_ROLE_CATEGORY
 		const jobRoleCategoryOptions = await db('common_code')
 			.where('group_code', 'JOB_ROLE_CATEGORY')
-			.select(
-				'code',
-				'code_name',
-				'parent_code',
-				'sort_order',
-			)
+			.select('code', 'code_name', 'parent_code', 'sort_order')
 			.orderBy('sort_order', 'asc');
 
 		const assignments = await db('assignments')
@@ -82,13 +72,16 @@ router.get('/:id', async (req, res, next) => {
 					.andOn('jobRoleCategory.group_code', '=', db.raw('?', ['JOB_ROLE_CATEGORY']));
 			})
 
+			// 직원 직급 코드: employees.position -> common_code(POSITION)
+			.leftJoin({ positionCode: 'common_code' }, function () {
+				this.on('employees.position', '=', 'positionCode.code')
+					.andOn('positionCode.group_code', '=', db.raw('?', ['POSITION']));
+			})
+
 			.where('assignments.project_id', project.id)
 			.where(function () {
-				this.whereNull('assignments.end_date').orWhere(
-					'assignments.end_date',
-					'>',
-					db.raw('CURRENT_DATE'),
-				);
+				this.whereNull('assignments.end_date')
+					.orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
 			})
 			.select(
 				'assignments.id',
@@ -100,7 +93,10 @@ router.get('/:id', async (req, res, next) => {
 				'employees.id as employee_id',
 				'employees.name as employee_name',
 				'departments.name as department',
+
+				// 직원 직급 정보
 				'employees.position',
+				'positionCode.code_name as position_name',
 
 				// 직원 직무 정보
 				'employees.job_role_code as job_role_code',
@@ -118,8 +114,6 @@ router.get('/:id', async (req, res, next) => {
 				...project,
 				tech_stack: techStack,
 				assignments,
-
-				// 추가: 화면 카드 기본 목록용
 				jobRoleOptions,
 				jobRoleCategoryOptions,
 			},
@@ -192,54 +186,46 @@ router.put('/:id', async (req, res, next) => {
 
 // DELETE /api/projects/:id — 프로젝트 삭제
 router.delete('/:id', async (req, res, next) => {
-  try {
-    const projectId = Number(req.params.id);
+	try {
+		const projectId = Number(req.params.id);
 
-    if (!projectId) {
-      return res.status(400).json({
-        success: false,
-        message: '프로젝트 ID가 올바르지 않습니다.',
-      });
-    }
+		if (!projectId) {
+			return res.status(400).json({
+				success: false,
+				message: '프로젝트 ID가 올바르지 않습니다.',
+			});
+		}
 
-    const project = await db('projects')
-      .where({ id: projectId })
-      .first();
+		const project = await db('projects').where({ id: projectId }).first();
 
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: '프로젝트를 찾을 수 없습니다.',
-      });
-    }
+		if (!project) {
+			return res.status(404).json({
+				success: false,
+				message: '프로젝트를 찾을 수 없습니다.',
+			});
+		}
 
-    await db.transaction(async (trx) => {
-      // 프로젝트 투입 정보 삭제
-      await trx('assignments')
-        .where({ project_id: projectId })
-        .del();
+		await db.transaction(async (trx) => {
+			// 프로젝트 투입 정보 삭제
+			await trx('assignments').where({ project_id: projectId }).del();
 
-      // 프로젝트 기술스택 삭제
-      await trx('project_tech_stack')
-        .where({ project_id: projectId })
-        .del();
+			// 프로젝트 기술스택 삭제
+			await trx('project_tech_stack').where({ project_id: projectId }).del();
 
-      // 프로젝트 삭제
-      await trx('projects')
-        .where({ id: projectId })
-        .del();
-    });
+			// 프로젝트 삭제
+			await trx('projects').where({ id: projectId }).del();
+		});
 
-    return res.json({
-      success: true,
-      message: '프로젝트가 삭제되었습니다.',
-      data: {
-        id: projectId,
-      },
-    });
-  } catch (err) {
-    next(err);
-  }
+		return res.json({
+			success: true,
+			message: '프로젝트가 삭제되었습니다.',
+			data: {
+				id: projectId,
+			},
+		});
+	} catch (err) {
+		next(err);
+	}
 });
 
 module.exports = router;

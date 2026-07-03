@@ -99,15 +99,41 @@ router.get('/bench-members', async (req, res, next) => {
     const benchEmployees = await db('employees')
       .leftJoin('employee_skills', 'employees.id', 'employee_skills.employee_id')
       .leftJoin('departments', 'employees.department_id', 'departments.id')
+
+      // 직무 코드 조회
+      .leftJoin({ jobRole: 'common_code' }, function () {
+        this.on('jobRole.code', '=', 'employees.job_role_code')
+          .andOn('jobRole.group_code', '=', db.raw('?', ['JOB_ROLE']));
+      })
+
+      // 직무구분 조회
+      .leftJoin({ jobRoleCategory: 'common_code' }, function () {
+        this.on('jobRoleCategory.code', '=', 'jobRole.parent_code')
+          .andOn('jobRoleCategory.group_code', '=', db.raw('?', ['JOB_ROLE_CATEGORY']));
+      })
+
       .whereNotIn('employees.id', currentlyDeployedIds)
       .where('employees.employment_status', 'active')
-      .groupBy('employees.id', 'departments.name')
+      .groupBy(
+        'employees.id',
+        'departments.name',
+        'jobRole.code_name',
+        'jobRole.parent_code',
+        'jobRoleCategory.code_name',
+      )
       .select(
         'employees.id',
         'employees.name',
         'departments.name as department',
         'employees.position',
         'employees.hire_date',
+
+        // 추가
+        'employees.job_role_code as job_role_code',
+        'jobRole.code_name as job_role_name',
+        'jobRole.parent_code as job_role_category_code',
+        'jobRoleCategory.code_name as job_role_category_name',
+
         db.raw("ARRAY_REMOVE(ARRAY_AGG(DISTINCT employee_skills.skill), NULL) as skills"),
       )
       .orderBy('employees.name');

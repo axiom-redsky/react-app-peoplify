@@ -18,50 +18,60 @@ import {
 } from '@axiom/components/ui';
 import { Save, Plus, X } from 'lucide-react';
 
+// 프로젝트 등록 API에 전달할 요청 데이터 타입
 type TProjectRegisterRequest = {
-	name: string;
-	client: string;
-	start_date: string;
-	end_date: string | null;
-	status: string;
-	progress_pct: number;
-	description: string;
-	tech_stack: string[];
+	name: string; // 프로젝트명
+	client: string; // 고객사명
+	start_date: string; // 프로젝트 시작일(YYYY-MM-DD)
+	end_date: string | null; // 프로젝트 종료일(미입력 시 null)
+	status: string; // 프로젝트 상태 코드(planned, active, complete, hold)
+	progress_pct: number; // 프로젝트 진척도(0~100)
+	description: string; // 프로젝트 설명
+	tech_stack: string[]; // 프로젝트 기술스택 목록
 };
 
+// 프로젝트 등록 API 응답 타입
 type TProjectRegisterResponse = {
-	success: boolean;
+	success: boolean; // API 처리 성공 여부
 	data?: {
-		id: number;
-		name: string;
-		client: string;
-		start_date: string;
-		end_date: string | null;
-		status: string;
-		progress_pct: number;
-		description: string;
-		tech_stack: string[];
-		created_at: string;
-		updated_at: string;
+		id: number; // 등록된 프로젝트 ID
+		name: string; // 프로젝트명
+		client: string; // 고객사명
+		start_date: string; // 프로젝트 시작일
+		end_date: string | null; // 프로젝트 종료일
+		status: string; // 프로젝트 상태 코드
+		progress_pct: number; // 프로젝트 진척도
+		description: string; // 프로젝트 설명
+		tech_stack: string[]; // 기술스택 목록
+		created_at: string; // 생성 일시
+		updated_at: string; // 수정 일시
 	};
-	message?: string;
+	message?: string; // 실패 또는 안내 메시지
 };
 
+// 프로젝트 등록 폼의 필드별 검증 오류 메시지 타입
 type TProjectRegisterErrors = Partial<Record<keyof TProjectRegisterRequest, string>>;
+
+// 프로젝트 상태 배지에서 허용하는 상태 코드 타입
 type ProjectStatusType = 'planned' | 'active' | 'complete' | 'hold';
 
+// 프로젝트 상태 Select 박스에 표시할 상태 옵션 목록
 const statusOptions = [
 	{ label: '예정', value: 'planned' },
 	{ label: '진행중', value: 'active' },
 	{ label: '완료', value: 'complete' },
 	{ label: '보류', value: 'hold' },
 ];
+
+// 기술스택 입력 영역에서 추천 버튼으로 제공할 기본 기술 목록
 const skillSuggestions = ['Java', 'Spring Boot', 'React', 'Vue', 'Python', 'Oracle', 'MySQL', 'AWS', 'Docker', 'Git'];
 
+// 입력 필드 포커스 시 공통으로 적용할 브랜드 컬러 클래스
 const fieldFocusClassName = 'focus-visible:border-brand-500 focus-visible:ring-brand-500/20';
 
+// 프로젝트 신규 등록 화면 컴포넌트
 export default function ProjectRegisterPage(): React.ReactNode {
-	// POST API 호출
+	// 프로젝트 등록 POST API 호출 훅
 	const {
 		mutate,
 		isPending: isSubmitting,
@@ -71,6 +81,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		type: 'mutation',
 	});
 
+	// 프로젝트 등록 폼 전체 입력값 상태
 	const [form, setForm] = useState<TProjectRegisterRequest>({
 		name: '',
 		client: '',
@@ -81,17 +92,35 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		description: '',
 		tech_stack: [],
 	});
+
+	// 시작일 버튼에 표시할 날짜 문자열 상태
 	const [start_date, setStart_date] = useState('');
+
+	// 종료일 버튼에 표시할 날짜 문자열 상태
 	const [end_date, setEnd_date] = useState('');
+
+	// 현재 선택된 기술스택 목록 상태
 	const [skills, setSkills] = useState<string[]>(['Java', 'Spring Boot', 'React']);
+
+	// 직접 입력 중인 신규 기술스택 문자열 상태
 	const [newSkillInput, setNewSkillInput] = useState('');
+
+	// 현재 열려 있는 날짜 선택기 구분 타입
 	type TOpenDatePicker = 'start_date' | 'end_date' | false;
+
+	// 시작일/종료일 캘린더 중 현재 열려 있는 항목 상태
 	const [openDatePicker, setOpenDatePicker] = useState<TOpenDatePicker>(false);
+
+	// 시작일 캘린더 외부 클릭 감지를 위한 DOM 참조
 	const startPickerRef = useRef<HTMLDivElement>(null);
+
+	// 종료일 캘린더 외부 클릭 감지를 위한 DOM 참조
 	const endPickerRef = useRef<HTMLDivElement>(null);
 
+	// 공통 알림 팝업 호출 함수
 	const { openAlert } = useAppAlert();
 
+	// 날짜 선택기 영역 바깥을 클릭하면 열린 캘린더를 닫는다.
 	useEffect(() => {
 		const handleClickOutside = (e: PointerEvent): void => {
 			const target = e.target as Node;
@@ -111,9 +140,13 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		};
 	}, []);
 
+	// 콤마 구분 문자열 방식의 기술스택 입력값 상태
 	const [techStackText, setTechStackText] = useState<string>('');
+
+	// 필드별 검증 오류 메시지 상태
 	const [errors, setErrors] = useState<TProjectRegisterErrors>({});
 
+	// 단일 폼 필드 값을 변경하고 해당 필드의 오류 메시지를 초기화한다.
 	const setField = <K extends keyof TProjectRegisterRequest>(key: K, value: TProjectRegisterRequest[K]): void => {
 		setForm((prev) => ({
 			...prev,
@@ -128,6 +161,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		}
 	};
 
+	// 진척도 입력값을 숫자만 허용하고 0~100 범위로 보정한다.
 	const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
 		const value = e.target.value;
 
@@ -143,6 +177,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		setField('progress_pct', progress);
 	};
 
+	// 진척도 바 클릭 위치를 기준으로 진척도 값을 계산한다.
 	const handleProgressBarClick = (e: React.MouseEvent<HTMLDivElement>): void => {
 		const rect = e.currentTarget.getBoundingClientRect();
 		const clickX = e.clientX - rect.left;
@@ -153,6 +188,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		setField('progress_pct', normalizedProgress);
 	};
 
+	// 콤마로 입력된 기술스택 문자열을 배열로 변환해 폼 상태에 반영한다.
 	const handleTechStackChange = (value: string): void => {
 		setTechStackText(value);
 
@@ -172,6 +208,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		}
 	};
 
+	// 검증 실패 시 첫 번째 오류 필드로 포커스를 이동한다.
 	const focusFirstError = (nextErrors: TProjectRegisterErrors): void => {
 		const firstErrorKey = Object.keys(nextErrors)[0];
 
@@ -186,6 +223,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		target?.focus();
 	};
 
+	// 프로젝트 등록 전 필수값, 진척도 범위, 시작일/종료일 순서를 검증한다.
 	const validateForm = (): boolean => {
 		const requiredResult = validateRequired(
 			{
@@ -222,6 +260,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		return Object.keys(nextErrors).length === 0;
 	};
 
+	// 등록 버튼 클릭 시 폼 검증 후 프로젝트 등록 API를 호출한다.
 	const handleSubmit = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
 
@@ -257,19 +296,19 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		);
 	};
 
-	// 스킬 제거 핸들러
+	// 선택된 기술스택 목록에서 특정 스킬을 제거한다.
 	const handleRemoveSkill = (skill: string): void => {
 		setSkills(skills.filter((s) => s !== skill));
 	};
 
-	// 추천 스킬 추가
+	// 추천 기술스택을 중복 없이 선택 목록에 추가한다.
 	const handleAddSuggestedSkill = (skill: string): void => {
 		if (!skills.includes(skill)) {
 			setSkills([...skills, skill]);
 		}
 	};
 
-	// 스킬 추가 핸들러
+	// 직접 입력한 기술스택을 중복 없이 선택 목록에 추가한다.
 	const handleAddSkill = (): void => {
 		const trimmed = newSkillInput.trim();
 		if (trimmed && !skills.includes(trimmed)) {
@@ -278,11 +317,13 @@ export default function ProjectRegisterPage(): React.ReactNode {
 		}
 	};
 
+	// 취소 버튼 클릭 시 이전 화면으로 이동한다.
 	const handleCancel = (): void => {
 		$router.back();
 	};
 
 	return (
+		// 프로젝트 등록 페이지 전체 레이아웃
 		<div className="p-5">
 			<PageHeader
 				title="프로젝트 등록"
@@ -313,6 +354,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 			/>
 
 			<form>
+				{/* 프로젝트 기본 정보 입력 영역 */}
 				<div className="bg-card rounded-xl border p-5 mb-4">
 					<h2 className="font-semibold text-foreground mb-4 text-sm flex items-center gap-2">
 						<span className="w-5 h-5 rounded-full bg-brand-600 text-white text-xs flex items-center justify-center">
@@ -635,6 +677,7 @@ export default function ProjectRegisterPage(): React.ReactNode {
 					</div>
 				</div>
 
+				{/* 입력한 프로젝트 정보를 저장 전 미리 확인하는 영역 */}
 				<div className="bg-card rounded-xl border p-4 mb-4">
 					<h3 className="font-semibold text-foreground text-sm mb-3">등록 정보 미리보기</h3>
 
