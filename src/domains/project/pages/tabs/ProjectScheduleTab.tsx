@@ -602,8 +602,8 @@ export default function ProjectScheduleTab({
 	const isAllSelected = selectedGroupKeys.length === 0;
 	// 현재 선택 상태에 따라 화면에 표시할 직무구분 목록입니다.
 	const visibleGroups = isAllSelected
-		? roleGroups
-		: roleGroups.filter((group) => selectedGroupKeys.includes(group.key));
+	? roleGroups.filter((group) => (groupedAssignments[group.key] || []).length > 0)
+	: roleGroups.filter((group) => selectedGroupKeys.includes(group.key));
 
 	/**
 	 * 전체 버튼 클릭 시 선택값을 초기화하여 모든 직무구분을 표시합니다.

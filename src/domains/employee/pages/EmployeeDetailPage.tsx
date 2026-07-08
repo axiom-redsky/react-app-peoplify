@@ -37,17 +37,27 @@ type TCommonCodeResponse = {
 
 // API 응답 타입 정의
 export type TAssignmentHistory = {
-	assignment_id: number;
-	role: string;
+	id: number;
+	assignment_id: number | null;
+	employee_id: number | null;
+	project_id: number | null;
+
+	project_name: string;
+	client: string | null;
+
+	role: string | null;
 	rate_pct: number;
 	start_date: string;
 	end_date: string | null;
-	project_name: string;
-	client: string;
-	project_status: string;
-	project_id: number;
+
+	action_type: 'ASSIGNED' | 'UPDATED' | 'REMOVED' | 'ENDED' | string;
+	status: 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'CANCELED' | string;
+
+	// 기존 탭 컴포넌트가 project_status를 보고 있을 수 있어서 임시 호환용
+	project_status?: string;
+
 	created_at: string;
-	updated_at: string;
+	updated_at: string | null;
 };
 
 export type TAssignmentContractInfo = {
@@ -206,6 +216,11 @@ export default function EmployeeDetailPage(): React.ReactNode {
 	/** 퇴사 여부 판단 */
 	const isResigned = employee?.employment_status === 'resigned';
 
+	const currentAssignment =
+		employee?.assignment_history?.find((history) => history.status === 'ACTIVE') ??
+		employee?.assignment_history?.find((history) => history.project_status === 'ACTIVE') ??
+		null;
+
 	/** 로딩 상태 처리 */
 	if (isPending) {
 		return (
@@ -270,6 +285,12 @@ export default function EmployeeDetailPage(): React.ReactNode {
 					<div className="flex gap-2">
 						<Button
 							variant="outline"
+							onClick={handleMoveList}
+						>
+							목록으로
+						</Button>
+						<Button
+							variant="outline"
 							size="sm"
 							onClick={handleMoveEdit}
 						>
@@ -327,11 +348,9 @@ export default function EmployeeDetailPage(): React.ReactNode {
 
 				<div className="text-right">
 					<p className="text-sm text-muted-foreground">현 투입 프로젝트</p>
-					<p className="font-semibold text-foreground">{employee.assignment_history?.[0]?.project_name || '-'}</p>
+					<p className="font-semibold text-foreground">{currentAssignment?.project_name || '-'}</p>
 					<p className="text-sm text-brand-600 font-medium">
-						{employee.assignment_history?.[0]?.rate_pct
-							? `투입률 ${employee.assignment_history[0].rate_pct}%`
-							: '미투입'}
+						{currentAssignment?.rate_pct ? `투입률 ${currentAssignment.rate_pct}%` : '미투입'}
 					</p>
 				</div>
 			</div>
@@ -375,15 +394,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 			{activeTab === 'skills' && <EmployeeSkillsTab skills={employee.skills ?? []} />}
 
 			{activeTab === 'contracts' && <EmployeeContractTab contracts={employee.contracts ?? []} />}
-			{/* 하단 버튼 */}
-			<div className="flex justify-end gap-2 mt-4">
-				<Button
-					variant="outline"
-					onClick={handleMoveList}
-				>
-					목록으로
-				</Button>
-			</div>
+	
 		</div>
 	);
 }

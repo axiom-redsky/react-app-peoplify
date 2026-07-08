@@ -230,27 +230,42 @@ router.get('/:id', async (req, res, next) => {
 			.where('employees.id', req.params.id)
 			.select('employees.*', 'departments.name as department')
 			.first();
+
 		if (!employee) {
-			return res.status(404).json({ success: false, message: '직원을 찾을 수 없습니다.' });
+			return res.status(404).json({
+				success: false,
+				message: '직원을 찾을 수 없습니다.',
+			});
 		}
 
-		const skills = await db('employee_skills').where({ employee_id: employee.id }).pluck('skill');
+		const skills = await db('employee_skills')
+			.where({ employee_id: employee.id })
+			.pluck('skill');
 
-		const assignmentHistory = await db('assignments')
-			.join('projects', 'assignments.project_id', 'projects.id')
-			.where('assignments.employee_id', employee.id)
+		// 투입 이력 조회
+		// 기존 assignments + projects 현재값 조회가 아니라
+		// assignment_history에 저장된 당시 스냅샷 기준으로 조회
+		const assignmentHistory = await db('assignment_history')
+			.where('employee_id', employee.id)
 			.select(
-				'assignments.id as assignment_id',
-				'assignments.role',
-				'assignments.rate_pct',
-				'assignments.start_date',
-				'assignments.end_date',
-				'projects.name as project_name',
-				'projects.client',
-				'projects.status as project_status',
-				'projects.id as project_id',
+				'id',
+				'assignment_id',
+				'employee_id',
+				'project_id',
+				'project_name',
+				'client',
+				'role',
+				'rate_pct',
+				'start_date',
+				'end_date',
+				'action_type',
+				'status',
+				'status as project_status',
+				'created_at',
+				'updated_at',
 			)
-			.orderBy('assignments.start_date', 'desc');
+			.orderBy('start_date', 'desc')
+			.orderBy('created_at', 'desc');
 
 		const contractHistory = await db('assignments')
 			.join('projects', 'assignments.project_id', 'projects.id')
@@ -267,6 +282,7 @@ router.get('/:id', async (req, res, next) => {
 				'assignments.performance_rating',
 			)
 			.orderBy('assignments.contract_start_date', 'desc');
+
 		res.json({
 			success: true,
 			data: {
