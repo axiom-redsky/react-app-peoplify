@@ -10,6 +10,12 @@ import EmployeeSkillsTab from './tabs/EmployeeSkillsTab';
 import EmployeeBasicInfoTab from './tabs/EmployeeBasicInfoTab';
 import EmployeeContractTab from './tabs/EmployeeContractTab';
 
+type CommonCode = {
+	code: string;
+	code_name?: string;
+	name?: string;
+	parent_code?: string | null;
+};
 // 공통코드 API 조회
 type TCommonCode = {
 	id: number;
@@ -184,6 +190,14 @@ export default function EmployeeDetailPage(): React.ReactNode {
 		deleteEmployee();
 	};
 
+	const getCodeName = (options: CommonCode[], code?: string | null) => {
+		if (!code) return '-';
+
+		const found = options.find((item) => item.code === code);
+
+		return found?.code_name ?? found?.name ?? code;
+	};
+
 	/** 직원 데이터 업데이트 */
 	useEffect(() => {
 		setEmployee(response?.data ?? null);
@@ -289,7 +303,7 @@ export default function EmployeeDetailPage(): React.ReactNode {
 					<div className="flex items-center gap-2 mb-1">
 						<h2 className="text-xl font-bold text-foreground">{employee.name}</h2>
 						<span className="text-sm text-muted-foreground">
-							{employee.department} · {employee.position}
+							{employee.department || '-'} · {getCodeName(positionOptions, employee.position) || '-'}
 						</span>
 					</div>
 
