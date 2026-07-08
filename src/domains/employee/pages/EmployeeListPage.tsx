@@ -1,10 +1,11 @@
-import { useApi } from '@axiom/hooks';
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
+import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
 import PageHeader from '@/shared/components/ui/PageHeader';
 import StatusEmployBadge from '@/shared/components/ui/StatusEmployBadge';
-import { ChevronLeft, ChevronRight, Search, SlidersHorizontal, UserPlus } from 'lucide-react';
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@axiom/components/ui';
+import { useApi } from '@axiom/hooks';
+import { ChevronLeft, ChevronRight, Search, Download, SlidersHorizontal, UserPlus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useAppAlert } from '@/shared/components/layout/default/AppAlertProvider';
+import * as XLSX from 'xlsx';
 
 // 직원 타입 정의 — 실제 API response 구조에 맞춤
 type TEmployee = {
@@ -34,6 +35,7 @@ type TEmployeeListResponse = {
 
 const EMPLOYEES_ENDPOINT = '/api/employees' as const;
 const PAGE_LIMIT = 10; // 페이지당 표시할 항목 수
+const EMPLOYEES_EXCEL_ENDPOINT = '/api/employees/excel' as const;
 
 type TDepartment = {
 	id: number;
@@ -45,6 +47,10 @@ type TDepartmentListResponse = {
 	data: TDepartment[];
 };
 
+type TEmployeeExcelResponse = {
+	success: boolean;
+	data: TEmployee[];
+};
 const DEPARTMENTS_ENDPOINT = '/api/departments';
 
 type TCommonCode = {
@@ -68,6 +74,13 @@ type TCommonCodesResponse = {
 	};
 };
 
+// 직원목록 엑셀 컬럼 타입
+// 카드형 목록 화면에는 그리드 헤더가 없기 때문에 엑셀 전용 헤더 정보를 별도로 정의한다.
+type TEmployeeExcelColumn = {
+	header: string;
+	width: number;
+	getValue: (employee: TEmployee, index: number) => string | number;
+};
 /**
  * URL query string 에서 검색조건 초기값 복원
  */
@@ -312,18 +325,179 @@ export default function EmployeeListPage(): React.ReactNode {
 		$router.push(`/employee/employee-detail/${employeeId}${queryString ? `?${queryString}` : ''}`);
 	};
 
+	// 날짜 문자열을 화면 표시 형식으로 변환한다.
+	// 예: 2026-07-03 또는 ISO 날짜 문자열 → 2026.07.03
+	const formatDate = (dateString?: string | null): string => {
+		if (!dateString) return '-';
+
+		const date = new Date(dateString);
+
+		if (Number.isNaN(date.getTime())) return '-';
+
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+
+		return `${year}.${month}.${day}`;
+	};
+
+	// 직원 목록 엑셀 다운로드 컬럼 정의
+	// 화면 테이블 헤더와 엑셀 헤더를 맞춘다.
+	const employeeExcelColumns: TEmployeeExcelColumn[] = [
+		{
+			header: '번호',
+			width: 8,
+			getValue: (_employee, index) => index + 1,
+		},
+		{
+			header: '이름',
+			width: 16,
+			getValue: (employee) => employee.name || '-',
+		},
+		{
+			header: '부서',
+			width: 18,
+			getValue: (employee) => employee.department || '-',
+		},
+		{
+			header: '직급',
+			width: 16,
+			getValue: (employee) => getCodeName(positionOptions, employee.position),
+		},
+		{
+			header: '이메일',
+			width: 30,
+			getValue: (employee) => employee.email || '-',
+		},
+		{
+			header: '연락처',
+			width: 18,
+			getValue: (employee) => employee.phone || '-',
+		},
+		{
+			header: '입사일',
+			width: 14,
+			getValue: (employee) => formatDate(employee.hire_date),
+		},
+		{
+			header: '재직상태',
+			width: 12,
+			getValue: (employee) => getCodeName(employmentStatusCodes, employee.employment_status),
+		},
+		{
+			header: '보유기술',
+			width: 40,
+			getValue: (employee) => (Array.isArray(employee.skills) ? employee.skills.join(', ') : ''),
+		},
+	];
+
+	// 엑셀 파일명에 사용할 오늘 날짜 문자열을 생성한다.
+	// 예: 20260706
+	const getTodayText = (): string => {
+		const now = new Date();
+		const year = now.getFullYear();
+		const month = String(now.getMonth() + 1).padStart(2, '0');
+		const day = String(now.getDate()).padStart(2, '0');
+
+		return `${year}${month}${day}`;
+	};
+
+	// 현재 화면에 표시된 직원 목록을 엑셀 다운로드용 2차원 배열로 변환한다.
+	// 첫 번째 행은 헤더, 두 번째 행부터 실제 직원 데이터다.
+	const getEmployeeExcelRows = (targetEmployees: TEmployee[]) => {
+		const headerRow = employeeExcelColumns.map((column) => column.header);
+
+		const dataRows = targetEmployees.map((employee, index) =>
+			employeeExcelColumns.map((column) => column.getValue(employee, index)),
+		);
+
+		return [headerRow, ...dataRows];
+	};
+
+	/** GET 조회 - 직원 엑셀 다운로드용 전체 목록 */
+	const {
+		data: excelResponse,
+		refetch: refetchExcelEmployees,
+		isFetching: isExcelDownloading,
+	} = useApi<TEmployeeExcelResponse>(EMPLOYEES_EXCEL_ENDPOINT, {
+		params: {
+			search: searchQuery || undefined,
+			department: selectedDepartment === 'all' ? undefined : selectedDepartment,
+			status: selectedStatus === 'all' ? undefined : selectedStatus,
+			deployment_status: selectedDeployment === 'all' ? undefined : selectedDeployment,
+		},
+	});
+
+	// 현재 검색/필터 조건에 맞는 전체 직원 목록을 엑셀 파일로 다운로드한다.
+	// 현재 검색/필터 조건에 맞는 전체 직원 목록을 엑셀 파일로 다운로드한다.
+	const handleExcelDownload = async () => {
+		try {
+			const result = await refetchExcelEmployees();
+
+			const targetEmployees = result?.data?.data ?? excelResponse?.data ?? [];
+
+			if (targetEmployees.length === 0) {
+				openAlert({
+					title: '다운로드 불가',
+					message: '다운로드할 직원 목록이 없습니다.',
+					confirmText: '확인',
+				});
+				return;
+			}
+
+			const excelRows = getEmployeeExcelRows(targetEmployees);
+
+			const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
+
+			worksheet['!cols'] = employeeExcelColumns.map((column) => ({
+				wch: column.width,
+			}));
+
+			if (worksheet['!ref']) {
+				worksheet['!autofilter'] = {
+					ref: worksheet['!ref'],
+				};
+			}
+
+			const workbook = XLSX.utils.book_new();
+
+			XLSX.utils.book_append_sheet(workbook, worksheet, '직원 목록');
+
+			XLSX.writeFile(workbook, `직원_목록_${getTodayText()}.xlsx`);
+		} catch (err) {
+			const error = err as Error;
+
+			openAlert({
+				title: '다운로드 실패',
+				message: error.message || '엑셀 다운로드 중 오류가 발생했습니다.',
+				confirmText: '확인',
+			});
+		}
+	};
+
 	return (
 		<div className="p-5">
 			<PageHeader
 				title="직원 관리"
 				actions={
-					<Button
-						size="lg"
-						onClick={handleMoveEmployeeForm}
-					>
-						<UserPlus className="w-4 h-4 mr-1.5" />
-						직원 등록
-					</Button>
+					<div className="flex items-center gap-2">
+						<Button
+							size="lg"
+							onClick={handleExcelDownload}
+							disabled={isExcelDownloading}
+						>
+							<Download className="w-4 h-4 mr-1.5" />
+							{isExcelDownloading ? '다운로드 중...' : '엑셀 다운로드'}
+						</Button>
+
+						<Button
+							size="lg"
+							onClick={handleMoveEmployeeForm}
+						>
+							<UserPlus className="w-4 h-4 mr-1.5" />
+							직원 등록
+						</Button>
+					</div>
 				}
 			/>
 

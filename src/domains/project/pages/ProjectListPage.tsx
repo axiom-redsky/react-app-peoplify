@@ -15,8 +15,8 @@ import {
 import PageHeader from '@/shared/components/ui/PageHeader';
 import StatusBadge from '@/shared/components/ui/StatusBadge';
 import type { StatusType } from '@/shared/components/ui/StatusBadge';
-
-import { Search, Plus, Calendar, Users } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { Search, Plus, Calendar, Users, Download } from 'lucide-react';
 
 // 프로젝트 목록 API에서 내려오는 개별 프로젝트 데이터 타입
 // 화면에서 사용하는 프로젝트명, 고객사, 기간, 상태, 기술스택 정보를 정의한다.
@@ -28,6 +28,7 @@ interface Project {
 	end_date: string;
 	status: StatusType;
 	tech_stack: string[];
+	member_count?: number;
 }
 
 // 날짜 문자열을 화면 표시 형식으로 변환한다.
@@ -39,6 +40,94 @@ const formatDate = (dateString: string): string => {
 	const day = String(date.getDate()).padStart(2, '0');
 	return `${year}.${month}.${day}`;
 };
+
+// 프로젝트 엑셀 컬럼 타입
+// 카드형 목록 화면에는 그리드 헤더가 없기 때문에 엑셀 전용 헤더 정보를 별도로 정의한다.
+type ProjectExcelColumn = {
+	header: string;
+	width: number;
+	getValue: (project: Project, index: number) => string | number;
+};
+
+/******************************* Excel 다운로드 로직 영역 ************************/
+// 프로젝트 목록 엑셀 다운로드 컬럼 정의
+// header: 엑셀 헤더명
+// width: 엑셀 컬럼 너비
+// getValue: 각 프로젝트 데이터에서 해당 컬럼에 들어갈 값을 만드는 함수
+const projectExcelColumns: ProjectExcelColumn[] = [
+	{
+		header: '번호',
+		width: 8,
+		getValue: (_project, index) => index + 1,
+	},
+	{
+		header: '프로젝트명',
+		width: 30,
+		getValue: (project) => project.name,
+	},
+	{
+		header: '고객사',
+		width: 20,
+		getValue: (project) => project.client,
+	},
+	{
+		header: '투입인력', // 실제 인력이 아니라 기술에 대해서 숫자를 카운팅중 하단에 고칠게있다.
+		width: 12,
+		getValue: (project) => `${project.member_count ?? 0}명`,
+	},
+	{
+		header: '상태',
+		width: 12,
+		getValue: (project) => getStatusLabel(project.status),
+	},
+	{
+		header: '시작일',
+		width: 14,
+		getValue: (project) => formatDate(project.start_date),
+	},
+	{
+		header: '종료일',
+		width: 14,
+		getValue: (project) => formatDate(project.end_date),
+	},
+	{
+		header: '프로젝트기간',
+		width: 28,
+		getValue: (project) => `${formatDate(project.start_date)} ~ ${formatDate(project.end_date)}`,
+	},
+	{
+		header: '기술스택',
+		width: 45,
+		getValue: (project) => (Array.isArray(project.tech_stack) ? project.tech_stack.join(', ') : ''),
+	},
+];
+
+// 프로젝트 상태 코드를 엑셀 표시용 한글명으로 변환한다.
+// API 상태값(active, complete, planned)을 사용자가 읽기 쉬운 한글로 바꾼다.
+const getStatusLabel = (status: StatusType): string => {
+	switch (status) {
+		case 'active':
+			return '진행 중';
+		case 'complete':
+			return '완료';
+		case 'planned':
+			return '예정';
+		default:
+			return String(status);
+	}
+};
+
+// 엑셀 파일명에 사용할 오늘 날짜 문자열을 생성한다.
+// 예: 20260706
+const getTodayText = (): string => {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, '0');
+	const day = String(now.getDate()).padStart(2, '0');
+
+	return `${year}${month}${day}`;
+};
+/******************************* Excel 다운로드 로직 영역 ************************/
 
 // 프로젝트 목록 화면 컴포넌트
 // 프로젝트 목록 조회, 상태 탭 필터, 검색어 필터, 상세/등록 이동을 담당한다.
@@ -112,6 +201,50 @@ export default function ProjectListPage(): React.ReactNode {
 
 		return statusMatch && searchMatch;
 	});
+
+	// 현재 필터링된 프로젝트 목록을 엑셀 다운로드용 2차원 배열로 변환한다.
+	// 첫 번째 행은 헤더, 두 번째 행부터 실제 프로젝트 데이터다.
+	const getProjectExcelRows = (targetProjects: Project[]) => {
+		const headerRow = projectExcelColumns.map((column) => column.header);
+
+		const dataRows = targetProjects.map((project, index) =>
+			projectExcelColumns.map((column) => column.getValue(project, index)),
+		);
+
+		return [headerRow, ...dataRows];
+	};
+
+	// 현재 화면에 표시된 프로젝트 목록을 엑셀 파일로 다운로드한다.
+	const handleExcelDownload = () => {
+		const targetProjects = filteredProjects ?? [];
+
+		if (targetProjects.length === 0) {
+			alert('다운로드할 프로젝트가 없습니다.');
+			return;
+		}
+
+		const excelRows = getProjectExcelRows(targetProjects);
+
+		const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
+
+		// 엑셀 컬럼 너비 설정
+		worksheet['!cols'] = projectExcelColumns.map((column) => ({
+			wch: column.width,
+		}));
+
+		// 엑셀 헤더 필터 설정
+		if (worksheet['!ref']) {
+			worksheet['!autofilter'] = {
+				ref: worksheet['!ref'],
+			};
+		}
+
+		const workbook = XLSX.utils.book_new();
+
+		XLSX.utils.book_append_sheet(workbook, worksheet, '프로젝트 목록');
+
+		XLSX.writeFile(workbook, `프로젝트_목록_${getTodayText()}.xlsx`);
+	};
 
 	// 프로젝트 목록 로딩 중 표시 화면
 	// 실제 테이블 구조와 유사한 Skeleton UI를 보여준다.
@@ -195,13 +328,24 @@ export default function ProjectListPage(): React.ReactNode {
 			<PageHeader
 				title="프로젝트 관리"
 				actions={
-					<Button
-						size="lg"
-						onClick={() => $router.push(`/project/new`)}
-					>
-						<Plus className="w-4 h-4 mr-1.5" />
-						프로젝트 등록
-					</Button>
+					<>
+						<Button
+							size="lg"
+							onClick={handleExcelDownload}
+							className="mr-2"
+						>
+							<Download className="w-4 h-4 mr-1.5" />
+							엑셀 다운로드
+						</Button>
+
+						<Button
+							size="lg"
+							onClick={() => $router.push(`/project/new`)}
+						>
+							<Plus className="w-4 h-4 mr-1.5" />
+							프로젝트 등록
+						</Button>
+					</>
 				}
 			/>
 
@@ -292,7 +436,7 @@ export default function ProjectListPage(): React.ReactNode {
 										</span>
 										<span className="flex items-center gap-1 text-muted-foreground">
 											<Users className="w-3.5 h-3.5" />
-											투입 {tech.length}명
+											투입 {proj.member_count}명
 										</span>
 									</div>
 									<div className="flex flex-wrap gap-1.5 mt-2">

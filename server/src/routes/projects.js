@@ -9,17 +9,47 @@ router.get('/', async (req, res, next) => {
 		const { status } = req.query;
 
 		let query = db('projects').orderBy('created_at', 'desc').orderBy('start_date', 'desc');
+
 		if (status) query = query.where('status', status);
 
 		const projects = await query;
 
-		// 기술스택 일괄 조회
 		const ids = projects.map((p) => p.id);
+
+		// 기술스택 일괄 조회
 		const techStack = ids.length > 0 ? await db('project_tech_stack').whereIn('project_id', ids) : [];
+
+		// 프로젝트별 투입인력 수 일괄 조회
+		// 같은 직원이 중복 배정되어도 1명으로 계산하기 위해 employee_id 기준 distinct count 사용
+		const memberCounts =
+			ids.length > 0
+				? await db('assignments')
+						.select('project_id')
+						.countDistinct({ member_count: 'employee_id' })
+						.whereIn('project_id', ids)
+						.where(function () {
+							this.whereNull('end_date').orWhere('end_date', '>', db.raw('CURRENT_DATE'));
+						})
+						.groupBy('project_id')
+				: [];
+
+		// project_id별 기술스택 목록 맵 생성
+		const techStackMap = techStack.reduce((acc, row) => {
+			if (!acc[row.project_id]) acc[row.project_id] = [];
+			acc[row.project_id].push(row.tech);
+			return acc;
+		}, {});
+
+		// project_id별 투입인력 수 맵 생성
+		const memberCountMap = memberCounts.reduce((acc, row) => {
+			acc[row.project_id] = Number(row.member_count ?? 0);
+			return acc;
+		}, {});
 
 		const data = projects.map((proj) => ({
 			...proj,
-			tech_stack: techStack.filter((t) => t.project_id === proj.id).map((t) => t.tech),
+			tech_stack: techStackMap[proj.id] ?? [],
+			member_count: memberCountMap[proj.id] ?? 0,
 		}));
 
 		res.json({ success: true, data });
@@ -40,9 +70,7 @@ router.get('/:id', async (req, res, next) => {
 			});
 		}
 
-		const techStack = await db('project_tech_stack')
-			.where({ project_id: project.id })
-			.pluck('tech');
+		const techStack = await db('project_tech_stack').where({ project_id: project.id }).pluck('tech');
 
 		// 직무 옵션: JOB_ROLE
 		const jobRoleOptions = await db('common_code')
@@ -62,26 +90,34 @@ router.get('/:id', async (req, res, next) => {
 
 			// 직원 직무 코드: employees.job_role_code -> common_code(JOB_ROLE)
 			.leftJoin({ jobRole: 'common_code' }, function () {
-				this.on('employees.job_role_code', '=', 'jobRole.code')
-					.andOn('jobRole.group_code', '=', db.raw('?', ['JOB_ROLE']));
+				this.on('employees.job_role_code', '=', 'jobRole.code').andOn(
+					'jobRole.group_code',
+					'=',
+					db.raw('?', ['JOB_ROLE']),
+				);
 			})
 
 			// 직무구분 코드: jobRole.parent_code -> common_code(JOB_ROLE_CATEGORY)
 			.leftJoin({ jobRoleCategory: 'common_code' }, function () {
-				this.on('jobRole.parent_code', '=', 'jobRoleCategory.code')
-					.andOn('jobRoleCategory.group_code', '=', db.raw('?', ['JOB_ROLE_CATEGORY']));
+				this.on('jobRole.parent_code', '=', 'jobRoleCategory.code').andOn(
+					'jobRoleCategory.group_code',
+					'=',
+					db.raw('?', ['JOB_ROLE_CATEGORY']),
+				);
 			})
 
 			// 직원 직급 코드: employees.position -> common_code(POSITION)
 			.leftJoin({ positionCode: 'common_code' }, function () {
-				this.on('employees.position', '=', 'positionCode.code')
-					.andOn('positionCode.group_code', '=', db.raw('?', ['POSITION']));
+				this.on('employees.position', '=', 'positionCode.code').andOn(
+					'positionCode.group_code',
+					'=',
+					db.raw('?', ['POSITION']),
+				);
 			})
 
 			.where('assignments.project_id', project.id)
 			.where(function () {
-				this.whereNull('assignments.end_date')
-					.orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
+				this.whereNull('assignments.end_date').orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
 			})
 			.select(
 				'assignments.id',

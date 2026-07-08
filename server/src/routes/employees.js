@@ -86,6 +86,142 @@ router.get('/', async (req, res, next) => {
 	}
 });
 
+// GET /api/employees/excel
+// 직원 목록 엑셀 다운로드 전용 조회
+// 화면 페이지네이션과 무관하게 현재 검색/필터 조건에 맞는 전체 직원을 조회한다.
+router.get('/excel', async (req, res, next) => {
+	try {
+		const { search, department, status, deployment_status } = req.query;
+
+		let query = db('employees')
+			.leftJoin('departments', 'employees.department_id', 'departments.id')
+			.select(
+				'employees.id',
+				'employees.name',
+				'employees.email',
+				'employees.phone',
+				'departments.name as department',
+				'employees.position',
+				'employees.job_role_code',
+				'employees.employment_status',
+				'employees.hire_date',
+				'employees.created_at',
+				'employees.updated_at'
+			)
+			.orderBy('employees.name', 'asc');
+
+		if (search) {
+			query = query.where(function () {
+				this.where('employees.name', 'like', `%${search}%`)
+					.orWhere('employees.email', 'like', `%${search}%`)
+					.orWhere('employees.phone', 'like', `%${search}%`);
+			});
+		}
+
+		if (department) {
+			query = query.where('departments.name', department);
+		}
+
+		if (status) {
+			query = query.where('employees.employment_status', status);
+		}
+
+		// 투입상태 필터
+		// deployed / bench 값은 실제 DEPLOYMENT_STATUS 공통코드 code 값에 맞춰 조정해야 한다.
+		if (deployment_status) {
+			if (deployment_status === 'deployed') {
+				query = query.whereExists(function () {
+					this.select('*')
+						.from('assignments')
+						.whereRaw('assignments.employee_id = employees.id')
+						.where(function () {
+							this.whereNull('assignments.end_date').orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
+						});
+				});
+			}
+
+			if (deployment_status === 'bench') {
+				query = query.whereNotExists(function () {
+					this.select('*')
+						.from('assignments')
+						.whereRaw('assignments.employee_id = employees.id')
+						.where(function () {
+							this.whereNull('assignments.end_date').orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
+						});
+				});
+			}
+		}
+
+		const employees = await query;
+		const employeeIds = employees.map((employee) => employee.id);
+
+		const skills =
+			employeeIds.length > 0
+				? await db('employee_skills')
+						.select('employee_id', 'skill')
+						.whereIn('employee_id', employeeIds)
+				: [];
+
+		const currentAssignments =
+			employeeIds.length > 0
+				? await db('assignments')
+						.leftJoin('projects', 'assignments.project_id', 'projects.id')
+						.select(
+							'assignments.employee_id',
+							'projects.name as project_name'
+						)
+						.whereIn('assignments.employee_id', employeeIds)
+						.where(function () {
+							this.whereNull('assignments.end_date').orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
+						})
+				: [];
+
+		const jobRoleCodes =
+			employees
+				.map((employee) => employee.job_role_code)
+				.filter(Boolean);
+
+		const jobRoles =
+			jobRoleCodes.length > 0
+				? await db('common_code')
+						.select('code', 'code_name')
+						.where('group_code', 'JOB_ROLE')
+						.whereIn('code', jobRoleCodes)
+				: [];
+
+		const skillMap = skills.reduce((acc, row) => {
+			if (!acc[row.employee_id]) acc[row.employee_id] = [];
+			acc[row.employee_id].push(row.skill);
+			return acc;
+		}, {});
+
+		const projectMap = currentAssignments.reduce((acc, row) => {
+			if (!acc[row.employee_id]) acc[row.employee_id] = [];
+			if (row.project_name) acc[row.employee_id].push(row.project_name);
+			return acc;
+		}, {});
+
+		const jobRoleMap = jobRoles.reduce((acc, row) => {
+			acc[row.code] = row.code_name;
+			return acc;
+		}, {});
+
+		const data = employees.map((employee) => ({
+			...employee,
+			skills: skillMap[employee.id] ?? [],
+			current_projects: projectMap[employee.id] ?? [],
+			job_role_name: employee.job_role_code ? jobRoleMap[employee.job_role_code] ?? employee.job_role_code : '-',
+		}));
+
+		res.json({
+			success: true,
+			data,
+		});
+	} catch (err) {
+		next(err);
+	}
+});
+
 // GET /api/employees/:id  — 상세
 router.get('/:id', async (req, res, next) => {
 	try {
