@@ -429,7 +429,6 @@ export default function EmployeeListPage(): React.ReactNode {
 	});
 
 	// 현재 검색/필터 조건에 맞는 전체 직원 목록을 엑셀 파일로 다운로드한다.
-	// 현재 검색/필터 조건에 맞는 전체 직원 목록을 엑셀 파일로 다운로드한다.
 	const handleExcelDownload = async () => {
 		try {
 			const result = await refetchExcelEmployees();

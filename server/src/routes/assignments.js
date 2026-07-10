@@ -4,11 +4,30 @@ const db = require('../db/knex');
 const router = express.Router();
 
 // GET /api/assignments  — 전체 투입현황 (선택적 필터)
+// - 기본: 전체 조회
+// - paging=true 전달 시에만 페이징 적용
+// - employee_id, project_id, department_id, current_only, withdraw_days 선택 필터 지원
 router.get('/', async (req, res, next) => {
 	try {
-		const { employee_id, project_id, current_only } = req.query;
+		const {
+			employee_id,
+			project_id,
+			department_id,
+			current_only,
+			withdraw_days,
+			paging,
+			page = 1,
+			page_size = 20,
+		} = req.query;
 
+		const usePaging = paging === 'true';
+		const currentPage = Math.max(parseInt(page, 10) || 1, 1);
+		const pageSize = Math.min(Math.max(parseInt(page_size, 10) || 20, 1), 100);
+		const offset = (currentPage - 1) * pageSize;
+
+		// 직원별 최신 assignment 1건
 		let query = db('assignments')
+			.distinctOn('assignments.employee_id')
 			.join('employees', 'assignments.employee_id', 'employees.id')
 			.leftJoin('departments', 'employees.department_id', 'departments.id')
 			.join('projects', 'assignments.project_id', 'projects.id')
@@ -20,26 +39,104 @@ router.get('/', async (req, res, next) => {
 				'assignments.end_date',
 				'employees.id as employee_id',
 				'employees.name as employee_name',
+				'departments.id as department_id',
 				'departments.name as department',
 				'projects.id as project_id',
 				'projects.name as project_name',
 				'projects.client',
-				db.raw(
-					`(assignments.start_date <= CURRENT_DATE AND (assignments.end_date IS NULL OR assignments.end_date >= CURRENT_DATE)) as is_current`,
-				),
+				db.raw(`
+					(
+						assignments.start_date <= CURRENT_DATE
+						AND (
+							assignments.end_date IS NULL
+							OR assignments.end_date >= CURRENT_DATE
+						)
+					) AS is_current
+				`)
 			)
-			.orderBy('assignments.start_date', 'desc');
+			.orderBy([
+				{ column: 'assignments.employee_id' },
+				{
+					column: db.raw(`
+						CASE
+							WHEN assignments.end_date IS NULL
+								OR assignments.end_date >= CURRENT_DATE
+							THEN 0
+							ELSE 1
+						END
+					`)
+				},
+				{ column: 'assignments.start_date', order: 'desc' },
+				{ column: 'assignments.id', order: 'desc' },
+			]);
 
-		if (employee_id) query = query.where('assignments.employee_id', employee_id);
-		if (project_id) query = query.where('assignments.project_id', project_id);
+		// 직원 필터
+		if (employee_id) {
+			query.where('assignments.employee_id', employee_id);
+		}
+
+		// 프로젝트 필터
+		if (project_id) {
+			query.where('assignments.project_id', project_id);
+		}
+
+		// 부서 필터
+		if (department_id && department_id !== 'all') {
+			query.where('departments.id', department_id);
+		}
+
+		// 현재 투입중만
 		if (current_only === 'true') {
-			query = query.where('assignments.start_date', '<=', db.raw('CURRENT_DATE')).where(function () {
-				this.whereNull('assignments.end_date').orWhere('assignments.end_date', '>=', db.raw('CURRENT_DATE'));
+			query
+				.where('assignments.start_date', '<=', db.raw('CURRENT_DATE'))
+				.where(function () {
+					this.whereNull('assignments.end_date').orWhere(
+						'assignments.end_date',
+						'>=',
+						db.raw('CURRENT_DATE')
+					);
+				});
+		}
+
+		// 철수 임박
+		if (withdraw_days && withdraw_days !== 'all') {
+			const days = Number(withdraw_days);
+
+			query
+				.whereNotNull('assignments.end_date')
+				.whereBetween('assignments.end_date', [
+					db.raw('CURRENT_DATE'),
+					db.raw(`CURRENT_DATE + INTERVAL '${days} days'`),
+				]);
+		}
+
+		if (!usePaging) {
+			const data = await query;
+
+			return res.json({
+				success: true,
+				data,
 			});
 		}
 
-		const data = await query;
-		res.json({ success: true, data });
+		const allData = await query.clone();
+
+		const total = allData.length;
+
+		const data = allData.slice(offset, offset + pageSize);
+
+		return res.json({
+			success: true,
+			data,
+			pagination: {
+				page: currentPage,
+				page_size: pageSize,
+				total,
+				total_pages: Math.ceil(total / pageSize),
+				has_next: currentPage < Math.ceil(total / pageSize),
+				has_prev: currentPage > 1,
+			},
+		});
 	} catch (err) {
 		next(err);
 	}

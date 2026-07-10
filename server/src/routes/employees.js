@@ -106,7 +106,7 @@ router.get('/excel', async (req, res, next) => {
 				'employees.employment_status',
 				'employees.hire_date',
 				'employees.created_at',
-				'employees.updated_at'
+				'employees.updated_at',
 			)
 			.orderBy('employees.name', 'asc');
 
@@ -157,29 +157,21 @@ router.get('/excel', async (req, res, next) => {
 
 		const skills =
 			employeeIds.length > 0
-				? await db('employee_skills')
-						.select('employee_id', 'skill')
-						.whereIn('employee_id', employeeIds)
+				? await db('employee_skills').select('employee_id', 'skill').whereIn('employee_id', employeeIds)
 				: [];
 
 		const currentAssignments =
 			employeeIds.length > 0
 				? await db('assignments')
 						.leftJoin('projects', 'assignments.project_id', 'projects.id')
-						.select(
-							'assignments.employee_id',
-							'projects.name as project_name'
-						)
+						.select('assignments.employee_id', 'projects.name as project_name')
 						.whereIn('assignments.employee_id', employeeIds)
 						.where(function () {
 							this.whereNull('assignments.end_date').orWhere('assignments.end_date', '>', db.raw('CURRENT_DATE'));
 						})
 				: [];
 
-		const jobRoleCodes =
-			employees
-				.map((employee) => employee.job_role_code)
-				.filter(Boolean);
+		const jobRoleCodes = employees.map((employee) => employee.job_role_code).filter(Boolean);
 
 		const jobRoles =
 			jobRoleCodes.length > 0
@@ -210,12 +202,131 @@ router.get('/excel', async (req, res, next) => {
 			...employee,
 			skills: skillMap[employee.id] ?? [],
 			current_projects: projectMap[employee.id] ?? [],
-			job_role_name: employee.job_role_code ? jobRoleMap[employee.job_role_code] ?? employee.job_role_code : '-',
+			job_role_name: employee.job_role_code ? (jobRoleMap[employee.job_role_code] ?? employee.job_role_code) : '-',
 		}));
 
 		res.json({
 			success: true,
 			data,
+		});
+	} catch (err) {
+		next(err);
+	}
+});
+
+// GET /api/employees/status
+router.get('/status', async (req, res, next) => {
+	try {
+		const { department_id, status, withdraw_days, page = 1, page_size = 20, paging } = req.query;
+
+		const usePaging = paging === 'true';
+		const currentPage = Math.max(Number(page) || 1, 1);
+		const pageSize = Math.min(Math.max(Number(page_size) || 20, 1), 100);
+		const offset = (currentPage - 1) * pageSize;
+
+		// 직원별 최신 assignment 1건
+		const latestAssignment = db
+			.select(
+				'a.employee_id',
+				'a.project_id',
+				'a.role',
+				'a.rate_pct',
+				'a.start_date',
+				'a.end_date',
+				db.raw(`
+					ROW_NUMBER() OVER (
+						PARTITION BY a.employee_id
+						ORDER BY
+							a.start_date DESC,
+							a.id DESC
+					) rn
+				`),
+			)
+			.from({ a: 'assignments' })
+			.as('la');
+
+		let query = db('employees as e')
+			.leftJoin('departments as d', 'e.department_id', 'd.id')
+			.leftJoin(latestAssignment, function () {
+				this.on('e.id', '=', 'la.employee_id').andOn('la.rn', '=', db.raw('1'));
+			})
+			.leftJoin('projects as p', 'la.project_id', 'p.id')
+			.select(
+	'e.id as employee_id',
+	'e.name as employee_name',
+	'e.job_role_code',
+	'd.id as department_id',
+	'd.name as department',
+
+	'la.project_id',
+	'p.name as project_name',
+	'p.client',
+
+	'la.role',
+	'la.rate_pct',
+	'la.start_date',
+	'la.end_date',
+
+	db.raw(`
+		CASE
+			WHEN la.employee_id IS NULL THEN 'bench'
+			WHEN la.end_date IS NULL OR la.end_date >= CURRENT_DATE THEN 'deployed'
+			ELSE 'completed'
+		END AS status
+	`),
+);
+
+		// 부서
+		if (department_id && department_id !== 'all') {
+			query.where('d.id', department_id);
+		}
+
+		// 상태
+		if (status && status !== 'all') {
+			if (status === 'bench') {
+				query.whereNull('la.employee_id');
+			} else if (status === 'deployed') {
+				query.whereNotNull('la.employee_id').where(function () {
+					this.whereNull('la.end_date').orWhere('la.end_date', '>=', db.raw('CURRENT_DATE'));
+				});
+			} else if (status === 'completed') {
+				query.whereNotNull('la.end_date').where('la.end_date', '<', db.raw('CURRENT_DATE'));
+			}
+		}
+
+		// 철수 예정
+		if (withdraw_days && withdraw_days !== 'all') {
+			const days = Number(withdraw_days);
+
+			query
+				.whereNotNull('la.end_date')
+				.whereBetween('la.end_date', [db.raw('CURRENT_DATE'), db.raw(`CURRENT_DATE + INTERVAL '${days} days'`)]);
+		}
+
+		query.orderBy('e.name');
+
+		if (!usePaging) {
+			const data = await query;
+			return res.json({ success: true, data });
+		}
+
+		const countResult = await query.clone().clearSelect().clearOrder().countDistinct({ total: 'e.id' }).first();
+
+		const total = Number(countResult.total);
+
+		const data = await query.limit(pageSize).offset(offset);
+
+		return res.json({
+			success: true,
+			data,
+			pagination: {
+				page: currentPage,
+				page_size: pageSize,
+				total,
+				total_pages: Math.ceil(total / pageSize),
+				has_next: currentPage * pageSize < total,
+				has_prev: currentPage > 1,
+			},
 		});
 	} catch (err) {
 		next(err);
@@ -238,9 +349,7 @@ router.get('/:id', async (req, res, next) => {
 			});
 		}
 
-		const skills = await db('employee_skills')
-			.where({ employee_id: employee.id })
-			.pluck('skill');
+		const skills = await db('employee_skills').where({ employee_id: employee.id }).pluck('skill');
 
 		// 투입 이력 조회
 		// 기존 assignments + projects 현재값 조회가 아니라
@@ -314,7 +423,16 @@ router.post('/', async (req, res, next) => {
 		const department_id = await resolveDepartmentId(req.body);
 
 		const [employee] = await db('employees')
-			.insert({ name, email, phone, department_id, position, hire_date, employment_status, job_role_code: req.body.job_role_code })
+			.insert({
+				name,
+				email,
+				phone,
+				department_id,
+				position,
+				hire_date,
+				employment_status,
+				job_role_code: req.body.job_role_code,
+			})
 			.returning('*');
 
 		if (skills.length > 0) {
